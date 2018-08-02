@@ -604,7 +604,7 @@ bool CollisionSolver3d::TriToTri(const TRI* tri1, const TRI* tri2, double h){
                 pts[3] == pts[2])
                 continue;
 	    if (PointToTri(pts,h))
-		status = true;
+            status = true;
 	}
 	for (int i = 0; i < 3; ++i)
 	{
@@ -954,11 +954,13 @@ static void PointToTriImpulse(POINT** pts, double* nor, double* w, double dist, 
 	    vt = sqrt(Dot3d(v_rel, v_rel) - sqr(vn));
 	else
 	    vt = 0.0;
+
 	if (vn < 0)
 	{
 	    if (isStaticRigidBody(pts[3]) ||
 	       (isStaticRigidBody(pts[0]) && isStaticRigidBody(pts[1]) &&
-		isStaticRigidBody(pts[2]))){
+		isStaticRigidBody(pts[2])))
+        {
 		impulse = vn;
 		rigid_impulse[0] = vn;
 		rigid_impulse[1] = vn;
@@ -968,7 +970,7 @@ static void PointToTriImpulse(POINT** pts, double* nor, double* w, double dist, 
 	    {
 		double m1 = total_mass(pts[0]->hs);
 		double m2 = total_mass(pts[3]->hs);
-		rigid_impulse[0] = vn * m2 / (m1 + m2);
+		rigid_impulse[0] = vn * m2 / (m1 + m2); //relative velocities
 		rigid_impulse[1] = vn * m1 / (m1 + m2);
 	    }
 	    else if (isMovableRigidBody(pts[0]) && isMovableRigidBody(pts[1])
@@ -984,6 +986,7 @@ static void PointToTriImpulse(POINT** pts, double* nor, double* w, double dist, 
 	    }
 	    else
 	        impulse = vn * 0.5;
+
 	    for (int i = 0; i < 3; ++i)
 	    {
 		if (isStaticRigidBody(pts[i]))
@@ -993,6 +996,7 @@ static void PointToTriImpulse(POINT** pts, double* nor, double* w, double dist, 
 	    if (fabs(sum_w) > MACH_EPS)
 	        scalarMult(1.0/sum_w,w,w);
 	}
+
 	if (vn * dt < 0.1 * dist)
 	{
 	    if (isRigidBody(pts[0]) && isRigidBody(pts[1]) &&
@@ -1009,45 +1013,48 @@ static void PointToTriImpulse(POINT** pts, double* nor, double* w, double dist, 
 		rigid_impulse[1] += tmp;
 	    }
 	}
+
 	if (fabs(sum_w) < MACH_EPS)
 	    m_impulse = impulse;
 	else
 	    m_impulse = 2.0 * impulse / (1.0 + Dot3d(w, w));
 
-//uncomment the following the debugging purpose
-if (debugging("CollisionImpulse"))
-if (fabs(m_impulse) > 0.0){
-	printf("real PointToTri collision, dist = %e\n",dist);
-	printf("vt = %f, vn = %f, dist = %f\n",vt,vn,dist);
-	printf("v_rel = %f %f %f\n",v_rel[0],v_rel[1],v_rel[2]);
-	printf("nor = %f %f %f\n",nor[0],nor[1],nor[2]);
-	printf("m_impuse = %f, impulse = %f, w = [%f %f %f]\n",
-		m_impulse,impulse,w[0],w[1],w[2]);
-	printf("dt = %f, root = %f\n",dt,root);
-	printf("k = %f, m = %f\n",k,m);
-	printf("x_old:\n");
-	for (int i = 0; i < 4; ++i){
-	    STATE* sl1 = (STATE*)left_state(pts[i]);
-	    printf("%f %f %f\n",sl1->x_old[0],sl1->x_old[1],sl1->x_old[2]);
-	}
-	printf("x_new:\n");
-	for (int i = 0; i < 4; ++i){
-	    printf("%f %f %f\n",Coords(pts[i])[0],Coords(pts[i])[1],Coords(pts[i])[2]);
-	}
-	printf("avgVel:\n");
-	for (int i = 0; i < 4; ++i){
-	    STATE* sl1 = (STATE*)left_state(pts[i]);
-	    printf("%f %f %f\n",sl1->avgVel[0],sl1->avgVel[1],sl1->avgVel[2]);
-	}
-}
+    //uncomment the following the debugging purpose
+    if (debugging("CollisionImpulse"))
+    if (fabs(m_impulse) > 0.0)
+        {
+        printf("real PointToTri collision, dist = %e\n",dist);
+        printf("vt = %f, vn = %f, dist = %f\n",vt,vn,dist);
+        printf("v_rel = %f %f %f\n",v_rel[0],v_rel[1],v_rel[2]);
+        printf("nor = %f %f %f\n",nor[0],nor[1],nor[2]);
+        printf("m_impuse = %f, impulse = %f, w = [%f %f %f]\n",
+            m_impulse,impulse,w[0],w[1],w[2]);
+        printf("dt = %f, root = %f\n",dt,root);
+        printf("k = %f, m = %f\n",k,m);
+        printf("x_old:\n");
+        for (int i = 0; i < 4; ++i){
+            STATE* sl1 = (STATE*)left_state(pts[i]);
+            printf("%f %f %f\n",sl1->x_old[0],sl1->x_old[1],sl1->x_old[2]);
+        }
+        printf("x_new:\n");
+        for (int i = 0; i < 4; ++i){
+            printf("%f %f %f\n",Coords(pts[i])[0],Coords(pts[i])[1],Coords(pts[i])[2]);
+        }
+        printf("avgVel:\n");
+        for (int i = 0; i < 4; ++i){
+            STATE* sl1 = (STATE*)left_state(pts[i]);
+            printf("%f %f %f\n",sl1->avgVel[0],sl1->avgVel[1],sl1->avgVel[2]);
+        }
+    }
 
 	if (isRigidBody(pts[0]) && isRigidBody(pts[1]) && 
 	    isRigidBody(pts[2]) && isRigidBody(pts[3]))
 	{
 	    if (isMovableRigidBody(pts[0]))
-		SpreadImpactZoneImpulse(pts[0], rigid_impulse[0], nor);
+            SpreadImpactZoneImpulse(pts[0], rigid_impulse[0], nor);
+
 	    if (isMovableRigidBody(pts[3]))
-		SpreadImpactZoneImpulse(pts[3], -1.0 * rigid_impulse[1], nor);
+            SpreadImpactZoneImpulse(pts[3], -1.0 * rigid_impulse[1], nor);
 	    return;
 	}
 	for (int i = 0; i < 3; ++i)

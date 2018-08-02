@@ -15,18 +15,12 @@ void initTestModule(Front &front, char* inName)
 	gview_plot_interface("init",front.interf);
 }
 
-static std::map<std::string, int> createMap()
-{
-	std::map<std::string, int> m;
-	m["FIRST_PHYSICS_WAVE_TYPE"] = FIRST_PHYSICS_WAVE_TYPE;
-	m["MOVABLE_BODY_BOUNDARY"] = MOVABLE_BODY_BOUNDARY;
-	m["NEUMANN_BOUNDARY"] = NEUMANN_BOUNDARY;
-	m["DIRICHLET_BOUNDARY"] = DIRICHLET_BOUNDARY;
-	m["STRING_HSBDRY"] = STRING_HSBDRY;
-	return m;
-}
-
-std::map<std::string,int> hashMap = createMap();
+std::map<std::string,int> hashMap({
+	{"FIRST_PHYSICS_WAVE_TYPE",FIRST_PHYSICS_WAVE_TYPE},
+	{"MOVABLE_BODY_BOUNDARY",MOVABLE_BODY_BOUNDARY},
+	{"NEUMANN_BOUNDARY",NEUMANN_BOUNDARY},
+	{"DIRICHLET_BOUNDARY",DIRICHLET_BOUNDARY},
+	{"STRING_HSBDRY",STRING_HSBDRY}});
 
 static void initSurface(Front &front,char* inName) {
 	SURFACE *surf;

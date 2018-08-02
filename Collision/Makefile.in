@@ -1,0 +1,40 @@
+CXX=@CXX@
+F77=@CXX@
+F77_LIBS=@F77_LIBS@
+
+USE_VTK=
+VTK_LIB=
+VTK_INCL=
+#uncomment the following if vtk lib is used
+#USE_VTK=-D__VTK__
+#VTK_LIB=/usr/lib/x86_64-linux-gnu/libvtk*.so
+#VTK_INCL=/usr/include/vtk-6.0
+
+incs = @ftlibincs@ -I../include -D__COLLISION__
+libincs = @otherlibsinc@ -L../lib/x86_64 -L.
+libs = @otherlibs@ -lmpich -lpthread -lmpfr
+
+CGAL_DIR=@CGAL_DIR@
+CGAL_INCLUDE = -I$(CGAL_DIR)/include
+CGAL_LIB = -L$(CGAL_DIR)/lib -lCGAL_Core -lCGAL_ImageIO -lCGAL
+
+
+test: test.o dcollid.o cdinit.o dcollid3d.o
+	$(CXX) $^ $(libincs) -lFronTier -lm $(libs) -frounding-math $(CGAL_LIB) -lgmp -lmpfr -lboost_thread -o test
+
+
+vtk.o: vtk.cpp
+	$(CXX) vtk.cpp -c $(incs) -I$(VTK_INCL)
+
+%.o: %.cpp
+	${CXX} $< -c -I../include $(incs) $(CGAL_INCLUDE) -frounding-math
+
+-include ../devel-deps.inc
+
+
+
+clean:
+	rm -rf *.o test 
+tagsfile:
+	ctags *.cpp ../src/*/*.[chf]
+

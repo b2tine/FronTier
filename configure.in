@@ -68,13 +68,13 @@ AC_LANG(C)
 
 
 
-AC_ARG_WITH(mpi, [ --with-mpi             generic MPI support. See manual.], [ ompincs=" -D__MPI__ " mpi=$withval],[ mpi="no"])
+AC_ARG_WITH(mpi, [ --with-mpi             generic MPI support. See manual.], [ mpi=$withval ompincs=" -D__MPI__ "],[ mpi="no"])
 
-AC_ARG_WITH(openmpi, [ --with-openmpi=path              use openmpi for MPI], [ompi=$withval],[ompi="no"])
-if test $ompi != "no" ; then
-    ompincs=" -D__MPI__ -I"$ompi"/include "
-    scriptotherlibsinc=${scriptotherlibsinc}" -L"$withval"/lib "
-    scriptotherlibs=${scriptotherlibs}" -lmpi -lmpi_cxx "
+AC_ARG_WITH(openmpi, [ --with-openmpi=path              use openmpi for MPI], [openmpi=$withval],[openmpi="no"])
+if test $openmpi != "no" ; then
+    ompincs=" -I"${openmpi}"/include -D__MPI__"
+    scriptotherlibsinc=${scriptotherlibsinc} "-L"${openmpi}"/lib"
+    scriptotherlibs=${scriptotherlibs} "-lmpi -lmpi_cxx -lpthread"
 fi
 
 
@@ -151,7 +151,7 @@ AC_ARG_WITH(no-debugging,[  --with-no-debugging          Removes the -g option w
 
 
 ##########################################################################################
-#              ||  all things requird for overture.  ||
+#              ||  all things required for overture.  ||
 #if overture is opted for and found, check for A++, Mesa, Xlibs, and hdf  and others
 
 if test $libover = 'yes' || test $testovertureprefix = 'yes'; then
@@ -236,10 +236,10 @@ AC_ARG_WITH(mpich,[  --with-mpich=PFX              Support for the mpich library
 if test $mpichh = 'yes';then
         mpichincs=" -I"${mpichprefix}"/include -D__MPI__ "
         scriptotherlibsinc=${scriptotherlibsinc}" -L"${mpichprefix}"/lib "
-        scriptotherlibs=${scriptotherlibs}" -lmpich -lpthread"
+        scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichxx -lpthread"
 fi
 
-AC_ARG_WITH(petsc, [ --with-petsc=path                 compile with petsc support], [petscdir=$withval iFluid="cd iFluid && \$(MAKE)"], [petscdir="" iFluid=""])
+AC_ARG_WITH(petsc_dir, [ --with-petsc=path                 compile with petsc support], [petsc_dir=$withval iFluid="cd iFluid && \$(MAKE)"], [petsc_dir="" iFluid=""])
 if test "$petscdir" = ""; then
     echo "PETSC not enabled, cannot build iFluid"
 else
@@ -249,7 +249,7 @@ else
         iFluid=""
     else
         echo "PETSC enabled"
-	AC_SUBST(PETSC_DIR,${PETSC_DIR})
+	AC_SUBST(PETSC_DIR,${petsc_dir})
 	AC_SUBST(PETSC_ARCH,${PETSC_ARCH})
 	AC_SUBST(PETSC_LIB,${PETSC_LIB})
 	AC_SUBST(PETSC_INCLUDE,${PETSC_INCLUDE})
@@ -257,28 +257,34 @@ else
     fi
 fi
 
-AC_ARG_WITH(cgal-dir,[  --with-cgal-dir              Support for the CGAL directory],[cgal_dir=$withval],[cgal_dir=""])
-AC_ARG_WITH(cgal-include,[  --with-cgal-include              Support for the CGAL includes],[cgal_inc=$withval],[cgal_inc=""])
-AC_ARG_WITH(cgal-lib,[  --with-cgal-lib              Support for the CGAL library],[cgal_lib=$withval],[cgal_lib="no"])
-
+Collision=""
+AC_ARG_WITH(cgal_dir,[  --with-cgal-dir=path             Support for the CGAL directory],[cgal_dir=$withval],[cgal_dir=""])
+AC_ARG_WITH(cgal_include,[  --with-cgal-include=path              Support for the CGAL includes],[cgal_inc=$withval],[cgal_inc=""])
+AC_ARG_WITH(cgal_lib,[  --with-cgal-lib=path              Support for the CGAL library],[cgal_lib=$withval],[cgal_lib=""])
 if test "$cgal_dir" = ""; then
         if test "$cgal_inc" = "" || test "$cgal_lib" = ""; then
             echo "CGAL is not enabled"
+            echo "Collision Detection disabled"
         else
             echo "CGAL enabled"
+            echo "Collision Detection enabled"
             AC_SUBST(CGAL_DIR,${cgal_dir})
             AC_SUBST(CGAL_INCLUDE,${cgal_inc})
             AC_SUBST(CGAL_LIB,${cgal_lib})
+            Collision="cd Collision && \$(MAKE)"
         fi
 else
         echo "CGAL enabled, cgal_dir = ${cgal_dir}"
+        echo "Collision Detection enabled"
         AC_SUBST(CGAL_DIR,${cgal_dir})
-        AC_SUBST(CGAL_INCLUDE,"${CGAL_DIR}/include")
-        AC_SUBST(CGAL_LIB,"${CGAL_DIR}/lib")
+        AC_SUBST(CGAL_INCLUDE,"${cgal_dir}/include")
+        AC_SUBST(CGAL_LIB,"${cgal_dir}/lib")
+        Collision="cd Collision && \$(MAKE)"
 fi
+AC_SUBST(iFluid, ${iFluid})
 
-AC_ARG_WITH(boost-dir,[  --with-boost-dir              Support for the BOOST directory],[boost_dir=$withval],[boost_dir=""])
 
+AC_ARG_WITH(boost_dir,[  --with-boost-dir              Support for the BOOST directory],[boost_dir=$withval],[boost_dir=""])
 if test "$boost_dir" = ""; then
         echo "BOOST is not enabled"
 else
@@ -288,16 +294,19 @@ else
         AC_SUBST(BOOST_LIB,"${BOOST_DIR}/lib")
 fi
 
-AC_ARG_WITH(cvode, [ --with-cvode=path                 compile with cvode support], [cvodedir=$withval folding="cd folding && \$(MAKE)"], [cvodedir="" folding=""])
+AC_ARG_WITH(cvodedir, [ --with-cvode-dir=path                 compile with cvode support], [cvodedir=$withval folding="cd folding && \$(MAKE)"], [cvodedir="" folding=""])
 if test "$cvodedir" = ""; then
     echo "CVODE not enabled, cannot implement implicit solver"
+    echo "Folding disabled"
 else
     echo "CVODE enabled"
     AC_SUBST(CVODE_DIR,${cvodedir})
-    AC_SUBST(CVODE_INCLUDE,"${CVODE_DIR}/include")
-    AC_SUBST(CVODE_LIB,"${CVODE_DIR}/lib")
+    AC_SUBST(CVODE_INCLUDE,"${CVODE_INCLUDE}")
+    AC_SUBST(CVODE_LIB,"${CVODE_LIB}")
 fi
 AC_SUBST(iFluid, ${iFluid})
+
+
 #/////////////////////////////
 #ibasename='no'
 #idirname='no'
@@ -365,7 +374,7 @@ AC_SUBST(CXX,$CXX)
 AC_SUBST(F77,$F77)
 AC_SUBST(F77_LIBS,$F77_LIBS)
 AC_SUBST(libext,"")
-cppflagss=" "
+cppflagss=""
 
 ################################################################
 # Done checking for C++
@@ -449,10 +458,10 @@ optimization=$optimization
 #####################################################################
 
 # included in all code in: driver 
-#                           front 
-#                           hyp 
-#                           intfc 
-#                           tri
+#                          front 
+#                          hyp 
+#                          intfc 
+#                          tri
 
 scriptftlibincs=" -I.. -I../util"${debug}${cppflagss}${amrincs}${hdfincs}${hdf5incs}${mpichincs}${overinc}${appinc}${ftlibdubug}${itapsd}${fenv}${optimization}${over}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gdincs}${gpuincs}${gslincs}${hypreincs}${subgrid}
 
@@ -463,7 +472,7 @@ scriptexampleincs=${mpichincs}${amrincs}${hdfincs}${hdf5incs}${hdfinc}${systemin
 #included in all code in: util/util
 scriptutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}${subgrid}
 
-#include in all conde in: util/dutil
+#include in all code in: util/dutil
 scriptdutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}${subgrid}
 
 flagsss=$FFLAGS${optimization}${firix}${fsun}${debug}${cppflagss}
@@ -504,6 +513,7 @@ src/Makefile
 src/util/Makefile 
 src/front/Makefile 
 src/intfc/Makefile 
+Collision/Makefile
 airfoil/Makefile
 folding/Makefile
 parachute/Makefile

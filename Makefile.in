@@ -11,6 +11,7 @@ ifeq ($(BASECODE),no)
 all: 
 	cd src && $(MAKE)
 	$(MAKE) incs 
+	cd Collision && $(MAKE)
 	cd airfoil && $(MAKE)
 	cd folding && $(MAKE)
 	cd parachute && $(MAKE)
@@ -67,6 +68,7 @@ clean:
 	-cd cim && $(MAKE) clean
 	-cd DG && $(MAKE) clean
 	-cd inverse && $(MAKE) clean
+	-cd Collision && $(MAKE) clean
 	-cd airfoil && $(MAKE) clean
 	-cd folding && $(MAKE) clean
 	-cd parachute && $(MAKE) clean

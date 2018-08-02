@@ -1,0 +1,26 @@
+Domain limit in 0-th dimension: 0 0.5 
+Domain limit in 1-th dimension: 0 0.5
+Domain limit in 2-th dimension: 0 0.5
+Computational grid: 50 50 50
+Lower boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 2-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 2-th dimension: DIRICHLET_BOUNDARY
+
+Max time: 2.0 
+Max step: 1000 
+Print interval: 0.01
+Movie frame interval: 0.01
+CFL factor: 0.75
+Redistribution interval: 10000000
+Type yes to turn off auto-redistribution: y
+
+Curve: 0.25 0.1 0.3 0.25 0.25 0.155 0.0 0.1 -0.1 STRING_HSBDRY
+Cuboid: 0.25 0.25 0.13 0.2 0.2 0.02 0.0 0.0 0.0 MOVABLE_BODY_BOUNDARY
+
+Enter yes for debugging: yes
+Enter the debugging string: collision
+Enter the debugging string: tCLOCK 
+Enter the debugging string: tCollisionImpulse 

@@ -1,0 +1,27 @@
+Domain limit in 0-th dimension: 0.0 0.5 
+Domain limit in 1-th dimension: 0.0 0.5
+Domain limit in 2-th dimension: 0.25 0.75 
+Computational grid: 50 50 50
+Lower boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 2-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 2-th dimension: DIRICHLET_BOUNDARY
+
+Max time: 1.0 
+Max step: 50
+Print interval: 0.5 
+Movie frame interval: 0.01
+CFL factor: 0.75
+Redistribution interval: 10000000
+Type yes to turn off auto-redistribution: y
+
+Initialize spheres (center[3], radius[3], vel[3], wave type):
+Sphere: 0.25 0.25 0.4 0.05 0.05 0.05 0.0 0.0 0.2 MOVABLE_BODY_BOUNDARY
+
+Initialize cuboids (center[3], edge[3], vel[3], wave type):
+Cuboid: 0.25 0.25 0.47 0.15 0.15 0.01 0.0 0.0 -0.2 FIRST_PHYSICS_WAVE_TYPE
+
+Enter yes for debugging: yes 
+Enter the debugging string: collision
