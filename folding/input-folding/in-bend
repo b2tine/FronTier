@@ -1,0 +1,26 @@
+Domain limit in 0-th dimension: 0.0 1.0 
+Domain limit in 1-th dimension: 0.0 1.0 
+Domain limit in 2-th dimension: 0.0 1.0 
+Computational grid: 80 80 80 
+Lower boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 2-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 2-th dimension: DIRICHLET_BOUNDARY
+
+Enter problem type: Fabric
+Enter fabric shape: Rectangle
+Enter frame step size: 0.005
+Enter the height of the plane: 0.8
+Enter lower boundary of plane: 0.21 0.21 0
+Enter upper boundary of plane: 0.8 0.79 1
+Enter file path of folding plan: foldingplan/fdrop_bdry_fix 
+Enter fabric spring constant: 5000
+Enter fabric friction constant: 0.5
+Enter fabric point mass: 0.00005
+Enter fabric bend stiffness constant: 0.01
+Enter fabric bend damping constant: 0.001
+
+Ente yes for debugging: yes 
+Enter the debugging string: folding

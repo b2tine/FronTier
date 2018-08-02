@@ -1,0 +1,10 @@
+foldingplan ZFoldDrag 
+spin original point: 0.4 0.5 0.5    
+spin axis: 0 1 0 
+angular velocity: 1
+plane center1: 0.4 0.5 0.5
+plane normal1: 1 0 0
+plane center2: 0.6 0.5 0.5
+plane normal2: 1 0 0
+folding time: 3.14 
+

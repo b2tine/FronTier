@@ -1,0 +1,99 @@
+Domain limit in 0-th dimension: 0 4 
+Domain limit in 1-th dimension: -4 6 
+Computational grid: 100 250 
+Lower boundary in 0-th dimension: NEUMANN_BOUNDARY
+Upper boundary in 0-th dimension: NEUMANN_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+
+Max time: 1.5
+Print interval: 1 
+Movie frame interval: 0.01
+
+Max step: 10000
+CFL factor: 0.5
+Redistribution interval: 10000000
+Type yes to turn off auto-redistribution: y
+
+Projection type can be
+        SIMPLE
+        BELL_COLELLA
+        KIM_MOIN
+        PEROT_BOTELLA
+Enter projection type: SIMPLE
+Enter advection order: 4
+Available elliptic methods are:
+        Simple elliptic (S)
+        CIM elliptic (C)
+        Double elliptic (DB)
+        Dual elliptic (DU)
+Enter elliptic method: S
+
+Enter number of canopy curve: 1
+Available type of rigid body include:
+	Line segment (L)
+Enter type of parachute: P 
+Enter start coordinate: 1.75 4 
+Enter end coordinate: 2.25 4
+Enter load coordinate: 2 2
+Enter shape of parachute canopy: P
+Enter yes to fix load node: n 
+Enter payload: 50.0 
+
+Entering yes to turn off fluid solver: no
+Enter gravity: 0 -9.8 
+Enter density and viscosity of the fluid: 1.2 0.04
+Enter surface tension: 0.0
+Enter yes to use porosity: yes 
+Enter porosity of canopy: 0.0
+Enter viscous parameter: 15.0
+Enter inertial parameter: 0.0
+Enter area density of canopy: 1.0 
+Enter yes to use eddy viscosity: no
+Available tuebulence models are:
+        Baldwin-Lomax (B)
+        Moin (M)
+	Smagorinski (S)
+Enter turbulence model: B
+Enter maximum distance for eddy viscosity: 0.1
+
+Enter factor of smoothing radius: 1
+Enter interior sub step number: 10
+
+For lower boundary in 1-th dimension
+Enter type of Dirichlet boundary: C 
+Enter velocity: 0 2.0
+Enter pressure: 0
+For upper boundary in 1-th dimension
+Enter type of Dirichlet boundary: FLOW_THROUGH
+
+Type y to make movie of pressure: y
+Type y to make movie of vorticity: y
+Type y to make movie of velocity: y
+Type y to make movie of viscosity: y
+
+Type y to make vector velocity field movie: y
+
+Enter fabric spring constant: 20000
+Enter fabric friction constant: 0.01
+Enter fabric point mass: 0.1
+Enter string spring constant: 2000
+Enter string friction constant: 0.1
+Enter string point mass: 0.01
+
+************Debugging options*****************
+
+Enter yes for debugging: yes
+Enter the debugging string: PETSc 
+Enter the debugging string: tcanopy_struct
+Enter the debugging string: ttrace
+Enter the debugging string: tstep_size
+Enter the debugging string: tCLOCK
+Enter the debugging string: tdirichlet_bdry
+Enter the debugging string: tflow_through
+Enter the debugging string: tsample_velocity
+Enter the sample line type: 2
+Enter the sample line coordinate: 6.0 6.0
+Enter the start step for sample: 0
+Enter the end step for sample: 10
+Enter the step interval for sample: 1

@@ -1,0 +1,17 @@
+#!/bin/bash
+#$ -N run-name
+#$ -q nodes.q
+#$ -R y
+#$ -e ./qsubout
+#$ -cwd 
+
+#directory of excutable
+DIR=`pwd`
+echo $DIR
+
+source /etc/profile.d/modules.sh
+source /home/tbyang/.bashrc
+#module load intel
+#module load openmpi-1.8/intel
+
+mpirun -f hosts -np nx*ny*nz $DIR/parachute -d 3 -p nx ny nz -i $DIR/$1 -o $DIR/$2

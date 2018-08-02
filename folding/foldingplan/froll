@@ -1,0 +1,7 @@
+foldingplan RollDrag
+spin_center: 0.8 0.5 0.53
+spin_dir: 0 1 0
+mov_center: 0.8 0.5 0.5
+mov_dir: 0 1 0
+ang_vel: -0.7
+time: 20

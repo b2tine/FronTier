@@ -1,0 +1,6 @@
+foldingplan OrigamiDrag
+number_of_points: 7
+number_of_creases: 6
+point_coordinates: 0.5 0.5 0.5  0.8 0.5 0.5  0.5 0.8 0.5  0.2 0.5 0.5  0.5 0.2 0.5  0.2 0.2 0.5  0.8 0.8 0.5
+crease_indices: 0 1  0 2  0 3  0 4  0 5  0 6
+angles: -3.1415 -3.1415 -3.1415 -3.1415 3.1415 3.1415

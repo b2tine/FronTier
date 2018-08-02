@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=4:mpiprocs=4
+#PBS -l place=scatter:excl
+#PBS -l walltime=000:30:00
+#PBS -j oe
+#PBS -N testjob 
+#PBS -q standard 
+#PBS -A ARONC36543654
+
+cd ${HOME}/FronTier++/app-module/
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/p/home/linli/pkg/szip/lib
+
+aprun -n nx*ny*nz ./excutable -d 3 -p nx ny nz -i ./input -o ./output
+

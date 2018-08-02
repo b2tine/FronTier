@@ -1,0 +1,23 @@
+foldingplan FoldDrag 
+spin original point: 0.5 0.5 0.5    
+spin axis: 0 1 0 
+angular velocity: 1
+plane center: 0.5 0.5 0.5
+plane normal: 1 0 0
+folding time: 3.14 
+
+foldingplan FoldDrag 
+spin original point: 0.5 0.5 0.5 
+spin axis: 1 0 0 
+angular velocity: 1 
+plane center: 0.5 0.5 0.5
+plane normal: 0 -1 0
+folding time: 3.14
+
+foldingplan FoldDrag
+spin original point: 0.5 0.5 0.5
+spin axis: -1 1 0
+angular velocity: 1
+plane center: 0.5 0.5 0.5
+plane normal: 1 1 0
+folding time: 3.14

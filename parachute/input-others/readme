@@ -1,0 +1,33 @@
+All the input files in this directory are about special cases during the 
+parachute inflation process, such as uneven equilibrium string length, 
+breaking string at some time.
+Here is some discription about them.
+
+1. Files with keyword "uneven" are cases where the equilibrium length of 
+some strings is not equal to others. They are stretched at the initial state.
+
+2. You can specify
+   1.) the uneven coefficient (default is 1.0 which means all equal)
+       "Enter uneven coefficient:",
+   2.) number of strings with different equilibrium length
+       "Enter number of uneven strings:",
+   3.) specific string IDs of strings with different equilibrium length
+       "Enter ID of uneven strings:".
+If 3.) is not specified in the inputfile, the default is the first n strings,
+where n is the number of strings set to be uneven.
+
+3. Files with keyword "break" are cases where some strings broken in the 
+middle of parachute inflation process.
+
+4. You can specify 
+   1.) the time to break string in the input file with the line 
+       "Enter time to break strings:",
+   2.) number of strings to break with the line 
+       "Enter number of strings to break:",
+   3.) specific string IDs to break with the line
+       "Enter ID of strings to break:".
+If 3.) is not specified in the inputfile, the default is the first n strings, 
+where n is the number of strings to break.
+
+5. Input files with suffix "-1" means the string IDs are specified, while 
+these without such suffix means the string IDs are not specified.

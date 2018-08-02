@@ -1,0 +1,25 @@
+Domain limit in 0-th dimension: 0.0 1.0 
+Domain limit in 1-th dimension: 0.0 1.0 
+Domain limit in 2-th dimension: 0.0 1.0 
+Computational grid: 50 50 50 
+Lower boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 2-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 2-th dimension: DIRICHLET_BOUNDARY
+
+Enter problem type: Fabric
+Enter fabric shape: Circle
+Enter the height of the plane: 0.11
+Enter circle center: 0.5 0.5
+Enter circle radius: 0.35
+Enter fabric bend stiffness constant: 0.0
+Enter fabric bend damping constant: 0.0
+Enter fabric spring constant: 800
+Enter fabric friction constant: 1.0
+Enter fabric point mass: 0.001
+Enter file path of folding plan: foldingplan/fdrag 
+
+Enter yes for debugging: yes 
+Enter the debugging string: folding

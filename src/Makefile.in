@@ -1,0 +1,14 @@
+CC=@CC@
+F77=@F77@
+all:
+	cd front  && $(MAKE)
+
+clean:
+	cd util && $(MAKE) clean
+	cd front && $(MAKE) clean
+	cd intfc && $(MAKE) clean
+
+diff:
+	cd util && $(MAKE) diff 
+	cd front && $(MAKE) diff
+	cd intfc && $(MAKE) diff

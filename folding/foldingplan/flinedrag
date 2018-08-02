@@ -1,0 +1,15 @@
+foldingplan LineDrag
+point on drag line: 0.35 0.5 0.5
+point on drag line: 0.65 0.5 0.5
+drag line velocity: 0 0 0.12
+point on static line1: 0.35 0.21 0.5 
+point on static line1: 0.65 0.21 0.5
+control line1 velocity: 0 0 0
+control line1 acceleration: 0 0.007 0 
+control line1 start acceleration time: 0.5
+point on static line2: 0.35 0.79 0.5
+point on static line2: 0.65 0.79 0.5 
+control line2 velocity: 0 0 0
+control line2 acceleration: 0 -0.007 0
+control line2 acceleration time: 0.5
+folding time: 2.7

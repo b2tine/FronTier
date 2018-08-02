@@ -1,0 +1,61 @@
+Domain limit in 0-th dimension: 0.0025 0.9975
+Domain limit in 1-th dimension: 0.0025 0.9975
+Computational grid: 199 199
+Lower boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 0-th dimension: DIRICHLET_BOUNDARY
+Lower boundary in 1-th dimension: DIRICHLET_BOUNDARY
+Upper boundary in 1-th dimension: DIRICHLET_BOUNDARY
+
+Max time: 30.0
+Max step: 100000
+Print interval: 0.5
+Movie frame interval: 0.3
+CFL factor: 0.75
+Redistribution interval: 5
+
+Problem type can be
+	TWO_FLUID_BUBBLE
+	TWO_FLUID_RT
+	TWO_FLUID_KH
+	FLUID_SOLID_CIRCLE
+	CHANNEL_FLOW
+Enter problem type: CHANNEL_FLOW
+Projection type can be
+        SIMPLE
+        BELL_COLELLA
+        KIM_MOIN
+        PEROT_BOTELLA
+Enter advection order: 4 
+Enter projection type: SIMPLE
+Enter density and viscosity of the fluid: 1 0.01
+Enter yes to use eddy viscosity: no
+Enter maximum distance for eddy viscosity: 0.1
+Enter gravity: 0.0 0.0
+
+For lower boundary in 0-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter velocity: 0 0
+Enter pressure: 0
+For upper boundary in 0-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter velocity: 0 0
+Enter pressure: 0
+For lower boundary in 1-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter velocity: 0 0
+Enter pressure: 0
+For upper boundary in 1-th dimension
+Enter type of Dirichlet boundary: CONSTANT_STATE
+Enter velocity: 1 0
+Enter pressure: 10
+
+Type y to make movie of pressure: y
+Type y to make movie of vorticity: y
+Type y to make movie of velocity: y
+
+Type y to make vector velocity field movie: y
+
+************Debugging options*****************
+
+Enter yes for debugging: yes
+Enter the debugging string: PETSc
