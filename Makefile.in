@@ -1,8 +1,8 @@
 build_cpu = @build_cpu@
 header_files = @headers@
-#include_dirs=include include/FronTier include/FronTier/front include/FronTier/util include/FronTier/intfc
 include_dirs=@include_dirs@
 BASECODE = @BASECODE@
+
 lib_only:
 	cd src && $(MAKE)
 	$(MAKE) incs 
@@ -85,7 +85,7 @@ clean:
 	-cd poisson && $(MAKE) clean
 	-cd subsurf && $(MAKE) clean
 	-cd iTaps && $(MAKE) clean
-	-cd lib/$(build_cpu)/; rm -rf gas *.a
+	-cd lib/$(build_cpu) && rm -rf gas *.a
 	-rm -rf incs
 	-rm -rf include
 else  ifeq ($(BASECODE),adv)
@@ -98,7 +98,7 @@ clean:
 	-cd crystal && $(MAKE) clean
 	-cd melting && $(MAKE) clean
 	-cd subsurf && $(MAKE) clean
-	-cd lib/$(build_cpu)/; rm -rf *.a
+	-cd lib/$(build_cpu) && $(RM) *.a
 	-rm -rf incs
 	-rm -rf include
 else
@@ -107,23 +107,27 @@ clean:
 	-cd example2d && $(MAKE) clean
 	-cd example3d && $(MAKE) clean
 	-cd cFluid && $(MAKE) clean
-	-cd lib/$(build_cpu)/; rm -rf *.a
+	-cd lib/$(build_cpu) && $(RM) *.a
 	-rm -rf incs
 	-rm -rf include
 endif
+
 diff:
 	cd src && $(MAKE) diff
 	-diff -r . $(diffdir) > DIFF
+
 
 incs: $(include_dirs) include/FronTier.h $(header_files)
 
 include/FronTier:
 	mkdir include include/FronTier
+
 $(include_dirs): include/FronTier
 	mkdir $@
 
 include/FronTier.h: $(include_dirs) 
 	@echo "#include <FronTier/front/fdecs.h>" > include/FronTier.h
+
 $(header_files): include/FronTier/%: src/% 
 	@echo "updating: "$@; \
 	sed -e "1,$$ s,include <,include <FronTier/,g" $^ | \
@@ -153,6 +157,7 @@ $(header_files): include/FronTier/%: src/%
 	sed -e "1,$$ s,FronTier/libgen.h,libgen.h,g" | \
 	sed -e "1,$$ s,FronTier/algorithm,algorithm,g" | \
 	sed -e "1,$$ s,FronTier/string,string,g" > $@
+
 $(header_files): $(include_dirs)
 
 
@@ -160,11 +165,9 @@ $(header_files): $(include_dirs)
 
 
 
-
-
-
 test:	
-	cd example2d/; $(MAKE)
+	cd example2d && $(MAKE)
+
 
 TARFLIST = $$ME/README \
 $$ME/build \

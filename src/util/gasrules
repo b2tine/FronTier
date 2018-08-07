@@ -1,23 +1,26 @@
 ######## FT BUILD INSTRUCTIONS ##############################
 VPATH = $(build_cpu):../:../../
+
 all:../../../lib/$(build_cpu)/gas/lib$(name)$(libext).a
+
 ../../../lib/$(build_cpu)/gas/lib$(name)$(libext).a: make.dep $(build_cpu) $(GAS_C_OBJECTS) $(GAS_F_OBJECTS)
-	-rm -rf lib$(name).a
-	-rm -rf ${build_cpu}/lib$(name).a
-	-mkdir ../../../lib/$(build_cpu)/gas
-	cd $(build_cpu); $(AR) cru lib$(name).a $(GAS_C_OBJECTS) $(GAS_F_OBJECTS)
-	cd $(build_cpu); $(RANLIB) lib$(name).a; mv lib$(name).a ../../../../lib/$(build_cpu)/gas/lib$(name)$(libext).a
+	$(RM) lib$(name).a
+	$(RM) ${build_cpu}/lib$(name).a
+	mkdir -p ../../../lib/$(build_cpu)/gas
+	cd $(build_cpu) && $(AR) cru lib$(name).a $(GAS_C_OBJECTS) $(GAS_F_OBJECTS)
+	cd $(build_cpu) && $(RANLIB) lib$(name).a && mv lib$(name).a ../../../../lib/$(build_cpu)/gas/lib$(name)$(libext).a
 
 $(build_cpu):
-	-mkdir $(build_cpu)
+	mkdir -p $(build_cpu)
+
 make.dep:../../util/make.dep
 	cp ../../util/make.dep make.util.dep
 	sed -e "1,$$ s,gas/$(name)/,,g" make.util.dep > make.dep
 
 ../util/make.dep:
-	cd ../..;./util/mkfiles.pl
-	cd ../..;./util/mkdep.pl
-	cd ../..;mv make.dep util/make.dep
+	cd ../.. && ./util/mkfiles.pl
+	cd ../.. && ./util/mkdep.pl
+	cd ../.. && mv make.dep util/make.dep
 
 include make.dep
 
@@ -40,6 +43,6 @@ $(GAS_F_OBJECTS): %.o: %.F
 	$(F77) $(gasincs_f) $(extras_f) -c $< -o $(build_cpu)/$@
 
 clean:
-	cd  $(build_cpu)/; rm -rf *.o
+	cd $(build_cpu) && $(RM) *.o
 
 ######## FT BUILD INSTRUCTIONS ##############################
