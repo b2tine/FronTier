@@ -121,9 +121,9 @@ EXPORT	F_USER_INTERFACE *f_user_hook(
 	        Fuser_hooks[i]._fprint_wave_type = f_fprint_wave_type;
 	        Fuser_hooks[i]._wave_type_as_string = f_wave_type_as_string;
 	        Fuser_hooks[i]._read_wave_type_from_string =
-		    f_read_wave_type_from_string;
+                f_read_wave_type_from_string;
 	        Fuser_hooks[i]._bi_interpolate_intfc_states =
-		    linear_state_interpolator;
+                linear_state_interpolator;
 	        Fuser_hooks[i]._fprint_state_data = f_fprint_state_data;
 	        Fuser_hooks[i]._read_print_state_data = f_read_print_state_data;
 	        Fuser_hooks[i]._nearest_intfc_state = f_nearest_intfc_state;
@@ -135,11 +135,11 @@ EXPORT	F_USER_INTERFACE *f_user_hook(
 	        Fuser_hooks[i]._obstacle_state = f_clear_state;
 	        Fuser_hooks[i]._FInterfaceTolerances = Itol;
 	        Fuser_hooks[i]._default_perform_redistribution_function =
-		    f_perform_redistribution;
+                f_perform_redistribution;
 	        Fuser_hooks[i]._merge_hs_flags = f_merge_hs_flags;
 	        Fuser_hooks[i]._interface_tangent_function._tangent = f_tangent;
 	        Fuser_hooks[i]._interface_tangent_function._tangent_name =
-		    strdup("f_tangent");
+                strdup("f_tangent");
 	        Fuser_hooks[i]._set_tangent_function = f_set_tangent_function;
 	        Fuser_hooks[i]._set_normal_function = f_set_normal_function;
 	        Fuser_hooks[i]._alloc_MaxFrontSpeed = f_alloc_MaxFrontSpeed;
@@ -150,11 +150,11 @@ EXPORT	F_USER_INTERFACE *f_user_hook(
 	    {
 	        Fuser_hooks[i]._fprint_hsbdry_type = f_fprint_hsbdry_type;
 	        Fuser_hooks[i]._read_hsbdry_type_from_string =
-		    f_read_hsbdry_type_from_string;
+                f_read_hsbdry_type_from_string;
 	        Fuser_hooks[i]._tri_interpolate_intfc_states =
-		    linear_tri_state_interpolator;
+                linear_tri_state_interpolator;
 	        Fuser_hooks[i]._read_print_boundary_state_data =
-		    f_read_print_boundary_state_data;
+                f_read_print_boundary_state_data;
 	    }
 
 	    /* Dimension specific fields */

@@ -668,20 +668,24 @@ static void coating_mono_hyper_surf2d(
 	INTERFACE *grid_intfc = front->grid_intfc;
 	RECT_GRID *top_grid = &topological_grid(grid_intfc);
 	struct Table *T = table_of_interface(grid_intfc);
-	COMPONENT *top_comp = T->components;
-        COMPONENT          comp;
-        INTERFACE          *intfc = front->interf;
-	double 		   *L = top_grid->L;
+
+    COMPONENT *top_comp = T->components;
+    COMPONENT          comp;
+    INTERFACE          *intfc = front->interf;
+
+    double 		   *L = top_grid->L;
 	double 		   *h = top_grid->h;
 	double             coords[MAXD];
-        double             t[MAXD],p[MAXD],vec[MAXD];
+    double             t[MAXD],p[MAXD],vec[MAXD];
 	const double 	   *nor;
-	CURVE **c,*immersed_curve;
-        HYPER_SURF_ELEMENT *hse;
-        HYPER_SURF         *hs;
+
+    CURVE **c,*immersed_curve;
+    HYPER_SURF_ELEMENT *hse;
+    HYPER_SURF         *hs;
 	BOND *b;
 	COMPONENT base_comp;
-	int i,index,nb,index_nb,*top_gmax = top_grid->gmax;
+
+    int i,index,nb,index_nb,*top_gmax = top_grid->gmax;
 	int dim = top_grid->dim;
 	int icoords[MAXD],icn[MAXD],smin[MAXD],smax[MAXD];
 	GRID_DIRECTION dir[4] = {WEST,EAST,SOUTH,NORTH};
@@ -694,10 +698,10 @@ static void coating_mono_hyper_surf2d(
 	{
 	    if (wave_type(*c) == ELASTIC_BOUNDARY)
 	    {
-		immersed_curve = *c;
-		comp = base_comp = negative_component(*c);
-		hs = Hyper_surf(immersed_curve);
-		break;
+            immersed_curve = *c;
+            comp = base_comp = negative_component(*c);
+	    	hs = Hyper_surf(immersed_curve);
+		    break;
 	    }
 	}
 	if (immersed_curve == NULL)
@@ -708,21 +712,25 @@ static void coating_mono_hyper_surf2d(
 	{
 	    index = d_index(icoords,top_gmax,dim);
 	    for (i = 0; i < dim; ++i)
-		coords[i] = L[i] + icoords[i]*h[i];
+            coords[i] = L[i] + icoords[i]*h[i];
+
 	    if (nearest_interface_point_within_range(coords,comp,grid_intfc,
 			NO_BOUNDARIES,hs,p,t,&hse,&hs,3))
 	    {
-		if (wave_type(hs) != ELASTIC_BOUNDARY) 
-		    continue;
-		b = Bond_of_hse(hse);
+		    if (wave_type(hs) != ELASTIC_BOUNDARY) 
+                continue;
+
+            b = Bond_of_hse(hse);
 	    	t[1] = Coords(b->start)[0] - Coords(b->end)[0]; // t is normal
 	    	t[0] = Coords(b->end)[1] - Coords(b->start)[1];
-	    	for (i = 0; i < dim; ++i)
-		    vec[i] = coords[i] - p[i];
-	    	if (scalar_product(vec,t,dim) > 0.0)
-		    top_comp[index] = base_comp + 1;
+	    	
+            for (i = 0; i < dim; ++i)
+                vec[i] = coords[i] - p[i];
+	
+            if (scalar_product(vec,t,dim) > 0.0)
+	    	    top_comp[index] = base_comp + 1;
 	    	else
-		    top_comp[index] = base_comp - 1;
+		        top_comp[index] = base_comp - 1;
 	    }
 	}
 	negative_component(immersed_curve) = base_comp - 1;

@@ -233,9 +233,9 @@ struct _F_BASIC_DATA {
 	char	restart_state_name[200];
 
 	/* The following are needed before FT_StartUp() */
-        double 	L[MAXD],U[MAXD];
-        int 	gmax[MAXD];
-        int 	boundary[MAXD][2];
+    double 	L[MAXD],U[MAXD];
+    int 	gmax[MAXD];
+    int 	boundary[MAXD][2];
 	size_t 	size_of_intfc_state;
 	GEOMETRY_REMAP coord_system;
 };

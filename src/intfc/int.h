@@ -466,7 +466,7 @@ struct _INTERFACE
 	struct _SURFACE **surfaces;	/* Pointer to Set of Surfaces */
 	struct _C_CURVE **c_curves;	/* c_curves on interface */
 
-	int		dim;		/* Dimension of Imbedding Space */
+	int		dim;		/* Dimension of Embedding Space */
 	int		num_points;	/* Total from curves */
 	long		max_point_gindex;
 	long		max_curve_gindex;

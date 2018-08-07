@@ -57,8 +57,8 @@ int main(int argc, char **argv)
 	FT_Init(argc,argv,&f_basic);
 	f_basic.size_of_intfc_state = sizeof(STATE);
 
-	//Initialize Petsc before FrontStartUP
-        PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
+	//Initialize Petsc before FrontStartUP 
+    PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
         //if (debugging("trace")) printf("Passed PetscInitialize()\n");
 
 	/*Construct Incompress Solver l_cartesian*/
@@ -216,17 +216,19 @@ static  void airfoil_driver(
 	    setStressColor(front);
 	    FT_Save(front);
 
-            if (debugging("trace"))
-                (void) printf("Calling printFrontInteriorStates()\n");
-            l_cartesian->printFrontInteriorStates(out_name);
+        if (debugging("trace"))
+            (void) printf("Calling printFrontInteriorStates()\n");
+        
+        l_cartesian->printFrontInteriorStates(out_name);
 	    printAfExtraDada(front,out_name);
 
-            if (debugging("trace"))
-                (void) printf("Calling FT_Draw()\n");
-            FT_Draw(front);
+        if (debugging("trace"))
+            (void) printf("Calling FT_Draw()\n");
 
+        FT_Draw(front);
 	    FrontPreAdvance(front);
 	    FT_Propagate(front);
+
 	    if (!af_params->no_fluid)
 	    {
             	if (debugging("trace")) printf("Calling ifluid solve()\n");
@@ -235,7 +237,7 @@ static  void airfoil_driver(
 	    }
 	    print_airfoil_stat(front,out_name);
 
-            FT_SetOutputCounter(front);
+        FT_SetOutputCounter(front);
 	    FT_SetTimeStep(front);
 	    if (!af_params->no_fluid)
 	    {

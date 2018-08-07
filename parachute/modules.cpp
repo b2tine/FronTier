@@ -100,7 +100,7 @@ extern void initParachuteModules(Front *front)
 {
 	int i,num_canopy;
 	FILE *infile = fopen(InName(front),"r");
-	SURFACE *surf;
+	SURFACE *surf; //not being used?
 	static RG_PARAMS rgb_params;
 
 	if (debugging("trace"))
@@ -121,6 +121,7 @@ extern void initParachuteModules(Front *front)
 	    initSingleModule(front);
 	else
 	    initMultiModule(front,num_canopy);
+
 	divideAtGoreBdry(front->interf);
 	setCanopyBodyIndex(front);
 

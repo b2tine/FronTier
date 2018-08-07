@@ -529,7 +529,8 @@ private:
 	void GFMGhostState(int*,int,STATE*);
 	void checkCorrectForTolerance(STATE*);
 	void adjustGFMStates();
-};
+}; // end G_CARTESIAN class
+
 
 // cFsub.cpp
 extern double getStateDens(POINTER);

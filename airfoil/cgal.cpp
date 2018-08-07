@@ -400,16 +400,18 @@ static void CgalCircle(
 
 	GenerateCgalSurf(front,surf,&cdt,flag,height);
 	checkReducedTri(*surf);
-        wave_type(*surf) = ELASTIC_BOUNDARY;
-        FT_InstallSurfEdge(*surf,MONO_COMP_HSBDRY);
+    wave_type(*surf) = ELASTIC_BOUNDARY;
+    FT_InstallSurfEdge(*surf,MONO_COMP_HSBDRY);
 	setMonoCompBdryZeroLength(*surf);
-	if (string_bool[0] == 'y' || string_bool[0] == 'Y')
+
+    if (string_bool[0] == 'y' || string_bool[0] == 'Y')
 	{
 	    findStringNodePoints(*surf,out_nodes_coords,string_node_pts,
                                 num_strings,&cbdry);
 	    installString(infile,front,*surf,cbdry,string_node_pts,num_strings);
 	}
-	if (gore_bool[0]=='y'|| gore_bool[0]=='Y')
+
+    if (gore_bool[0]=='y'|| gore_bool[0]=='Y')
         {
             if (vent_bool[0] !='y' && vent_bool[0] !='Y')
 		InstallInCurve(front,*surf,in_nodes_coords[0],
