@@ -75,7 +75,6 @@ libs = @otherlibs@
 
 all: 
 	cd ../intfc && $(MAKE)
-#	cd ../util && $(MAKE)
 	$(RM) ../../lib/$(build_cpu)/libFronTier.a
 	$(MAKE) ../../lib/$(build_cpu)/libFronTier.a
 
@@ -137,7 +136,11 @@ $(FT_G_OBJECTS):%.o: %.cu
 
 clean:
 	cd $(build_cpu) && $(RM) *.o
-	cd ../intfc && $(MAKE) clean
+
+distclean:
+	rm -rf $(build_cpu)
+	$(RM) make.dep 
+	$(RM) make.util.dep 
 
 tagsfile:
 	ctags ../intfc/*.c ../util/*.c *.c ../intfc/*.h ../util/*.h *.h

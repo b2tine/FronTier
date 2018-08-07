@@ -85,8 +85,8 @@ clean:
 	-cd poisson && $(MAKE) clean
 	-cd subsurf && $(MAKE) clean
 	-cd iTaps && $(MAKE) clean
-	-cd lib/$(build_cpu) && rm -rf gas *.a
-	-rm -rf incs
+	-cd lib/$(build_cpu) && $(RM) *.a
+	-cd lib/$(build_cpu) && rm -rf gas
 	-rm -rf include
 else  ifeq ($(BASECODE),adv)
 clean:
@@ -99,7 +99,6 @@ clean:
 	-cd melting && $(MAKE) clean
 	-cd subsurf && $(MAKE) clean
 	-cd lib/$(build_cpu) && $(RM) *.a
-	-rm -rf incs
 	-rm -rf include
 else
 clean:
@@ -108,9 +107,51 @@ clean:
 	-cd example3d && $(MAKE) clean
 	-cd cFluid && $(MAKE) clean
 	-cd lib/$(build_cpu) && $(RM) *.a
-	-rm -rf incs
 	-rm -rf include
 endif
+
+distclean:
+	cd src && $(MAKE) distclean && $(RM) Makefile
+	cd example2d && $(MAKE) clean && $(RM) Makefile
+	cd example3d && $(MAKE) clean && $(RM) Makefile
+	cd iFluid && $(MAKE) clean && $(RM) Makefile
+	cd cFluid && $(MAKE) clean && $(RM) Makefile
+	cd vFluid && $(MAKE) clean && $(RM) Makefile
+	cd wings && $(MAKE) clean && $(RM) Makefile
+	cd cim && $(MAKE) clean && $(RM) Makefile
+	cd DG && $(MAKE) clean && $(RM) Makefile
+	cd inverse && $(MAKE) clean && $(RM) Makefile
+	cd Collision && $(MAKE) clean && $(RM) Makefile
+	cd airfoil && $(MAKE) clean && $(RM) Makefile
+	cd folding && $(MAKE) clean && $(RM) Makefile
+	cd parachute && $(MAKE) clean && $(RM) Makefile
+	cd parachute2d && $(MAKE) clean && $(RM) Makefile
+	cd proj && $(MAKE) clean && $(RM) Makefile
+	cd solver && $(MAKE) clean && $(RM) Makefile
+	cd sprModel && $(MAKE) clean && $(RM) Makefile
+	cd weno && $(MAKE) clean && $(RM) Makefile
+	cd cell && $(MAKE) clean && $(RM) Makefile
+	cd crystal && $(MAKE) clean && $(RM) Makefile
+	cd curvature && $(MAKE) clean && $(RM) Makefile
+	cd finance && $(MAKE) clean && $(RM) Makefile
+	cd rgbody && $(MAKE) clean && $(RM) Makefile
+	cd climate && $(MAKE) clean && $(RM) Makefile
+	cd melting && $(MAKE) clean && $(RM) Makefile
+	cd pde && $(MAKE) clean && $(RM) Makefile
+	cd MonteCarlo && $(MAKE) clean && $(RM) Makefile
+	cd timeSeries && $(MAKE) clean && $(RM) Makefile
+	cd poisson && $(MAKE) clean && $(RM) Makefile
+	cd subsurf && $(MAKE) clean && $(RM) Makefile
+	cd iTaps && $(MAKE) clean && $(RM) Makefile
+	rm -rf include
+	rm -rf lib
+	rm -rf autom4te.cache
+	$(RM) config.log 
+	$(RM) config.status 
+	$(RM) configure
+	$(RM) devel-deps.inc 
+	$(RM) iMesh-Defs.inc
+	$(RM) Makefile
 
 diff:
 	cd src && $(MAKE) diff

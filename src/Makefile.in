@@ -1,14 +1,22 @@
 CC=@CC@
 F77=@F77@
+
 all:
-	cd front  && $(MAKE)
+	cd front && $(MAKE)
 
 clean:
-	cd util && $(MAKE) clean
 	cd front && $(MAKE) clean
 	cd intfc && $(MAKE) clean
+	cd util && $(MAKE) clean
+
+distclean:
+	cd front && $(MAKE) distclean && $(RM) Makefile
+	cd intfc && $(MAKE) distclean && $(RM) Makefile
+	cd util && $(MAKE) distclean && $(RM) Makefile
+	$(RM) make.ofiles
+	$(RM) make.files
 
 diff:
-	cd util && $(MAKE) diff 
 	cd front && $(MAKE) diff
 	cd intfc && $(MAKE) diff
+	cd util && $(MAKE) diff 

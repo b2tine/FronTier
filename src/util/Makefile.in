@@ -77,3 +77,12 @@ $(libutil_a_OBJECTS): %.o: %.c
 
 clean:
 	cd $(build_cpu) && $(RM) *.o
+
+distclean:
+	rm -rf $(build_cpu)
+	rm -rf d$(build_cpu)
+	$(RM) make.dep 
+	$(RM) make.dep.u 
+	$(RM) make.util.dep 
+
+
