@@ -397,11 +397,11 @@ EXPORT	void	FT_Init(
 	    case 'i':
 	    case 'I':
 	    	f_basic->ReadFromInput = YES;
-	    	zero_scalar(in_name,200);
-                strcpy(in_name,argv[1]);
-                argc -= 2;
-		argv += 2;
-		break;
+	    	zero_scalar(in_name,200); //in_name is pointing to f_basic->in_name  
+            strcpy(in_name,argv[1]);
+            argc -= 2;
+            argv += 2;
+            break;
 	    case 'r':
 	    case 'R':
 	    	f_basic->RestartRun = YES;
