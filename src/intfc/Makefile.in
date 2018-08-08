@@ -142,6 +142,7 @@ distclean:
 	$(RM) make.dep 
 	$(RM) make.util.dep 
 	$(RM) testintfc
+	$(RM) tags
 
 tagsfile:
 	ctags *.c ../util/*.c *.h ../util/*.h 

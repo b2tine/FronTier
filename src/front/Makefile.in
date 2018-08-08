@@ -141,6 +141,7 @@ distclean:
 	rm -rf $(build_cpu)
 	$(RM) make.dep 
 	$(RM) make.util.dep 
+	$(RM) tags
 
 tagsfile:
 	ctags ../intfc/*.c ../util/*.c *.c ../intfc/*.h ../util/*.h *.h
