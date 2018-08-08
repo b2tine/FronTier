@@ -1354,34 +1354,38 @@ typedef struct _F_INIT_DATA F_INIT_DATA;
 
 struct _LEVEL_FUNC_PACK {
 	/* Not needed for restart initialization */
-        COMPONENT neg_component;
-        COMPONENT pos_component;
+    COMPONENT neg_component;
+    COMPONENT pos_component;
 
 	/* For level set initialization */
-        double (*func)(POINTER,double*);
-        POINTER func_params;
+    double (*func)(POINTER,double*);
+    POINTER func_params;
 
 	/* For point array initialization */
 	int num_points;
 	double **point_array;
 	boolean closed_curve;
 	int direction;
-	/* For initialization by reading SDL file */
+
+    /* For initialization by reading SDL file */
 	boolean read_sdl_input;
 	char *sdl_name;
-	/* For initialization by reading VTK file */
-	boolean read_vtk_input;
+
+    /* For initialization by reading VTK file */
+    boolean read_vtk_input;
 	char *vtk_name;
 	int wave_type;
 
 	boolean is_mono_hs;
 	int num_mono_hs;
-	/* For constrained level set initialization */
-        boolean (*constr_func)(POINTER,double*);
-        POINTER constr_params;
-	/* For constrained level set initialization */
-        boolean (*string_func)(INTERFACE*,SURFACE*,POINTER,int);
-        POINTER string_params;
+
+    /* For constrained level set initialization */
+    boolean (*constr_func)(POINTER,double*);
+    POINTER constr_params;
+
+    /* For constrained level set initialization */
+    boolean (*string_func)(INTERFACE*,SURFACE*,POINTER,int);
+    POINTER string_params;
 	
 	boolean set_3d_bdry;
 	boolean attach_string;

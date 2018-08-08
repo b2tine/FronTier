@@ -137,19 +137,21 @@ extern void initParachuteDefault(
 {
 	AF_PARAMS *af_params = (AF_PARAMS*)front->extra2;
 	FILE *infile = fopen(InName(front),"r");
-        char string[100];
+    char string[100];
 	af_params->is_parachute_system = YES;
 	af_params->num_opt_round = 20;
-        af_params->spring_model = MODEL1;
+    af_params->spring_model = MODEL1;
 	af_params->gore_len_fac = 1.0;
-	if (CursorAfterStringOpt(infile,
+
+    if (CursorAfterStringOpt(infile,
             "Enter yes to attach gores to canopy:"))
-        {
-            fscanf(infile,"%s",string);
-            if (string[0] == 'y' || string[0] == 'Y')
-                af_params->attach_gores = YES;
-        }
-        fclose(infile);
+    {
+        fscanf(infile,"%s",string);
+        if (string[0] == 'y' || string[0] == 'Y')
+            af_params->attach_gores = YES;
+    }
+
+    fclose(infile);
 }	/* end initParachuteDefault */
 
 static void initSingleModule(
