@@ -1998,8 +1998,6 @@ LOCAL   void FT_InitIntfc3d(
 	}
 	else if (level_func_pack->is_mono_hs)
 	{
-        // This block doesn't seem correct for a MONO_COMP_HSBDRY
-        // ... Deprecated??
 	    for (int i = 0; i < level_func_pack->num_mono_hs; ++i)
 	    {
             pos_comp = level_func_pack->pos_component;

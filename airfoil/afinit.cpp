@@ -72,13 +72,13 @@ static void setInitialIntfcAF3d(
 
 	level_func_pack->set_3d_bdry = YES;
 	level_func_pack->neg_component = LIQUID_COMP2;
-        level_func_pack->pos_component = LIQUID_COMP2;	
+    level_func_pack->pos_component = LIQUID_COMP2;	
 	level_func_pack->func_params = NULL;
-        level_func_pack->func = NULL;
+    level_func_pack->func = NULL;
 	af_params->is_parachute_system = NO;
 	af_params->cut_vent = NO;
 	af_params->num_opt_round = 20;
-        af_params->spring_model = MODEL1;	// default
+    af_params->spring_model = MODEL1;	// default
 	af_params->attach_gores = NO;		// default
 	af_params->use_gpu = NO;		// default
 	af_params->gore_len_fac = 1.0;		// default
@@ -206,10 +206,10 @@ static void setInitialIntfcAF3d(
 	}
 	if (CursorAfterStringOpt(infile,
             "Entering number of canopy optimization rounds: "))
-        {
-            fscanf(infile,"%d",&af_params->num_opt_round);
-            (void) printf("%d\n",af_params->num_opt_round);
-        }
+    {
+        fscanf(infile,"%d",&af_params->num_opt_round);
+        (void) printf("%d\n",af_params->num_opt_round);
+    }
 }	/* end setInitialIntfcAF3d */
 
 static void setInitialIntfcAF2d(

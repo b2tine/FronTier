@@ -117,8 +117,8 @@ int main(int argc, char **argv)
 	    if (f_basic.dim == 3)
             initIsolated3dCurves(&front);
 
-	    initRigidBody(&front);
-	    rgb_init(&front, rgb_params);
+	    initRigidBody(&front); //in afinit3d.cpp
+	    rgb_init(&front, rgb_params); //in ../iFluid/iFsub.cpp
 
 	    if (f_basic.dim == 3 && debugging("trace"))
             gview_plot_interface("ginit",front.interf);
