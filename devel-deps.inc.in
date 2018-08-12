@@ -16,3 +16,10 @@ FT_libs:
 	@cd ../src/intfc && $(MAKE) ../../lib/@build_cpu@/libintfc.a
 	@cd .. && $(MAKE) incs
 	@$(MAKE) ../lib/@build_cpu@/libFronTier.a
+
+FT_libs_testdir:
+	@cd ../../src/front && $(MAKE) ../../lib/@build_cpu@/libfront.a
+	@cd ../../src/util && $(MAKE) ../../lib/@build_cpu@/libutil.a
+	@cd ../../src/intfc && $(MAKE) ../../lib/@build_cpu@/libintfc.a
+	@cd ../.. && $(MAKE) incs
+	@cd .. && $(MAKE) ../lib/@build_cpu@/libFronTier.a
