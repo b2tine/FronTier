@@ -12,9 +12,9 @@ CGAL_LIB = -L/usr/lib/x86_64-linux-gnu -lCGAL_Core -lCGAL_ImageIO -lCGAL
 GMOCK_LIB = -lgmock -lgmock_main
 
 
-#OBJS = ../HSE.o HSEtests.o
-OBJS = HSEtests.o
-
+#OBJS = ../AABB.o AABBtests.o
+#OBJS = AABBtests.o
+OBJS = ../FT_HSE.o FT_HSEtests.o
 
 testAll: main.cpp $(OBJS) FT_libs_testdir
 	$(CXX) $< $(OBJS) $(GMOCK_LIB) $(CGAL_INCLUDE) $(CGAL_LIB) -I../../include $(incs) -L../../lib/x86_64 $(libincs) -lFronTier -lm $(libs) -o $@
@@ -22,6 +22,10 @@ testAll: main.cpp $(OBJS) FT_libs_testdir
 
 %.o: %.cpp
 	$(CXX) -c $< $(CGAL_INCLUDE) $(CGAL_LIB) -I../../include $(incs) -L../../lib/x86_64 $(libincs) -lFronTier -lm $(libs)
+
+../%.o: ../%.cpp
+	cd .. && $(CXX) -c $(notdir $<) $(CGAL_INCLUDE) $(CGAL_LIB) -I../include $(incs) -L../lib/x86_64 $(libincs) -lFronTier -lm $(libs)
+
 
 
 clean:
