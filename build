@@ -24,7 +24,7 @@ function parse_arguments {
     WITHHDF=1
     WITHGD=1
     COPTS_GCC="-fopenmp -Wno-unused-result"
-export BASECODE="no"
+    export BASECODE="no"
 
     for arg in $@ ; do
         if [[ "$arg" == "-d" ]]; then
@@ -319,22 +319,22 @@ function config_alpha {
     CGAL_INCLUDE="-I/usr/include"
     CGAL_LIB="-L/usr/lib/x86_64-linux-gnu"
 
-    if [[ -n "$WITHHYPRE" ]]; then
-        CONF="$CONF --with-hypre"
-	export USEHYPRE="yes"
+    if [ $WITHHYPRE -eq 1 ]; then
+        CONF="${CONF} --with-hypre"
+	    export USEHYPRE="yes"
     else
-	export USEHYPRE="no"
+	    export USEHYPRE="no"
     fi
 
-    if [[ -n "$WITHGPU" ]]; then
-        CONF="$CONF --with-gpu"
-	export USEGPU="yes"
+    if [ $WITHGPU -eq 1 ]; then
+        CONF="${CONF} --with-gpu"
+	    export USEGPU="yes"
     else
-	export USEGPU="no"
+	    export USEGPU="no"
     fi
 
-    if [[ -n "$WITHHDF" ]]; then
-        CONF="$CONF --with-hdf=/usr/local/pkg/hdf"
+    if [ $WITHHDF -eq 1 ]; then
+        CONF="${CONF} --with-hdf=/usr/local/pkg/hdf"
     fi
 
     export CONF="--with-mpi=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-devel ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
