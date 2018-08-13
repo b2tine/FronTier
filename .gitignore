@@ -1,0 +1,46 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+Makefile
+*.cache
+*.log
+*.status
+*.inc
+*.dep
+*.dep.*
+*.files
+*.ofiles
+configure
+include
+crystal
+iFluid
+testAll
+
+# Others
+*/tags
+*/*/tags

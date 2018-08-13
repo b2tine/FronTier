@@ -14,13 +14,8 @@ AABB::AABB(FT_HSE* h)
     }
 }
 
-bool AABB::contains(AABB* BB)
+bool AABB::contains(AABB* BB) const
 {
-    /*
-    return lower[0] < BB->lower[0] && lower[1] < BB->lower[1] &&
-           lower[2] < BB->lower[2] && upper[0] > BB->upper[0] &&
-           upper[1] > BB->upper[1] && upper[2] > BB->upper[2];*/
-    
     for( int i = 0; i < 3; i++ )
     {
         if( lower[i] >= BB->lower[i] ) return false;
@@ -29,7 +24,7 @@ bool AABB::contains(AABB* BB)
     return true;
 }
 
-bool AABB::overlaps(AABB* BB)
+bool AABB::overlaps(AABB* BB) const
 {
     for( int i = 0; i < 3; i++ )
     {
@@ -39,9 +34,12 @@ bool AABB::overlaps(AABB* BB)
     return true;
 }
 
-void AABB::print()
+void AABB::print() const
 {
     printf("\n   upper: (%3g,%3g,%3g) \n", upper[0], upper[1], upper[2]);
     printf("centroid: (%3g,%3g,%3g) \n", centroid[0], centroid[1], centroid[2]);
     printf("   lower: (%3g,%3g,%3g) \n\n", lower[0], lower[1], lower[2]);
 }
+
+
+

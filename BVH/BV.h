@@ -18,9 +18,9 @@ class AABB
 
         explicit AABB(FT_HSE*);
 
-        bool contains(AABB*);
-        bool overlaps(AABB*);
-        void print();
+        bool contains(AABB*) const;
+        bool overlaps(AABB*) const;
+        void print() const;
 };
 
 
@@ -31,3 +31,10 @@ class AABB
 //Every BV type must be constructable from a pointer to
 //a FT_HSE and have a centroid of type BV_Point.
 //More to come...  
+
+
+//Potential Methods:
+//
+//  1. AABB of 2 AABBs (constructor)
+//  2. volume
+//  3. inflation
