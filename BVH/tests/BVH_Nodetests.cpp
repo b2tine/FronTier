@@ -69,7 +69,19 @@ class BVH_NodeTests : public TestData
 
 TEST(BVH_NodeTest, Constructor_FT_HSE)
 {
-    BVH_Node node;
+    POINT* a = new POINT;  POINT* b = new POINT;
+    Coords(a)[0] = 0.0;    Coords(b)[0] = 1.0;
+    Coords(a)[1] = 0.0;    Coords(b)[1] = 0.0;
+    Coords(a)[2] = 0.0;    Coords(b)[2] = 0.0;
+
+    POINT* c = new POINT;   TRI* t = new TRI;
+    Coords(c)[0] = 0.0;     Point_of_tri(t)[0] = a;
+    Coords(c)[1] = 1.0;     Point_of_tri(t)[1] = b;
+    Coords(c)[2] = 0.0;     Point_of_tri(t)[2] = c;
+
+    FT_TRI* T = new FT_TRI(t);
+
+    BVH_Node node(T);
 } 
 
 

@@ -3,9 +3,11 @@ F77=mpif77 -g -rdynamic
 F77_LIBS=
 
 libext = 
-incs =   -I/usr/local/pkg/mpich2-3.2/include -D__MPI__  -D__HYPRE__  
-libincs =  -L/usr/lib  /usr/lib/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3 -L/usr/lib -L/usr/local/pkg/hdf/lib  -L/usr/local/pkg/mpich2-3.2/lib 
-libs = -lgd  /usr/lib/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3  -ldf -ljpeg -lz  -lmpich -lpthread
+incs =  # -I/usr/local/pkg/mpich2-3.2/include -D__MPI__  -D__HYPRE__  
+libincs =  -L/usr/lib  -L/usr/local/pkg/hdf/lib  -L/usr/local/pkg/mpich2-3.2/lib 
+#libincs =  -L/usr/lib  /usr/lib/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3 -L/usr/lib -L/usr/local/pkg/hdf/lib  -L/usr/local/pkg/mpich2-3.2/lib 
+libs = -lgd  -ldf -ljpeg -lz -lmpich -lpthread
+#libs = -lgd  /usr/lib/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3  -ldf -ljpeg -lz  -lmpich -lpthread
 
 CGAL_INCLUDE = -I/usr/include
 CGAL_LIB = -L/usr/lib/x86_64-linux-gnu -lCGAL_Core -lCGAL_ImageIO -lCGAL
