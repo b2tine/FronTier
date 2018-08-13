@@ -1,6 +1,7 @@
 #ifndef FT_HSE_H
 #define FT_HSE_H
 
+#include <iostream>
 #include <cassert>
 #include <algorithm>
 #include "FronTier.h"
