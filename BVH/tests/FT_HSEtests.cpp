@@ -68,6 +68,7 @@ TEST(FT_BOND, OutOfRangeDeathTest)
     FT_BOND B(A);
     ASSERT_DEATH(B.Point_of_hse(2),".*Assertion.*");
     ASSERT_DEATH(B.Point_of_hse(-1),".*Assertion.*");
+    delete a; delete b; delete A;
 }
 
 //////////////////////////////////////////////////////
@@ -87,6 +88,7 @@ TEST(FT_TRI, OutOfRangeDeathTest)
     FT_TRI T(t);
     ASSERT_DEATH(T.Point_of_hse(3),".*Assertion.*");
     ASSERT_DEATH(T.Point_of_hse(-1),".*Assertion.*");
+    delete a; delete b; delete c; delete t;
 }
 
 //////////////////////////////////////////////////////

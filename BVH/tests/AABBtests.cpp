@@ -45,7 +45,7 @@ class TestData : public ::testing::Test
         P = new FT_POINT(a);
     }
 
-    void TearDown() override
+    virtual void TearDown()
     {
         delete a; delete b; delete c;
         delete d; delete e; delete f;
@@ -80,7 +80,7 @@ class AABBTests : public TestData
 
 };
 
-TEST_F(AABBTests, BoxesOverlapOrContained)
+TEST_F(AABBTests, BoxesOverlapVsContain)
 {
     //contains means strictly contained
     ASSERT_TRUE(bbT2->contains(bbT1));
@@ -91,7 +91,7 @@ TEST_F(AABBTests, BoxesOverlapOrContained)
     ASSERT_TRUE(bbT1->overlaps(bbB2));
 }
 
-TEST_F(AABBTests, ConstructorFT_HSE)
+TEST_F(AABBTests, Constructor_FT_HSE)
 {
     ASSERT_DOUBLE_EQ(bbT1->upper[2],3.0);
     ASSERT_DOUBLE_EQ(bbT2->centroid[1],5.0);
@@ -99,13 +99,15 @@ TEST_F(AABBTests, ConstructorFT_HSE)
     ASSERT_DOUBLE_EQ(bbB1->lower[1],1.0);
     ASSERT_DOUBLE_EQ(bbB1->centroid[0],1.5);
 
-    //May want to disallow BVs for points
+    //Is this the correct behavior for points?
     ASSERT_DOUBLE_EQ(bbP->lower[0],bbP->upper[0]);
 }
 
 //TODO: Degenerate Cases?:
 //      
-//      1.  Box has zero volume for point, or disallow?
+//      1.  Box has zero volume for a point;
+//          should AABB be allowed to be given
+//          a point as a constructor argument?
 //      
 //      2.  What about for bonds or tris that are parallel
 //          to two axis simultaneously and box is 2d?

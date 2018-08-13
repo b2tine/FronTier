@@ -41,5 +41,8 @@ void AABB::print() const
     printf("   lower: (%3g,%3g,%3g) \n\n", lower[0], lower[1], lower[2]);
 }
 
-
+BV_Type AABB::getType() const
+{
+    return BV_Type::AABB;
+}
 

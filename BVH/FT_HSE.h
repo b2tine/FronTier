@@ -13,11 +13,13 @@ class FT_HSE
     public:
 
         FT_HSE() = default;
+        virtual ~FT_HSE() = default;
+
+        //delete copy and move ops since no member data
         FT_HSE(const FT_HSE&) = delete;
         FT_HSE& operator=(const FT_HSE&) = delete;
         FT_HSE(FT_HSE&&) = delete;
         FT_HSE& operator=(FT_HSE&&) = delete;
-        virtual ~FT_HSE() = default;
 
         virtual double max_coord(int) const = 0;
         virtual double min_coord(int) const = 0;
@@ -36,11 +38,14 @@ class FT_POINT : public FT_HSE
     public:
 
         FT_POINT() = default;
+        ~FT_POINT() = default;
+
+        //delete copy and move ops until there
+        //is a good reason not to.
         FT_POINT(const FT_POINT&) = delete;
         FT_POINT& operator=(const FT_POINT&) = delete;
         FT_POINT(FT_POINT&&) = delete;
         FT_POINT& operator=(FT_POINT&&) = delete;
-        ~FT_POINT() = default;
 
         explicit FT_POINT(POINT* p)
             : point{p}
@@ -62,11 +67,14 @@ class FT_BOND : public FT_HSE
     public:
 
         FT_BOND() = default;
+        ~FT_BOND() = default;
+
+        //delete copy and move ops until there
+        //is a good reason not to.
         FT_BOND(const FT_BOND&) = delete;
         FT_BOND& operator=(const FT_BOND&) = delete;
         FT_BOND(FT_BOND&&) = delete;
         FT_BOND& operator=(FT_BOND&&) = delete;
-        ~FT_BOND() = default;
         
         explicit FT_BOND(BOND* b)
             : bond{b}
@@ -88,11 +96,14 @@ class FT_TRI : public FT_HSE
     public:
 
         FT_TRI() = default;
+        ~FT_TRI() = default;
+
+        //delete copy and move ops until there
+        //is a good reason not to.
         FT_TRI(const FT_TRI&) = delete;
         FT_TRI& operator=(const FT_TRI&) = delete;
         FT_TRI(FT_TRI&&) = delete;
         FT_TRI& operator=(FT_TRI&&) = delete;
-        ~FT_TRI() = default;
 
         explicit FT_TRI(TRI* t)
             : tri{t}
