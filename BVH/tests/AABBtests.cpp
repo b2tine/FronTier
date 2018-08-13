@@ -2,7 +2,7 @@
 #include "../BV.h"
 
 
-class TestData : public ::testing::Test
+class AABBTestData : public ::testing::Test
 {
     public:
 
@@ -14,7 +14,7 @@ class TestData : public ::testing::Test
     FT_BOND *B1, *B2;
     FT_POINT* P;
 
-    TestData()
+    AABBTestData()
     {
         a = new POINT;         b = new POINT;
         Coords(a)[0] = 2.0;    Coords(b)[0] = 1.0;
@@ -54,16 +54,18 @@ class TestData : public ::testing::Test
         delete B2; delete T1; delete T2;
     }
 
+    virtual ~AABBTestData() = default;
+
 };
 
-class AABBTests : public TestData
+class AABBTests : public AABBTestData
 {
     public:
     
     AABB *bbP, *bbB1, *bbB2, *bbT1, *bbT2;
 
     AABBTests()
-        : TestData{}
+        : AABBTestData{}
     {
         bbP = new AABB(P);
         bbB1 = new AABB(B1);    bbB2 = new AABB(B2);
@@ -75,8 +77,10 @@ class AABBTests : public TestData
         delete bbP;
         delete bbB1; delete bbB2;
         delete bbT1; delete bbT2;
-        TestData::TearDown();
+        AABBTestData::TearDown();
     }
+
+    ~AABBTests() = default;
 
 };
 

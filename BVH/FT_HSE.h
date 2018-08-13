@@ -21,10 +21,10 @@ class FT_HSE
         FT_HSE(FT_HSE&&) = delete;
         FT_HSE& operator=(FT_HSE&&) = delete;
 
+        virtual int num_pts() const = 0;
         virtual double max_coord(int) const = 0;
         virtual double min_coord(int) const = 0;
         virtual POINT* Point_of_hse(int) const = 0;
-        virtual int num_pts() const = 0;
 
 };
 
@@ -33,7 +33,7 @@ class FT_POINT : public FT_HSE
 {
     private:
 
-        POINT* point;
+        POINT* point{nullptr};
 
     public:
 
@@ -47,6 +47,7 @@ class FT_POINT : public FT_HSE
         FT_POINT(FT_POINT&&) = delete;
         FT_POINT& operator=(FT_POINT&&) = delete;
 
+        //NOTE: point is a shallow copy of p
         explicit FT_POINT(POINT* p)
             : point{p}
         {}
@@ -62,7 +63,7 @@ class FT_BOND : public FT_HSE
 {
     private:
 
-        BOND* bond;
+        BOND* bond{nullptr};
 
     public:
 
@@ -76,6 +77,7 @@ class FT_BOND : public FT_HSE
         FT_BOND(FT_BOND&&) = delete;
         FT_BOND& operator=(FT_BOND&&) = delete;
         
+        //NOTE: bond is a shallow copy of p
         explicit FT_BOND(BOND* b)
             : bond{b}
         {}
@@ -91,7 +93,7 @@ class FT_TRI : public FT_HSE
 {
     private:
 
-        TRI* tri;
+        TRI* tri{nullptr};
 
     public:
 
@@ -104,7 +106,8 @@ class FT_TRI : public FT_HSE
         FT_TRI& operator=(const FT_TRI&) = delete;
         FT_TRI(FT_TRI&&) = delete;
         FT_TRI& operator=(FT_TRI&&) = delete;
-
+        
+        //NOTE: tri is a shallow copy of t
         explicit FT_TRI(TRI* t)
             : tri{t}
         {}

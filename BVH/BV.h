@@ -52,6 +52,7 @@ class AABB
 
         void print() const;
         BV_Type getType() const;
+
 };
 
 //Potential AABB Methods:

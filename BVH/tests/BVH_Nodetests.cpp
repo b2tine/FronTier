@@ -1,7 +1,7 @@
 #include "gmock/gmock.h"
 #include "../BVH_Node.h"
 
-class TestData : public ::testing::Test
+class BVH_NodeTestData : public ::testing::Test
 {
     public:
 
@@ -10,7 +10,7 @@ class TestData : public ::testing::Test
 
     FT_TRI *T1, *T2;
 
-    TestData()
+    BVH_NodeTestData()
     {
         a = new POINT;         b = new POINT;
         Coords(a)[0] = 0.0;    Coords(b)[0] = 1.0;
@@ -30,7 +30,7 @@ class TestData : public ::testing::Test
         T1 = new FT_TRI(t1);    T2 = new FT_TRI(t2);
     }
 
-    void TearDown() override
+    virtual void TearDown()
     {
         delete t1; delete t2;
         delete T1; delete T2;
@@ -38,52 +38,37 @@ class TestData : public ::testing::Test
         delete c; delete d;
     }
 
+    virtual ~BVH_NodeTestData() = default;
+
 };
 
-/*
-class BVH_NodeTests : public TestData
+class BVH_NodeTests : public BVH_NodeTestData
 {
     public:
     
-    AABB *bbP, *bbB1, *bbB2, *bbT1, *bbT2;
+    BVH_Node* node;
 
     BVH_NodeTests()
-        : TestData{}
+        : BVH_NodeTestData{}
     {
-        bbP = new AABB(P);
-        bbB1 = new AABB(B1);    bbB2 = new AABB(B2);
-        bbT1 = new AABB(T1);    bbT2 = new AABB(T2);
+        node = new BVH_Node(T1);
     }
 
     void TearDown() override
     {
-        delete bbP;
-        delete bbB1; delete bbB2;
-        delete bbT1; delete bbT2;
-        TestData::TearDown();
+        delete node;
+        BVH_NodeTestData::TearDown();
     }
 
+    ~BVH_NodeTests() = default;
+
 };
-*/
 
-
-TEST(BVH_NodeTest, Constructor_FT_HSE)
+TEST_F(BVH_NodeTests, Constructor_FT_HSE)
 {
-    POINT* a = new POINT;  POINT* b = new POINT;
-    Coords(a)[0] = 0.0;    Coords(b)[0] = 1.0;
-    Coords(a)[1] = 0.0;    Coords(b)[1] = 0.0;
-    Coords(a)[2] = 0.0;    Coords(b)[2] = 0.0;
-
-    POINT* c = new POINT;   TRI* t = new TRI;
-    Coords(c)[0] = 0.0;     Point_of_tri(t)[0] = a;
-    Coords(c)[1] = 1.0;     Point_of_tri(t)[1] = b;
-    Coords(c)[2] = 0.0;     Point_of_tri(t)[2] = c;
-
-    FT_TRI* T = new FT_TRI(t);
-
-    BVH_Node node(T);
-} 
-
+    ASSERT_NE(node->getHse(),nullptr);
+    ASSERT_NE(node->getBV(),nullptr);//not passed
+}
 
 
 

@@ -8,6 +8,9 @@ class BVH_Node
 {
     private:
 
+        FT_HSE* hse;
+
+        AABB* getAABB();//temporary to put off introducing template
 
     public:
 
@@ -21,7 +24,23 @@ class BVH_Node
         BVH_Node(BVH_Node&&) = delete;
         BVH_Node& operator=(BVH_Node&&) = delete;
 
-        explicit BVH_Node(FT_HSE*);
+        //NOTE: hse is a shallow copy of h
+        explicit BVH_Node(FT_HSE* h)
+            : hse{h}
+        {}
+
+        //returns a const pointer to a const FT_HSE
+        const FT_HSE* const getHse() const
+        {
+            return hse;
+        }
+
+        /*
+        //returns a const pointer to a const BV
+        const BV* const getBV() const
+        {
+            return getAABB();
+        }*/
 };
 
 
