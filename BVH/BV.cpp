@@ -14,6 +14,11 @@ AABB::AABB(FT_HSE* h)
     }
 }
 
+BV_Point AABB::getCentroid() const
+{
+    return centroid;
+}
+
 bool AABB::contains(AABB* BB) const
 {
     for( int i = 0; i < 3; i++ )
@@ -41,7 +46,7 @@ void AABB::print() const
     printf("   lower: (%3g,%3g,%3g) \n\n", lower[0], lower[1], lower[2]);
 }
 
-BV_Type AABB::getType() const
+BV_Type AABB::getTypeBV() const
 {
     return BV_Type::AABB;
 }

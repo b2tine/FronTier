@@ -1,17 +1,24 @@
 /*
- *
  *                  BV.h
  *
- *  
- *  Bounding Volume (BV) types used to parameterize the
- *  Bounding Volume Heirarchy template class, BVH, and
- *  the associated BVH_Node template class.
- *  
  *
- *  Current BV types: AABB
+ * Every BV type must be constructable from a FT_HSE* and
+ * have the following member functions.
+ * 
+ *      1. BV_Type typeBV()
  *
- * */
-
+ *      2. BV_Point centroid()
+ *
+ *      3. bool contains()
+ *      
+ *      4. bool overlaps()
+ *
+ *      5. void inflate()
+ *
+ *
+ *      More to come ...
+ *      
+*/
 
 #include "FT_HSE.h"
 
@@ -22,11 +29,10 @@
 
 
 enum class BV_Type {AABB, OBB, KDOP, SPHERE};
-
 using BV_Point = std::vector<double>;
 
 
-
+//Axis Aligned Bounding Box (AABB)
 class AABB
 {
     public:
@@ -38,7 +44,7 @@ class AABB
         AABB() = default;
         ~AABB() = default;
 
-        //delete copy and move ops until there
+        //Delete copy and move ops until there
         //is a good reason not to.
         AABB(const AABB&) = delete;
         AABB& operator=(const AABB&) = delete;
@@ -47,30 +53,14 @@ class AABB
 
         explicit AABB(FT_HSE*);
 
+        BV_Type getTypeBV() const;
+        BV_Point getCentroid() const;
         bool contains(AABB*) const;
         bool overlaps(AABB*) const;
-
+        //void inflate() override;
         void print() const;
-        BV_Type getType() const;
-
 };
 
-//Potential AABB Methods:
-//
-//  1. AABB of 2 AABBs (constructor)
-//  2. volume
-//  3. inflation
-
-
-//Every BV type must be constructable from a pointer to
-//a FT_HSE and have a centroid of type BV_Point.
-//
-//  - contains()
-//  - overlaps()
-//
-//  methods that operate on other BVs of the same type.  
-//
-//  More to come...
 
 
 #endif

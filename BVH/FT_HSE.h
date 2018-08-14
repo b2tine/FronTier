@@ -52,10 +52,10 @@ class FT_POINT : public FT_HSE
             : point{p}
         {}
 
-        int num_pts() const override { return 1; }
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;
         double max_coord(int) const override;
+        int num_pts() const override { return 1; }
 };
 
 //Wrapper class for FronTier BOND
@@ -82,10 +82,10 @@ class FT_BOND : public FT_HSE
             : bond{b}
         {}
 
-        int num_pts() const override { return 2; }
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;
         double max_coord(int) const override;
+        int num_pts() const override { return 2; }
 };
 
 //Wrapper class for FronTier TRI
@@ -112,10 +112,10 @@ class FT_TRI : public FT_HSE
             : tri{t}
         {}
 
-        int num_pts() const override { return 3; }
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;
         double max_coord(int) const override;
+        int num_pts() const override { return 3; }
 };
 
 

@@ -14,6 +14,8 @@ class AABBTestData : public ::testing::Test
     FT_BOND *B1, *B2;
     FT_POINT* P;
 
+    //can probably make this a static StartUp/TearDown method
+    //in the derived class fixture so share the resources.
     AABBTestData()
     {
         a = new POINT;         b = new POINT;
@@ -62,27 +64,28 @@ class AABBTests : public AABBTestData
 {
     public:
     
-    AABB *bbP, *bbB1, *bbB2, *bbT1, *bbT2;
+    AABB *bbT1, *bbT2, *bbB1, *bbB2;
 
     AABBTests()
         : AABBTestData{}
     {
-        bbP = new AABB(P);
-        bbB1 = new AABB(B1);    bbB2 = new AABB(B2);
-        bbT1 = new AABB(T1);    bbT2 = new AABB(T2);
+        bbT1 = new AABB(T1);
+        bbT2 = new AABB(T2);
+        bbB1 = new AABB(B1);
+        bbB2 = new AABB(B2);
     }
 
     void TearDown() override
     {
-        delete bbP;
-        delete bbB1; delete bbB2;
         delete bbT1; delete bbT2;
+        delete bbB1; delete bbB2;
         AABBTestData::TearDown();
     }
 
     ~AABBTests() = default;
 
 };
+
 
 TEST_F(AABBTests, BoxesOverlapVsContain)
 {
@@ -97,14 +100,7 @@ TEST_F(AABBTests, BoxesOverlapVsContain)
 
 TEST_F(AABBTests, Constructor_FT_HSE)
 {
-    ASSERT_DOUBLE_EQ(bbT1->upper[2],3.0);
-    ASSERT_DOUBLE_EQ(bbT2->centroid[1],5.0);
-
-    ASSERT_DOUBLE_EQ(bbB1->lower[1],1.0);
-    ASSERT_DOUBLE_EQ(bbB1->centroid[0],1.5);
-
-    //Is this the correct behavior for points?
-    ASSERT_DOUBLE_EQ(bbP->lower[0],bbP->upper[0]);
+    ASSERT_EQ(bbT1->getTypeBV(),BV_Type::AABB);
 }
 
 //TODO: Degenerate Cases?:

@@ -1,7 +1,7 @@
 #include "gmock/gmock.h"
-#include "../BVH_Node.h"
+#include "../BV_Node.h"
 
-class BVH_NodeTestData : public ::testing::Test
+class BV_NodeTestData : public ::testing::Test
 {
     public:
 
@@ -10,7 +10,9 @@ class BVH_NodeTestData : public ::testing::Test
 
     FT_TRI *T1, *T2;
 
-    BVH_NodeTestData()
+    //can probably make this a static StartUp/TearDown method
+    //in the derived class fixture so share the resources.
+    BV_NodeTestData()
     {
         a = new POINT;         b = new POINT;
         Coords(a)[0] = 0.0;    Coords(b)[0] = 1.0;
@@ -38,36 +40,39 @@ class BVH_NodeTestData : public ::testing::Test
         delete c; delete d;
     }
 
-    virtual ~BVH_NodeTestData() = default;
+    virtual ~BV_NodeTestData() = default;
 
 };
 
-class BVH_NodeTests : public BVH_NodeTestData
+class BV_NodeTests : public BV_NodeTestData
 {
     public:
     
-    BVH_Node* node;
+    BV_Leaf<AABB>* leaf;
 
-    BVH_NodeTests()
-        : BVH_NodeTestData{}
+    BV_NodeTests()
+        : BV_NodeTestData{}
     {
-        node = new BVH_Node(T1);
+        leaf = new BV_Leaf<AABB>(T1);
     }
 
     void TearDown() override
     {
-        delete node;
-        BVH_NodeTestData::TearDown();
+        delete leaf;
+        BV_NodeTestData::TearDown();
     }
 
-    ~BVH_NodeTests() = default;
+    ~BV_NodeTests() = default;
 
 };
 
-TEST_F(BVH_NodeTests, Constructor_FT_HSE)
+//Parameterized by AABB
+TEST_F(BV_NodeTests, Constructor_BV_Leaf)
 {
-    ASSERT_NE(node->getHse(),nullptr);
-    //ASSERT_NE(node->getBV(),nullptr);//not passed
+    ASSERT_NE(leaf->getHse(),nullptr);
+    ASSERT_NE(leaf->getBV(),nullptr);
+    ASSERT_TRUE(leaf->isLeaf());
+    ASSERT_FALSE(leaf->isRoot());
 }
 
 
