@@ -58,49 +58,12 @@ class AABB
         AABB(const AABB&,const AABB&);
 
         BV_Type getTypeBV() const;
-        const BV_Point getCentroid() const;
         bool contains(const AABB&) const;
         bool overlaps(const AABB&) const;
         //void inflate() override;
         void print() const;
 };
 
-/*
- *  Pointer methods not being used right now
- *
-//Axis Aligned Bounding Box (AABB)
-class AABB
-{
-    public:
-
-        BV_Point lower;
-        BV_Point upper;
-        BV_Point centroid;
-
-        AABB() = default;
-        ~AABB() = default;
-
-        //Delete copy and move ops until there
-        //is a good reason not to.
-        AABB(const AABB&) = delete;
-        AABB& operator=(const AABB&) = delete;
-        AABB(AABB&&) = delete;
-        AABB& operator=(AABB&&) = delete;
-
-        explicit AABB(FT_HSE*);
-        AABB(const BV_Point&,const BV_Point&);
-
-        BV_Type getTypeBV() const;
-        BV_Point getCentroid() const;
-        bool contains(AABB*) const;
-        bool overlaps(AABB*) const;
-        //void inflate() override;
-        void print() const;
-
-        //create new AABB containing the two given as args
-        static AABB* merge(AABB*,AABB*);//may not need this...
-};
-*/
 
 //TODO: may need notion of containment with shared surfaces
 

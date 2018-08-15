@@ -32,10 +32,6 @@ class BV_NodeBase
         BV_NodeBase(BV_NodeBase&&) = delete;
         BV_NodeBase& operator=(BV_NodeBase&&) = delete;
 
-        //need copy constructor for AABB for this.
-        //seems better than providing setBV() in public interface
-            //explicit BV_NodeBase(const AABB&);
-
         void setParent(BV_NodeBase* p) {parent = p;}
         const BV_NodeBase* const getParent() const {return parent;}
 

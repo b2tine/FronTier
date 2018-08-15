@@ -72,7 +72,13 @@ class AABB_NodeTests : public BV_NodeTestData
 
 using DISABLED_AABB_NodeTests = AABB_NodeTests;
 
-TEST_F(AABB_NodeTests, Constructor_BV_Node)
+TEST_F(AABB_NodeTests, ConstructorBV_NodeDeathTest)
+{
+    BV_Node* achild;
+    ASSERT_DEATH(BV_Node* node = new BV_Node(lchild,achild),"");
+}
+
+TEST_F(AABB_NodeTests, ConstructorBV_Node)
 {
     BV_Node* parentnode = new BV_Node(lchild,rchild);
     ASSERT_NE(parentnode->getLeft(),nullptr);
@@ -82,7 +88,7 @@ TEST_F(AABB_NodeTests, Constructor_BV_Node)
     delete parentnode;
 }
 
-TEST_F(AABB_NodeTests, Constructor_BV_Leaf)
+TEST_F(AABB_NodeTests, ConstructorBV_Leaf)
 {
     ASSERT_NE(lchild->getHse(),nullptr);
     ASSERT_EQ(lchild->getParent(),nullptr);

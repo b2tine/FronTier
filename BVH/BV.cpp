@@ -31,11 +31,6 @@ AABB::AABB(const AABB& A, const AABB& B)
     }
 }
 
-const BV_Point AABB::getCentroid() const
-{
-    return centroid;
-}
-
 //bool AABB::contains(AABB* BB) const
 bool AABB::contains(const AABB& BB) const
 {
@@ -57,21 +52,6 @@ bool AABB::overlaps(const AABB& BB) const
     }
     return true;
 }
-
-/*
-//static factory like function
-AABB* AABB::merge(AABB* A, AABB* B)
-{
-    assert(A != nullptr && B != nullptr);
-    BV_Point L, U;
-    for( int i = 0; i < 3; i++ )
-    {
-        L.push_back(std::min(A->lower[i],B->lower[i]));
-        U.push_back(std::max(A->upper[i],B->upper[i]));
-    }
-    return new AABB(L,U);
-}
-*/
 
 void AABB::print() const
 {

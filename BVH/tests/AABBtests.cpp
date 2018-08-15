@@ -76,40 +76,6 @@ class AABBTestData : public ::testing::Test
 
 };
 
-/*
-class AABBTests : public AABBTestData
-{
-    public:
-    
-    AABB *bbT1, *bbT2, *bbT3, *bbB1,
-         *bbB2, *bbBVPts;
-
-    AABBTests()
-        : AABBTestData{}
-    {
-        bbT1 = new AABB(T1);
-        bbT2 = new AABB(T2);
-        bbT3 = new AABB(T3);
-        bbB1 = new AABB(B1);
-        bbB2 = new AABB(B2);
-
-        BV_Point L = {-1,-1,-1};
-        BV_Point U = {1,1,1};
-        bbBVPts = new AABB(L,U);
-    }
-
-    void TearDown() override
-    {
-        delete bbB1; delete bbB2;
-        delete bbT1; delete bbT2;
-        delete bbT3; delete bbBVPts;
-        AABBTestData::TearDown();
-    }
-
-    ~AABBTests() = default;
-
-};
-*/
 
 class AABBTests : public AABBTestData
 {
@@ -136,19 +102,6 @@ class AABBTests : public AABBTestData
 
 using DISABLED_AABBTests = AABBTests;
 
-TEST_F(DISABLED_AABBTests, mergeBoxesDeathTest)
-{
-    //AABB* bbNull;
-    //ASSERT_DEATH(AABB::merge(bbT1,bbNull),"");
-}
-
-TEST_F(DISABLED_AABBTests, MergeBoxes)
-{
-    //AABB* parentbox = AABB::merge(bbT2,bbT3);
-    //ASSERT_NE(parentbox,nullptr);
-    //TODO: Add tests for properties of the new box.
-    //      (see BoxesOverlapvsContain test)
-}
 
 TEST_F(AABBTests, BoxesOverlapVsContain)
 {
