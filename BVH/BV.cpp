@@ -14,6 +14,13 @@ AABB::AABB(FT_HSE* h)
     }
 }
 
+AABB::AABB(const BV_Point& L, const BV_Point& U)
+    : lower{L}, upper{U}
+{
+    for( int i = 0; i < 3; i++ )
+        centroid.push_back(0.5*(lower[i]+upper[i]));
+}
+
 BV_Point AABB::getCentroid() const
 {
     return centroid;
@@ -49,5 +56,20 @@ void AABB::print() const
 BV_Type AABB::getTypeBV() const
 {
     return BV_Type::AABB;
+}
+
+//static factory like function
+AABB* AABB::merge(AABB* A, AABB* B)
+{
+    BV_Point L;
+    BV_Point U;
+
+    for( int i = 0; i < 3; i++ )
+    {
+        L.push_back(std::min(A->lower[i],B->lower[i]));
+        U.push_back(std::max(A->upper[i],B->upper[i]));
+    }
+
+    return new AABB(L,U);
 }
 
