@@ -3,44 +3,56 @@
 #ifndef BV_NODE_H
 #define BV_NODE_H
 
-template<typename BV>
-class BV_Node
+/* Using AABB as the Bounding Volume for now.
+ * will make BV_NodeBase and derived classes templates,
+ * or create a class heirarchy of BV types ... */
+
+class BV_NodeBase
 {
+    private:
+
+        //Moved AABB bv into subclasses to avoid having to
+        //write copy constructor/assignment. Uncopyable BV
+        //seems appropriate for now.
+        
+        BV_NodeBase* parent{nullptr};
+        //may want to use a shared_ptr, but also may not
+        //matter since there won't be any tree balancing
+        //(at least I don't think there will be ...)
+
     public:
 
-        BV* bv{nullptr};
-        //TODO: need parent and children nodes
-
-        BV_Node() = default;
-        virtual ~BV_Node() {delete bv;}
+        BV_NodeBase() = default;
+        virtual ~BV_NodeBase() = default;//{delete bv;}
 
         //delete copy and move ops until there
         //is a good reason not to.
-        BV_Node(const BV_Node&) = delete;
-        BV_Node& operator=(const BV_Node&) = delete;
-        BV_Node(BV_Node&&) = delete;
-        BV_Node& operator=(BV_Node&&) = delete;
+        BV_NodeBase(const BV_NodeBase&) = delete;
+        BV_NodeBase& operator=(const BV_NodeBase&) = delete;
+        BV_NodeBase(BV_NodeBase&&) = delete;
+        BV_NodeBase& operator=(BV_NodeBase&&) = delete;
 
-        //TODO: Need constructor with children as args.
-        //      Requires a merge method for the AABB BV type.
+        //need copy constructor for AABB for this.
+        //seems better than providing setBV() in public interface
+            //explicit BV_NodeBase(const AABB&);
 
-        //returns a const pointer to a const BV
-        const BV* const getBV() const {return bv;}
+        void setParent(BV_NodeBase* p) {parent = p;}
+        const BV_NodeBase* const getParent() const {return parent;}
 
-        virtual const bool isLeaf() const {return false;}
-        virtual const bool isRoot() const
-        {
-            //TODO: implement this
-        }
-
+        virtual const AABB& getBV() const = 0;
+        virtual const bool isLeaf() const = 0;
+        virtual const bool isRoot() const = 0;
 };
 
-template<typename BV>
-class BV_Leaf : public BV_Node<BV>
+//has a FT_HSE* and does not have children
+class BV_Leaf : public BV_NodeBase
 {
-    public:
+    private:
 
+        AABB bv;
         FT_HSE* hse{nullptr};
+
+    public:
 
         BV_Leaf() = default;
         ~BV_Leaf() = default;
@@ -54,22 +66,50 @@ class BV_Leaf : public BV_Node<BV>
 
         //NOTE: hse is a shallow copy of h
         explicit BV_Leaf(FT_HSE* h)
-            : hse{h}
+            : bv{h}, hse{h} {}
+
+        const AABB& getBV() const override {return bv;}
+        const FT_HSE* const getHse() const {return hse;}
+        const bool isLeaf() const override {return true;}
+        const bool isRoot() const override {return false;}
+};
+
+//has children, does not have FT_HSE*.
+class BV_Node : public BV_NodeBase
+{
+    private:
+
+        AABB bv;
+        BV_NodeBase* left{nullptr};
+        BV_NodeBase* right{nullptr};
+
+    public:
+
+        BV_Node() = default;
+        ~BV_Node() = default;
+
+        //delete copy and move ops until there
+        //is a good reason not to.
+        BV_Node(const BV_Node&) = delete;
+        BV_Node& operator=(const BV_Node&) = delete;
+        BV_Node(BV_Node&&) = delete;
+        BV_Node& operator=(BV_Node&&) = delete;
+
+        BV_Node(BV_NodeBase* lc, BV_NodeBase* rc)
+            : bv{lc->getBV(),rc->getBV()},
+            left{lc}, right{rc}
         {
-            this->bv = new BV(h);
+            lc->setParent(this);
+            rc->setParent(this);
         }
 
-        //returns a const pointer to a const FT_HSE
-        const FT_HSE* const getHse() const {return hse;}
+        const AABB& getBV() const override {return bv;}
+        const BV_NodeBase* const getLeft() const {return left;}
+        const BV_NodeBase* const getRight() const {return right;}
+        const bool isLeaf() const override {return false;}
         const bool isRoot() const override {return false;}
-        const bool isLeaf() const override {return true;}
-
-
+        //TODO: implement isRoot(); is dummy right now
 };
 
 
 #endif
-
-
-
-

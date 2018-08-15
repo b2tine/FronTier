@@ -12,6 +12,7 @@ class BV_NodeTestData : public ::testing::Test
 
     //can probably make this a static StartUp/TearDown method
     //in the derived class fixture to share the resources.
+    //Do it when compilation/run time slowdown observed..
     BV_NodeTestData()
     {
         a = new POINT;         b = new POINT;
@@ -44,28 +45,24 @@ class BV_NodeTestData : public ::testing::Test
 
 };
 
-//AABB is the only BV type currently
+//AABB is currently the only BV type
 class AABB_NodeTests : public BV_NodeTestData
 {
     public:
     
-    BV_Leaf<AABB> *lchild, *rchild;
-    //BV_Node<AABB>* parent;
+    BV_Leaf *lchild, *rchild;
 
     AABB_NodeTests()
         : BV_NodeTestData{}
     {
-        lchild = new BV_Leaf<AABB>(T1);
-        rchild = new BV_Leaf<AABB>(T2);
-        //this constructor not implemented yet
-        //parent = new BV_Node<AABB>(lchild,rchild);
+        lchild = new BV_Leaf(T1);
+        rchild = new BV_Leaf(T2);
     }
 
     void TearDown() override
     {
         delete lchild;
         delete rchild;
-        //delete parent;
         BV_NodeTestData::TearDown();
     }
 
@@ -73,18 +70,25 @@ class AABB_NodeTests : public BV_NodeTestData
 
 };
 
+using DISABLED_AABB_NodeTests = AABB_NodeTests;
+
+TEST_F(AABB_NodeTests, Constructor_BV_Node)
+{
+    BV_Node* parentnode = new BV_Node(lchild,rchild);
+    ASSERT_NE(parentnode->getLeft(),nullptr);
+    ASSERT_EQ(lchild->getParent(),parentnode);
+    ASSERT_EQ(rchild->getParent(),parentnode);
+    ASSERT_FALSE(parentnode->isLeaf());
+    delete parentnode;
+}
+
 TEST_F(AABB_NodeTests, Constructor_BV_Leaf)
 {
     ASSERT_NE(lchild->getHse(),nullptr);
-    ASSERT_NE(lchild->getBV(),nullptr);
+    ASSERT_EQ(lchild->getParent(),nullptr);
     ASSERT_TRUE(lchild->isLeaf());
     ASSERT_FALSE(lchild->isRoot());
 }
 
-//not passed, requires a merge function for the AABB BV type
-using DISABLED_AABB_NodeTests = AABB_NodeTests;
-TEST_F(DISABLED_AABB_NodeTests, Constructor_BV_Node)
-{
-    //ASSERT_NE(parent->getBV(),nullptr);
-}
+
 

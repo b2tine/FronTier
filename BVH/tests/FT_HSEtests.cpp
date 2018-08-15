@@ -43,8 +43,8 @@ TEST_F(FT_POINT_TESTS, MaxCoordEqualMinCoord)
 
 TEST_F(FT_POINT_TESTS, OutOfRangeDeathTest)
 {
-    ASSERT_DEATH(p->Point_of_hse(1),".*Assertion.*");
-    ASSERT_DEATH(p->Point_of_hse(-1),".*Assertion.*");
+    ASSERT_DEATH(p->Point_of_hse(1),"");
+    ASSERT_DEATH(p->Point_of_hse(-1),"");
 }
 
 //////////////////////////////////////////////////////
@@ -82,8 +82,8 @@ class FT_BOND_TESTS : public ::testing::Test
 
 TEST_F(FT_BOND_TESTS, OutOfRangeDeathTest)
 {
-    ASSERT_DEATH(B->Point_of_hse(2),".*Assertion.*");
-    ASSERT_DEATH(B->Point_of_hse(-1),".*Assertion.*");
+    ASSERT_DEATH(B->Point_of_hse(2),"");
+    ASSERT_DEATH(B->Point_of_hse(-1),"");
 }
 
 
@@ -124,8 +124,8 @@ class FT_TRI_TESTS : public ::testing::Test
 
 TEST_F(FT_TRI_TESTS, OutOfRangeDeathTest)
 {
-    ASSERT_DEATH(T->Point_of_hse(3),".*Assertion.*");
-    ASSERT_DEATH(T->Point_of_hse(-1),".*Assertion.*");
+    ASSERT_DEATH(T->Point_of_hse(3),"");
+    ASSERT_DEATH(T->Point_of_hse(-1),"");
 }
 
 

@@ -14,6 +14,9 @@ class AABBTestData : public ::testing::Test
     FT_BOND *B1, *B2;
     FT_POINT* P;
 
+    BV_Point L = {-1,-1,-1};
+    BV_Point U = {1,1,1};
+
     //can probably make this a static StartUp/TearDown method
     //in the derived class fixture to share the resources.
     AABBTestData()
@@ -73,11 +76,13 @@ class AABBTestData : public ::testing::Test
 
 };
 
+/*
 class AABBTests : public AABBTestData
 {
     public:
     
-    AABB *bbT1, *bbT2, *bbT3, *bbB1, *bbB2;
+    AABB *bbT1, *bbT2, *bbT3, *bbB1,
+         *bbB2, *bbBVPts;
 
     AABBTests()
         : AABBTestData{}
@@ -87,13 +92,40 @@ class AABBTests : public AABBTestData
         bbT3 = new AABB(T3);
         bbB1 = new AABB(B1);
         bbB2 = new AABB(B2);
+
+        BV_Point L = {-1,-1,-1};
+        BV_Point U = {1,1,1};
+        bbBVPts = new AABB(L,U);
     }
 
     void TearDown() override
     {
         delete bbB1; delete bbB2;
         delete bbT1; delete bbT2;
-        delete bbT3;
+        delete bbT3; delete bbBVPts;
+        AABBTestData::TearDown();
+    }
+
+    ~AABBTests() = default;
+
+};
+*/
+
+class AABBTests : public AABBTestData
+{
+    public:
+    
+    AABB bbT1, bbT2, bbT3, bbB1,
+         bbB2, bbBVPts;
+
+    AABBTests()
+        : AABBTestData{},
+        bbT1{T1}, bbT2{T2}, bbT3{T3},
+        bbB1{B1}, bbB2{B2}, bbBVPts{L,U}
+    {}
+
+    void TearDown() override
+    {
         AABBTestData::TearDown();
     }
 
@@ -104,35 +136,53 @@ class AABBTests : public AABBTestData
 
 using DISABLED_AABBTests = AABBTests;
 
-
-TEST_F(AABBTests, mergeBoxes)
+TEST_F(DISABLED_AABBTests, mergeBoxesDeathTest)
 {
-    AABB* parentbox = AABB::merge(bbT2,bbT3);
-    ASSERT_NE(parentbox,nullptr);
+    //AABB* bbNull;
+    //ASSERT_DEATH(AABB::merge(bbT1,bbNull),"");
+}
+
+TEST_F(DISABLED_AABBTests, MergeBoxes)
+{
+    //AABB* parentbox = AABB::merge(bbT2,bbT3);
+    //ASSERT_NE(parentbox,nullptr);
+    //TODO: Add tests for properties of the new box.
+    //      (see BoxesOverlapvsContain test)
 }
 
 TEST_F(AABBTests, BoxesOverlapVsContain)
 {
     //contains means strictly contained
-    ASSERT_TRUE(bbT2->contains(bbT1));
-    ASSERT_FALSE(bbT1->contains(bbB1));
+    EXPECT_TRUE(bbT2.contains(bbT1));
+    EXPECT_FALSE(bbT1.contains(bbB1));
 
     //shared surface is considered overlap
-    ASSERT_TRUE(bbT1->overlaps(bbB1));
-    ASSERT_TRUE(bbT1->overlaps(bbB2));
-
-    //TODO: is this the behavior we really want?
+    EXPECT_TRUE(bbT1.overlaps(bbB1));
+    EXPECT_TRUE(bbT1.overlaps(bbB2));
+    //TODO: Is this the behavior we really want?
+    //      May need to add case(s) of
+    //      loose containment (share surface)
+    //      and/or not contained but share surfaces
 }
 
-/*
-TEST_F(AABBTests, Constructor_BV_Points)
+TEST_F(AABBTests, ConstructorAABBs)
 {
-    ASSERT_EQ(bbT1->getTypeBV(),BV_Type::AABB);
-}*/
+    AABB parentbox(bbT2,bbT3);
+}
 
-TEST_F(AABBTests, Constructor_FT_HSE)
+TEST_F(AABBTests, ConstructorBV_Points)
 {
-    ASSERT_EQ(bbT1->getTypeBV(),BV_Type::AABB);
+    ASSERT_DOUBLE_EQ(bbBVPts.centroid[0],0.0);
+    ASSERT_DOUBLE_EQ(bbBVPts.centroid[1],0.0);
+    ASSERT_DOUBLE_EQ(bbBVPts.centroid[2],0.0);
+}
+
+TEST_F(AABBTests, ConstructorFT_HSE)
+{
+    //See AABBTestData fixture
+    ASSERT_DOUBLE_EQ(bbT1.upper[0],9.0);
+    ASSERT_DOUBLE_EQ(bbT1.centroid[1],1.25);
+    ASSERT_DOUBLE_EQ(bbT1.lower[2],1.0);
 }
 
 //TODO: Degenerate Cases?:
@@ -143,7 +193,7 @@ TEST_F(AABBTests, Constructor_FT_HSE)
 //      
 //      2.  What about for bonds or tris that are parallel
 //          to two axis simultaneously and box is 2d?
-//          (volume = 0)
+//          (resulting in volume = 0)
 //      
 //      3.  Is volume even necessary, since using
 //          hilbert curve for BVH construction?
