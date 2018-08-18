@@ -87,6 +87,9 @@ class FT_BOND : public FT_HSE
         int num_pts() const override { return 2; }
 };
 
+//TODO: Add method to check if an FT_HSE (FT_BOND or FT_TRI)
+//      is FT_BOND's neighbor.
+
 //Wrapper class for FronTier TRI
 class FT_TRI : public FT_HSE
 {
@@ -117,7 +120,8 @@ class FT_TRI : public FT_HSE
         int num_pts() const override { return 3; }
 };
 
-
+//TODO: Add method to check if an FT_HSE (FT_BOND or FT_TRI)
+//      is FT_TRI's neighbor.
 
 
 

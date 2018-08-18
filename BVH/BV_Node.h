@@ -4,10 +4,10 @@
 #define BV_NODE_H
 
 /* Using AABB as the Bounding Volume for now.
- * will make BV_NodeBase and derived classes templates,
+ * will make BV_Node and derived classes templates,
  * or create a class heirarchy of BV types ... */
 
-class BV_NodeBase
+class BV_Node
 {
     private:
 
@@ -15,25 +15,25 @@ class BV_NodeBase
         //write copy constructor/assignment. Uncopyable BV
         //seems appropriate for now.
         
-        BV_NodeBase* parent{nullptr};
+        BV_Node* parent{nullptr};
         //may want to use a shared_ptr, but also may not
         //matter since there won't be any tree balancing
         //(at least I don't think there will be ...)
 
     public:
 
-        BV_NodeBase() = default;
-        virtual ~BV_NodeBase() = default;//{delete bv;}
+        BV_Node() = default;
+        virtual ~BV_Node() = default;//{delete bv;}
 
         //delete copy and move ops until there
         //is a good reason not to.
-        BV_NodeBase(const BV_NodeBase&) = delete;
-        BV_NodeBase& operator=(const BV_NodeBase&) = delete;
-        BV_NodeBase(BV_NodeBase&&) = delete;
-        BV_NodeBase& operator=(BV_NodeBase&&) = delete;
+        BV_Node(const BV_Node&) = delete;
+        BV_Node& operator=(const BV_Node&) = delete;
+        BV_Node(BV_Node&&) = delete;
+        BV_Node& operator=(BV_Node&&) = delete;
 
-        void setParent(BV_NodeBase* p) {parent = p;}
-        const BV_NodeBase* const getParent() const {return parent;}
+        void setParent(BV_Node* p) {parent = p;}
+        const BV_Node* const getParent() const {return parent;}
 
         virtual const AABB& getBV() const = 0;
         virtual const bool isLeaf() const = 0;
@@ -41,7 +41,7 @@ class BV_NodeBase
 };
 
 //has a FT_HSE* and does not have children
-class BV_Leaf : public BV_NodeBase
+class BV_Leaf : public BV_Node
 {
     private:
 
@@ -72,27 +72,27 @@ class BV_Leaf : public BV_NodeBase
 };
 
 //has children, does not have FT_HSE*.
-class BV_Node : public BV_NodeBase
+class BV_iNode : public BV_Node
 {
     private:
 
         AABB bv;
-        BV_NodeBase* left{nullptr};
-        BV_NodeBase* right{nullptr};
+        BV_Node* left{nullptr};
+        BV_Node* right{nullptr};
 
     public:
 
-        BV_Node() = default;
-        ~BV_Node() = default;
+        BV_iNode() = default;
+        ~BV_iNode() = default;
 
         //delete copy and move ops until there
         //is a good reason not to.
-        BV_Node(const BV_Node&) = delete;
-        BV_Node& operator=(const BV_Node&) = delete;
-        BV_Node(BV_Node&&) = delete;
-        BV_Node& operator=(BV_Node&&) = delete;
+        BV_iNode(const BV_iNode&) = delete;
+        BV_iNode& operator=(const BV_iNode&) = delete;
+        BV_iNode(BV_iNode&&) = delete;
+        BV_iNode& operator=(BV_iNode&&) = delete;
 
-        BV_Node(BV_NodeBase* lc, BV_NodeBase* rc)
+        BV_iNode(BV_Node* lc, BV_Node* rc)
             : bv{lc->getBV(),rc->getBV()},
             left{lc}, right{rc}
         {
@@ -101,8 +101,8 @@ class BV_Node : public BV_NodeBase
         }
 
         const AABB& getBV() const override {return bv;}
-        const BV_NodeBase* const getLeft() const {return left;}
-        const BV_NodeBase* const getRight() const {return right;}
+        const BV_Node* const getLeft() const {return left;}
+        const BV_Node* const getRight() const {return right;}
         const bool isLeaf() const override {return false;}
         const bool isRoot() const override {return false;}
         //TODO: Implement isRoot(); is dummy right now.
