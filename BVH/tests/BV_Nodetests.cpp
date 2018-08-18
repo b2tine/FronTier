@@ -76,7 +76,7 @@ class AABB_NodeTests : public BV_NodeTestData
     public:
     
     BV_Leaf  *l1, *l2, *l3, *l4, *l5;
-    BV_iNode *p1, *p2, *gp;
+    BV_Node *p1, *p2, *gp;
 
     AABB_NodeTests()
         : BV_NodeTestData{}
@@ -86,9 +86,9 @@ class AABB_NodeTests : public BV_NodeTestData
         l3 = new BV_Leaf(T3);
         l4 = new BV_Leaf(T4);
         l5 = new BV_Leaf(T5);
-        p1 = new BV_iNode(l1,l2);
-        p2 = new BV_iNode(l3,l4);
-        gp = new BV_iNode(p1,p2);
+        p1 = new BV_Node(l1,l2);
+        p2 = new BV_Node(l3,l4);
+        gp = new BV_Node(p1,p2);
     }
 
     void TearDown() override
@@ -106,20 +106,21 @@ class AABB_NodeTests : public BV_NodeTestData
 using DISABLED_AABB_NodeTests = AABB_NodeTests;
 
 
-TEST_F(DISABLED_AABB_NodeTests, GetSibling)
+TEST_F(AABB_NodeTests, GetSibling)
 {
-    //BV_Node* s = l1->getSibling();
+    auto s = l1->getSibling();
+    ASSERT_EQ(s,l2);
 }
 
-TEST_F(AABB_NodeTests, ConstructorBV_iNodeDeathTest)
+TEST_F(AABB_NodeTests, ConstructorBV_NodeDeathTest)
 {
     BV_Node* achild;
-    ASSERT_DEATH(BV_iNode* node = new BV_iNode(l1,achild),"");
+    ASSERT_DEATH(BV_Node* node = new BV_Node(l1,achild),"");
 }
 
 TEST_F(AABB_NodeTests, ConstructorBV_Node)
 {
-    BV_iNode* p1 = new BV_iNode(l1,l2);
+    BV_Node* p1 = new BV_Node(l1,l2);
     ASSERT_NE(p1->getLeft(),nullptr);
     ASSERT_EQ(l1->getParent(),p1);
     ASSERT_EQ(l2->getParent(),p1);

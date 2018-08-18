@@ -57,14 +57,11 @@ class AABB
         //BV_Point centroid;
 
         AABB() = default;
+        AABB(const AABB&) = default;
+        AABB& operator=(const AABB&) = default;
+        AABB(AABB&&) = default;
+        AABB& operator=(AABB&&) = default;
         ~AABB() = default;
-
-        //Delete copy and move ops until there
-        //is a good reason not to.
-        AABB(const AABB&) = delete;
-        AABB& operator=(const AABB&) = delete;
-        AABB(AABB&&) = delete;
-        AABB& operator=(AABB&&) = delete;
 
         explicit AABB(FT_HSE*);
         AABB(const AABB&,const AABB&);

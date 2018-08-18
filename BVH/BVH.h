@@ -9,7 +9,7 @@ class BVH
 {
     private:
         
-        BV_iNode* root{nullptr};
+        BV_Node* root{nullptr};
 
     public:
 
@@ -23,10 +23,10 @@ class BVH
         BVH(BVH&&) = delete;
         BVH& operator=(BVH&&) = delete;
 
-        const BV_iNode* const getRoot() const {return root;}
+        const BV_Node* const getRoot() const {return root;}
 
         static BV_Leaf* createLeaf(FT_HSE* h);
-        static BV_iNode* createNode(BV_Node* lc, BV_Node* rc);
+        static BV_Node* createNode(BV_Node* lc, BV_Node* rc);
 
 };
 
