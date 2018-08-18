@@ -98,17 +98,17 @@ struct BV_HilberSortingTraits
 
     Less_x_3 less_x_3_object() const
     {
-        return Less_x_3;
+        return Less_x_3();
     }
 
     Less_y_3 less_y_3_object() const
     {
-        return Less_y_3;
+        return Less_y_3();
     }
 
     Less_z_3 less_z_3_object() const
     {
-        return Less_z_3;
+        return Less_z_3();
     }
 };
 

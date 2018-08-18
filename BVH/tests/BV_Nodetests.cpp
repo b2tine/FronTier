@@ -1,19 +1,19 @@
 #include "gmock/gmock.h"
 #include "../BV_Node.h"
 
-class BV_NodeTestData : public ::testing::Test
+class AABB_NodeTests : public ::testing::Test
 {
     protected:
 
-    TRI *t1, *t2, *t3, *t4,*t5;
-    POINT *a, *b, *c, *d, *e, *f, *g;
+    static TRI *t1, *t2, *t3, *t4,*t5;
+    static POINT *a, *b, *c, *d, *e, *f, *g;
 
-    FT_TRI *T1, *T2, *T3, *T4, *T5;
+    static FT_TRI *T1, *T2, *T3, *T4, *T5;
 
-    //can probably make this a static StartUp/TearDown method
-    //in the derived class fixture to share the resources.
-    //Do it when compilation/run time slowdown observed..
-    BV_NodeTestData()
+    BV_Leaf  *l1, *l2, *l3, *l4, *l5;
+    BV_Node *p1, *p2, *gp;
+
+    static void SetUpTestCase()
     {
         a = new POINT;         b = new POINT;
         Coords(a)[0] = 0.0;    Coords(b)[0] = 1.0;
@@ -55,7 +55,7 @@ class BV_NodeTestData : public ::testing::Test
         T5 = new FT_TRI(t5);    //T6 = new FT_TRI(t6);
     }
 
-    virtual void TearDown()
+    static void TearDownTestCase()
     {
         delete t1; delete t2; delete t3;
         delete t4; delete t5;
@@ -66,20 +66,7 @@ class BV_NodeTestData : public ::testing::Test
         delete g;
     }
 
-    virtual ~BV_NodeTestData() = default;
-
-};
-
-//AABB is currently the only BV type
-class AABB_NodeTests : public BV_NodeTestData
-{
-    public:
-    
-    BV_Leaf  *l1, *l2, *l3, *l4, *l5;
-    BV_Node *p1, *p2, *gp;
-
-    AABB_NodeTests()
-        : BV_NodeTestData{}
+    void SetUp() override
     {
         l1 = new BV_Leaf(T1);
         l2 = new BV_Leaf(T2);
@@ -96,14 +83,33 @@ class AABB_NodeTests : public BV_NodeTestData
         delete l1; delete l2;
         delete l3; delete l4; delete l5;
         delete p1; delete p2; delete gp;
-        BV_NodeTestData::TearDown();
     }
 
     ~AABB_NodeTests() = default;
-
 };
 
+TRI* AABB_NodeTests::t1 = nullptr;
+TRI* AABB_NodeTests::t2 = nullptr;
+TRI* AABB_NodeTests::t3 = nullptr;
+TRI* AABB_NodeTests::t4 = nullptr;
+TRI* AABB_NodeTests::t5 = nullptr;
+POINT* AABB_NodeTests::a = nullptr;
+POINT* AABB_NodeTests::b = nullptr;
+POINT* AABB_NodeTests::c = nullptr;
+POINT* AABB_NodeTests::d = nullptr;
+POINT* AABB_NodeTests::e = nullptr;
+POINT* AABB_NodeTests::f = nullptr;
+POINT* AABB_NodeTests::g = nullptr;
+FT_TRI* AABB_NodeTests::T1 = nullptr;
+FT_TRI* AABB_NodeTests::T2 = nullptr;
+FT_TRI* AABB_NodeTests::T3 = nullptr;
+FT_TRI* AABB_NodeTests::T4 = nullptr;
+FT_TRI* AABB_NodeTests::T5 = nullptr;
+
+
+
 using DISABLED_AABB_NodeTests = AABB_NodeTests;
+
 
 
 TEST_F(AABB_NodeTests, GetSibling)
