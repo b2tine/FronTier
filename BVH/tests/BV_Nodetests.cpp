@@ -3,7 +3,7 @@
 
 class BV_NodeTestData : public ::testing::Test
 {
-    public:
+    protected:
 
     TRI *t1, *t2;
     POINT *a, *b, *c, *d, *e, *f;

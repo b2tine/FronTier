@@ -1,8 +1,6 @@
 #ifndef FT_HSE_H
 #define FT_HSE_H
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/hilbert_sort.h>
 #include <algorithm>
 #include <iostream>
 #include <cassert>
@@ -23,11 +21,10 @@ class FT_HSE
         FT_HSE(FT_HSE&&) = delete;
         FT_HSE& operator=(FT_HSE&&) = delete;
 
-        virtual int num_pts() const = 0;
         virtual double max_coord(int) const = 0;
         virtual double min_coord(int) const = 0;
         virtual POINT* Point_of_hse(int) const = 0;
-
+        virtual int num_pts() const = 0;
 };
 
 //Wrapper class for FronTier POINT
@@ -51,7 +48,8 @@ class FT_POINT : public FT_HSE
 
         //NOTE: point is a shallow copy of p
         explicit FT_POINT(POINT* p)
-            : point{p} {}
+            : point{p}
+        {}
 
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;
@@ -80,7 +78,8 @@ class FT_BOND : public FT_HSE
         
         //NOTE: bond is a shallow copy of p
         explicit FT_BOND(BOND* b)
-            : bond{b} {}
+            : bond{b}
+        {}
 
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;
@@ -109,7 +108,8 @@ class FT_TRI : public FT_HSE
         
         //NOTE: tri is a shallow copy of t
         explicit FT_TRI(TRI* t)
-            : tri{t} {}
+            : tri{t}
+        {}
 
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;

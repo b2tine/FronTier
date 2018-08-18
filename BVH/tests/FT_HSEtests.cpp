@@ -6,30 +6,30 @@ class FT_POINT_TESTS : public ::testing::Test
     protected:
 
     POINT* a;
-    FT_POINT* p;
+    FT_POINT* A;
 
     FT_POINT_TESTS()
         : a{new POINT}
     {
-        Coords(a)[0] = 1.0;
-        Coords(a)[1] = 0.0;
-        Coords(a)[2] = 4.0;
-        p = new FT_POINT(a);
+        Coords(a)[0] = 1.0;//     Coords(b)[0] = 1.0;
+        Coords(a)[1] = 0.0;//     Coords(b)[0] = 1.0;
+        Coords(a)[2] = 4.0;//     Coords(b)[0] = 1.0;
+        A = new FT_POINT(a);//    B = new FT_POINT(b);
     }
 
     void TearDown() override
     {
-        delete a;
-        delete p;
+        delete a;   delete A;
+        //delete b;   delete B;
     }
 
 };
 
+using DISABLED_FT_POINT_TESTS = FT_POINT_TESTS;
 
 TEST_F(FT_POINT_TESTS, PointOfHse)
 {
-    POINT* b = p->Point_of_hse(0);
-
+    POINT* b = A->Point_of_hse(0);
     ASSERT_DOUBLE_EQ(Coords(b)[0],1.0);
     ASSERT_DOUBLE_EQ(Coords(b)[1],0.0);
     ASSERT_DOUBLE_EQ(Coords(b)[2],4.0);
@@ -37,14 +37,14 @@ TEST_F(FT_POINT_TESTS, PointOfHse)
 
 TEST_F(FT_POINT_TESTS, MaxCoordEqualMinCoord)
 {
-    ASSERT_DOUBLE_EQ(p->min_coord(0),p->max_coord(0));
-    ASSERT_DOUBLE_EQ(p->min_coord(2),4.0);
+    ASSERT_DOUBLE_EQ(A->min_coord(0),A->max_coord(0));
+    ASSERT_DOUBLE_EQ(A->min_coord(2),A->max_coord(2));
 }
 
 TEST_F(FT_POINT_TESTS, OutOfRangeDeathTest)
 {
-    ASSERT_DEATH(p->Point_of_hse(1),"");
-    ASSERT_DEATH(p->Point_of_hse(-1),"");
+    ASSERT_DEATH(A->Point_of_hse(1),"");
+    ASSERT_DEATH(A->Point_of_hse(-1),"");
 }
 
 //////////////////////////////////////////////////////

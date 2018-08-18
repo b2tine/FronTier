@@ -20,28 +20,41 @@
  *      
 */
 
+#include "BV_Point.h"
 #include "FT_HSE.h"
 
 #ifndef BV_H
 #define BV_H
 
-#include <vector>
+//#include <vector>
 
 
 enum class BV_Type {AABB, OBB, KDOP, SPHERE};
-using BV_Point = std::vector<double>;
+
+//using BV_Point = std::vector<double>;
+/*
+ * Note: BV_Point is now its own class that
+ *      is compatible with as a key type in
+ *      std::map<key,val>.
+ *
+ *      TODO: implement functors needed for
+ *      compatability with the CGAL function
+ *      hilbert_sort().
+ *
+ *      If we end up implementing our own
+ *      hilbert_sort() we will probably go
+ *      back to using a std::vector<double>.
+ *
+ */
 
 //Axis Aligned Bounding Box (AABB)
 class AABB
 {
-    //TODO: Should data be private? May be overkill
-    //      since already private inside BV_Nodes
-    
     public:
 
         BV_Point lower;
         BV_Point upper;
-        BV_Point centroid;
+        //BV_Point centroid;
 
         AABB() = default;
         ~AABB() = default;
@@ -54,13 +67,14 @@ class AABB
         AABB& operator=(AABB&&) = delete;
 
         explicit AABB(FT_HSE*);
-        AABB(const BV_Point&,const BV_Point&);
         AABB(const AABB&,const AABB&);
+        AABB(const BV_Point&,const BV_Point&);
 
-        BV_Type getTypeBV() const;
+        const BV_Point centroid() const;
         bool contains(const AABB&) const;
         bool overlaps(const AABB&) const;
-        //void inflate() override;
+        //void inflate();
+        BV_Type getTypeBV() const;
         void print() const;
 };
 

@@ -4,7 +4,7 @@
 
 class AABBTestData : public ::testing::Test
 {
-    public:
+    protected:
 
     TRI *t1, *t2, *t3;
     BOND *s1, *s2;
@@ -125,16 +125,16 @@ TEST_F(AABBTests, ConstructorAABBs)
 
 TEST_F(AABBTests, ConstructorBV_Points)
 {
-    ASSERT_DOUBLE_EQ(bbBVPts.centroid[0],0.0);
-    ASSERT_DOUBLE_EQ(bbBVPts.centroid[1],0.0);
-    ASSERT_DOUBLE_EQ(bbBVPts.centroid[2],0.0);
+    BV_Point centroid = bbBVPts.centroid();
+    ASSERT_DOUBLE_EQ(centroid[0],0.0);
+    ASSERT_DOUBLE_EQ(centroid[1],0.0);
+    ASSERT_DOUBLE_EQ(centroid[2],0.0);
 }
 
 TEST_F(AABBTests, ConstructorFT_HSE)
 {
-    //See AABBTestData fixture
+    //See AABBTestData fixture (superclass of AABBtests)
     ASSERT_DOUBLE_EQ(bbT1.upper[0],9.0);
-    ASSERT_DOUBLE_EQ(bbT1.centroid[1],1.25);
     ASSERT_DOUBLE_EQ(bbT1.lower[2],1.0);
 }
 

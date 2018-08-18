@@ -62,7 +62,8 @@ class BV_Leaf : public BV_NodeBase
 
         //NOTE: hse is a shallow copy of h
         explicit BV_Leaf(FT_HSE* h)
-            : bv{h}, hse{h} {}
+            : bv{h}, hse{h}
+        {}
 
         const AABB& getBV() const override {return bv;}
         const FT_HSE* const getHse() const {return hse;}
@@ -104,7 +105,10 @@ class BV_Node : public BV_NodeBase
         const BV_NodeBase* const getRight() const {return right;}
         const bool isLeaf() const override {return false;}
         const bool isRoot() const override {return false;}
-        //TODO: implement isRoot(); is dummy right now
+        //TODO: Implement isRoot(); is dummy right now.
+        //
+        //      Note: This should only be called after
+        //      BVH construction has been completed.
 };
 
 
