@@ -3,6 +3,10 @@
 
 #include <CGAL/hilbert_sort.h>
 
+//TODO: figure out good way to test the hilbert_sort feature
+
+
+
 //Point type that can be used in std::map 
 class BV_Point
 {
@@ -61,6 +65,52 @@ class BV_Point
 //additional structures allowing BV_Point to
 //be used in the CGAL function hilbert_sort();
 
-//TODO: figure out good way to test the hilber_sort feature
+struct BV_LessX
+{
+    bool operator()(const BV_Point& p, const BV_Point& q) const
+    {
+        return p[0] < q[0];
+    }
+};
+
+struct BV_LessY
+{
+    bool operator()(const BV_Point& p, const BV_Point& q) const
+    {
+        return p[1] < q[1];
+    }
+};
+
+struct BV_LessZ
+{
+    bool operator()(const BV_Point& p, const BV_Point& q) const
+    {
+        return p[2] < q[2];
+    }
+};
+
+struct BV_HilberSortingTraits
+{
+    using Point_3 = BV_Point;
+    using Less_x_3 = BV_LessX;
+    using Less_y_3 = BV_LessY;
+    using Less_z_3 = BV_LessZ;
+
+    Less_x_3 less_x_3_object() const
+    {
+        return Less_x_3;
+    }
+
+    Less_y_3 less_y_3_object() const
+    {
+        return Less_y_3;
+    }
+
+    Less_z_3 less_z_3_object() const
+    {
+        return Less_z_3;
+    }
+};
+
 
 #endif

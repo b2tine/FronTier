@@ -37,7 +37,7 @@ enum class BV_Type {AABB, OBB, KDOP, SPHERE};
  *      is compatible with as a key type in
  *      std::map<key,val>.
  *
- *      TODO: implement functors needed for
+ *      TODO: Test functors needed for
  *      compatability with the CGAL function
  *      hilbert_sort().
  *
