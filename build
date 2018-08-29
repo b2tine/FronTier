@@ -582,6 +582,38 @@ function config_lambda {
     PMAKE="-j2"
 }
 
+function config_gradOne {
+    export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
+    export F77="mpif77 ${OPTS}"
+    export CC="mpicc ${OPTS} ${COPTS_GCC}"
+
+    export scriptotherlibs="${scriptotherlibs} /usr/lib/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3"
+
+    #export PETSC_INCLUDE="-I/usr/include/petsc"
+    #export PETSC_LIB="-L/usr/lib -lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
+
+    if [[ -n "$WITHHYPRE" ]]; then
+        CONF="$CONF --with-hypre"
+        export USEHYPRE="yes"
+    else
+        export USEHYPRE="no"
+    fi
+
+    if [[ -n "$WITHGPU" ]]; then
+        CONF="$CONF --with-gpu"
+        export USEGPU="yes"
+    else
+        export USEGPU="no"
+    fi
+
+    #if [[ -n "$WITHHDF" ]]; then
+     #   CONF="$CONF --with-hdf=/usr"
+    #fi
+
+    export CONF="-with-devel ${CONF} --with-gd=/usr"
+    PMAKE="-j2"
+}
+
 #################
 
 function config_delta {
@@ -987,6 +1019,9 @@ elif [[ "${HOST}" == "sirius" ]]; then
 elif [[ "${HOST}" == "alpha" ]]; then
     echo "Computer is recognized as alpha."
     config_alpha
+elif [[ "${HOST}" == "grad01" ]]; then
+    echo "Computer is recognized as grad01."
+    config_gradOne
 elif [[ "${HOST}" == "intruder.cluster" ]]; then
     echo "Computer is recognized as intruder cluster."
     config_intruder
