@@ -8,6 +8,9 @@
  * or create a class heirarchy of BV types ... */
 
 
+//NOTE: Scott says concrete classes should not inherit from other concrete classes (item 33 of "More Effective C++") ... first design may be better.
+
+
 //Does not have FT_HSE*.
 class BV_Node
 {

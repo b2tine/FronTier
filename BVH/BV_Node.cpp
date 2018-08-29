@@ -8,6 +8,7 @@
 BV_Node::BV_Node(BV_Node* lc, BV_Node* rc)
 {
     assert(lc != nullptr && rc != nullptr);
+
     setLeft(lc);    lc->setParent(this);
     setRight(rc);   rc->setParent(this);
     bv = AABB(lc->getBV(),rc->getBV());
