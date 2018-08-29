@@ -236,7 +236,7 @@ AC_ARG_WITH(mpich,[  --with-mpich=PFX              Support for the mpich library
 if test $mpichh = 'yes';then
         mpichincs=" -I"${mpichprefix}"/include -D__MPI__ "
         scriptotherlibsinc=${scriptotherlibsinc}" -L"${mpichprefix}"/lib "
-        scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichxx -lpthread"
+        scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichcxx -lpthread"
 fi
 
 AC_ARG_WITH(petsc_dir, [ --with-petsc=path                 compile with petsc support], [petsc_dir=$withval iFluid="cd iFluid && \$(MAKE)"], [petsc_dir="" iFluid=""])
