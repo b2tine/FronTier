@@ -303,8 +303,8 @@ function config_vogon {
 #################
 function config_alpha {
     export CXX="mpic++ ${OPTS} ${COPTS_GCC}"
-    export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
+    export F77="mpif77 ${OPTS}"
 
     export scriptotherlibs="${scriptotherlibs} /usr/lib/x86_64-linux-gnu/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3"
 
@@ -337,7 +337,7 @@ function config_alpha {
         CONF="${CONF} --with-hdf=/usr/local/pkg/hdf"
     fi
 
-    export CONF="--with-mpi=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-devel ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-devel ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
     PMAKE="-j2"
 }
 

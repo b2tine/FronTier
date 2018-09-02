@@ -218,7 +218,7 @@ AS_HELP_STRING([--enable-itaps],[compiles in extra data into intfc structure nee
 
 AC_ARG_ENABLE(imesh,
 AS_HELP_STRING([--enable-imesh],[compiles in extra data into intfc structure needed for iMesh]),
-[if (test "$enableval" = "yes") ; then
+[if (test ${enableval} = "yes") ; then
         itapsd='-DIMESH'
  fi
 ])
@@ -226,37 +226,49 @@ AS_HELP_STRING([--enable-imesh],[compiles in extra data into intfc structure nee
 
 ####################################################
 # check generic for mpich
-AC_ARG_WITH(mpich,[  --with-mpich=PFX              Support for the mpich library, add the =PFX where PFX is the path to mpich, if it not in a system location,FronTier may suport other mpi implementations, that can put here also.],[mpichprefix=$withval mpichh="yes"],[mpichh="no"])
-if test $mpichh = 'yes';then
+AC_ARG_WITH(mpich,[  --with-mpich=PFX              Support for the mpich library, add the =PFX where PFX is the path to mpich, if it not in a system location,FronTier may suport other mpi implementations, that can put here also.],[mpichprefix=${withval} mpichh="yes"],[mpichh="no"])
+if test ${mpichh} = 'yes';then
         mpichincs=" -I"${mpichprefix}"/include -D__MPI__ "
         scriptotherlibsinc=${scriptotherlibsinc}" -L"${mpichprefix}"/lib "
         scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichcxx -lpthread"
 fi
 
-AC_ARG_WITH(petsc_dir, [ --with-petsc=path                 compile with petsc support], [petsc_dir=$withval iFluid="cd iFluid && \$(MAKE)"], [petsc_dir="" iFluid=""])
-if test "$petscdir" = ""; then
-    echo "PETSC not enabled, cannot build iFluid"
+AC_ARG_WITH(petsc_dir, [ --with-petsc=path                 compile with petsc support], [petsc_dir=${withval} iFluid="cd iFluid && \$(MAKE)"], [petsc_dir="" iFluid=""])
+AC_ARG_WITH(petsc_inc,[  --with-petsc-include=path              Support for the PETSc includes],[petsc_inc=${withval}],[petsc_inc=""])
+AC_ARG_WITH(petsc_lib,[  --with-petsc-lib=path              Support for the PETSc library],[petsc_lib=${withval}],[petsc_lib=""])
+if test ${petsc_dir} = ""; then
+        if test ${petsc_inc} = "" || test ${petsc_lib} = ""; then
+            echo "PETSc is not enabled"
+            echo "iFluid Module is disabled"
+        else
+            echo "PETSc enabled"
+            echo "iFluid Module enabled"
+            AC_SUBST(PETSC_DIR,${petsc_dir})
+            AC_SUBST(PETSC_INCLUDE,${petsc_inc})
+            AC_SUBST(PETSC_LIB,${petsc_lib})
+        fi
 else
-    if test $mpichh = 'no' -a $ompi = 'no' -a $mpi = 'no' ;then
+    if test ${mpichh} = 'no' -a ${ompi} = 'no' -a ${mpi} = 'no' ;then
         echo "Cannot enable PETSC without mpi"
-        petscdir=""
+        petsc_dir=""
         iFluid=""
     else
-        echo "PETSC enabled"
-	AC_SUBST(PETSC_DIR,${petsc_dir})
-	AC_SUBST(PETSC_ARCH,${PETSC_ARCH})
-	AC_SUBST(PETSC_LIB,${PETSC_LIB})
-	AC_SUBST(PETSC_INCLUDE,${PETSC_INCLUDE})
-       	
+        echo "PETSC enabled, petsc_dir = ${petsc_dir}"
+        echo "iFluid Module enabled"
+        AC_SUBST(PETSC_DIR,${petsc_dir})
+	    AC_SUBST(PETSC_ARCH,${PETSC_ARCH})
+	    AC_SUBST(PETSC_INCLUDE,${PETSC_INCLUDE})
+	    AC_SUBST(PETSC_LIB,${PETSC_LIB})
     fi
 fi
+AC_SUBST(iFluid, ${iFluid})
 
 Collision=""
-AC_ARG_WITH(cgal_dir,[  --with-cgal-dir=path             Support for the CGAL directory],[cgal_dir=$withval],[cgal_dir=""])
-AC_ARG_WITH(cgal_include,[  --with-cgal-include=path              Support for the CGAL includes],[cgal_inc=$withval],[cgal_inc=""])
-AC_ARG_WITH(cgal_lib,[  --with-cgal-lib=path              Support for the CGAL library],[cgal_lib=$withval],[cgal_lib=""])
-if test "$cgal_dir" = ""; then
-        if test "$cgal_inc" = "" || test "$cgal_lib" = ""; then
+AC_ARG_WITH(cgal_dir,[  --with-cgal-dir=path             Support for the CGAL directory],[cgal_dir=${withval}],[cgal_dir=""])
+AC_ARG_WITH(cgal_include,[  --with-cgal-include=path              Support for the CGAL includes],[cgal_inc=${withval}],[cgal_inc=""])
+AC_ARG_WITH(cgal_lib,[  --with-cgal-lib=path              Support for the CGAL library],[cgal_lib=${withval}],[cgal_lib=""])
+if test ${cgal_dir} = ""; then
+        if test ${cgal_inc} = "" || test ${cgal_lib} = ""; then
             echo "CGAL is not enabled"
             echo "Collision Detection disabled"
         else
@@ -275,7 +287,6 @@ else
         AC_SUBST(CGAL_LIB,"${cgal_dir}/lib")
         Collision="cd Collision && \$(MAKE)"
 fi
-AC_SUBST(iFluid, ${iFluid})
 
 
 AC_ARG_WITH(boost_dir,[  --with-boost-dir              Support for the BOOST directory],[boost_dir=$withval],[boost_dir=""])
