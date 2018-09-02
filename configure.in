@@ -1,15 +1,10 @@
 AC_PREREQ(2.57)
 AC_INIT([FronTier],[1.0])
-#AC_ARG_PROGRAM
 AC_CONFIG_SRCDIR([src/intfc/array.h])
 AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_CANONICAL_BUILD 
 AC_PROG_AWK
-#echo "BUILD CPU=${build_cpu}"
-#echo "BUILD OS=${build_os}"
-
-#scriptotherlibs=" "
 
 AC_ARG_WITH(devel, [   --with-devel                Enables dependency tracking in examples for FronTier files],[ checklibs=FT_libs ] [ check_libs="" ] )
 
@@ -33,9 +28,9 @@ AC_ARG_WITH(base,[  --with-base                 Compilation of the Basic FronTie
 
 
 
-AC_ARG_WITH(gd,[  --with-gd=PFX             Links with gd library for 1d post processing],[scriptotherlibsinc=" -L$withval/lib "${scriptotherlibs} scriptotherlibs="-lgd "${scriptotherlibs} gdincs=" -D__GD__ -I"${withval}"/include "],[gdincs=""])
+AC_ARG_WITH(gd,[  --with-gd=PFX             Links with gd library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgd "${scriptotherlibs} gdincs=" -D__GD__ -I"${withval}"/include "],[gdincs=""])
 
-AC_ARG_WITH(gsl,[  --with-gsl=PFX             Links with gsl library for 1d post processing],[scriptotherlibsinc=" -L$withval/lib "${scriptotherlibs} scriptotherlibs="-lgsl "${scriptotherlibs} gslincs=" -D__GSL__ -I"${withval}"/include "],[gslincs=""])
+AC_ARG_WITH(gsl,[  --with-gsl=PFX             Links with gsl library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgsl "${scriptotherlibs} gslincs=" -D__GSL__ -I"${withval}"/include "],[gslincs=""])
 
 AC_ARG_WITH(gpu,[--with-gpu  Support GPU],[gpuincs=" -D__GPU__ " ],[gpuincs="" ])
 
@@ -229,9 +224,8 @@ AS_HELP_STRING([--enable-imesh],[compiles in extra data into intfc structure nee
 ])
     
 
-####################################################3
+####################################################
 # check generic for mpich
-#/////////////////////////////
 AC_ARG_WITH(mpich,[  --with-mpich=PFX              Support for the mpich library, add the =PFX where PFX is the path to mpich, if it not in a system location,FronTier may suport other mpi implementations, that can put here also.],[mpichprefix=$withval mpichh="yes"],[mpichh="no"])
 if test $mpichh = 'yes';then
         mpichincs=" -I"${mpichprefix}"/include -D__MPI__ "
@@ -308,9 +302,6 @@ AC_SUBST(iFluid, ${iFluid})
 
 
 #/////////////////////////////
-#ibasename='no'
-#idirname='no'
-# check for irix
 if test $build_os = "irix" || test $build_cpu = "irix" || test $build_vendor = "irix" || test $build_os = "IRIX" || test $build_cpu = "IRIX"|| test $build_vendor = "IRIX";then
 echo made it in
 AC_CHECK_LIB(gen,basename,[ibasename='yes'],[ibasename='no'])
@@ -363,30 +354,15 @@ noname=""
 echo not using name.h
 fi
 
-#########################################
 ##############################################################
 # Setting C++ as the compiler
 ###############################################################
-echo "Using C++"
-#AC_SUBST(ccft,$CXX)
 AC_SUBST(CC,$CC)
 AC_SUBST(CXX,$CXX)
 AC_SUBST(F77,$F77)
 AC_SUBST(F77_LIBS,$F77_LIBS)
 AC_SUBST(libext,"")
 cppflagss=""
-
-################################################################
-# Done checking for C++
-##########################################################
-
-###################################################################
-# FT build instructions
-#############################################################3#
-
-##############################################################
-# Done FT build instructions
-##############################################################
 
 ######################################################
 ##### CHANGING VARIBLES BASED ON ABOVE TESTS AND INPUT
@@ -454,7 +430,7 @@ ftlibdubug=" "
 optimization=$optimization 
 
 ######################################################################
-## The complete varibles as the are sent to thier parts of the code.
+## The complete varibles as the are sent to their parts of the code.
 #####################################################################
 
 # included in all code in: driver 
@@ -489,8 +465,6 @@ AC_SUBST(sn_ellip,$snyesorno)
 AC_SUBST(debugg,$debug)
 AC_SUBST(tsttyesornoo,$tsttyesorno)
 AC_SUBST(FFLAGS,$flagsss)
-#AC_SUBST(f77ft,$F77)
-#AC_SUBST(f77ft,"gfortran")
 AC_SUBST(ftlibincs,$scriptftlibincs)
 AC_SUBST(utilincs,$scriptutilincs)
 AC_SUBST(exampleincs,$scriptexampleincs)
@@ -504,9 +478,7 @@ ftbuild=./src/util/ftrules
 
 
 
-#AC_SUBST(AWK,"awk")
 # Write the makefiles
-
 if test $basecode = "full"; then
 filelist='Makefile 
 src/Makefile 
