@@ -6,33 +6,33 @@ AC_PROG_INSTALL
 AC_CANONICAL_BUILD 
 AC_PROG_AWK
 
-AC_ARG_WITH(devel, [   --with-devel                Enables dependency tracking in examples for FronTier files],[ checklibs=FT_libs ] [ check_libs="" ] )
+AC_PROG_CC(gcc gcc295 cc)
+AC_PROG_CXX
+AC_PROG_F77(gfortran)
+AC_LANG(C)
 
-AC_SUBST(devel, ${checklibs})
 
-# Checks for programs.
-AC_ARG_WITH(seaborg,[  --with-seaborg              Setup for seaborg],[seaborgg="yes"],[seaborgg="no"])
-if test $seaborgg = 'yes'; then
+AC_ARG_WITH(no-debugging,[  --with-no-debugging          Removes the -g option while compiling],[debug=" "],[debug=" -g "])
+
+AC_ARG_WITH([deptrack],[   --with-deptrack                Enables dependency tracking in examples for FronTier files],[ checklibs=FT_libs ] [ checklibs="" ] )
+
+AC_SUBST(devel,${checklibs})
+
+AC_ARG_WITH([seaborg],[  --with-seaborg              Setup for seaborg],[seaborgg="yes"],[seaborgg="no"])
+if test ${seaborgg} = 'yes'; then
         module add GNU
         module load gcc
 fi
 
-########################### BUILD GAS ##############################
-subgrid=" "
-rotsym=" "
-gascleann=" "
 basecode="full"
+AC_ARG_WITH([adv],[  --with-adv                 Compilation of the Advanced FronTier++ code ],[basecode="adv"],[])
+AC_ARG_WITH([base],[  --with-base                 Compilation of the Basic FronTier++ code ],[basecode="base"],[])
 
-AC_ARG_WITH(adv,[  --with-adv                 Compilation of the Advanced FronTier++ code ],[basecode="adv"],[])
-AC_ARG_WITH(base,[  --with-base                 Compilation of the Basic FronTier++ code ],[basecode="base"],[])
+AC_ARG_WITH([gd],[  --with-gd=PFX             Links with gd library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgd "${scriptotherlibs} gdincs=" -D__GD__ -I"${withval}"/include "],[gdincs=""])
 
+AC_ARG_WITH([gsl],[  --with-gsl=PFX             Links with gsl library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgsl "${scriptotherlibs} gslincs=" -D__GSL__ -I"${withval}"/include "],[gslincs=""])
 
-
-AC_ARG_WITH(gd,[  --with-gd=PFX             Links with gd library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgd "${scriptotherlibs} gdincs=" -D__GD__ -I"${withval}"/include "],[gdincs=""])
-
-AC_ARG_WITH(gsl,[  --with-gsl=PFX             Links with gsl library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgsl "${scriptotherlibs} gslincs=" -D__GSL__ -I"${withval}"/include "],[gslincs=""])
-
-AC_ARG_WITH(gpu,[--with-gpu  Support GPU],[gpuincs=" -D__GPU__ " ],[gpuincs="" ])
+AC_ARG_WITH([gpu],[--with-gpu  Support GPU],[gpuincs=" -D__GPU__ " ],[gpuincs="" ])
 
 if test "$gpuincs" = ""; then
     echo "GPU not enabled"
@@ -42,9 +42,12 @@ else
     AC_SUBST(USEGPU,${USEGPU})        
 fi
 
-AC_ARG_WITH(hypre,[--with-hypre  Support HYPRE],[hypreincs=" -D__HYPRE__ " ],[hypreincs="" ])
+#HYPRE's arg_with statement should be near the PETSc arg_with statement,
+#and it should get its own distinct linker flag, rather than tacking it onto
+#the PETSC linker flags inside functions of the build script (of all places!).
+AC_ARG_WITH([hypre],[--with-hypre  Support HYPRE],[hypreincs=" -D__HYPRE__ " ],[hypreincs="" ])
 
-if test "$hypreincs" = ""; then
+if test ${hypreincs} = ""; then
     echo "HYPRE not enabled"
     AC_SUBST(USEHYPRE,${USEHYPRE})        
 else
@@ -52,65 +55,43 @@ else
     AC_SUBST(USEHYPRE,${USEHYPRE})        
 fi
 
-############################ Compiler Checks #########################
-AC_PROG_CC(gcc gcc295 cc)
-AC_PROG_CXX
-AC_PROG_F77(gfortran)
-AC_LANG(C)
-############################ Compiler Checks Ends ####################
+AC_ARG_WITH([mpi], [ --with-mpi             generic MPI support. See manual.], [mpi=$withval ompincs=" -D__MPI__ "],[mpi="no"])
 
-
-
-
-
-AC_ARG_WITH(mpi, [ --with-mpi             generic MPI support. See manual.], [ mpi=$withval ompincs=" -D__MPI__ "],[ mpi="no"])
-
-AC_ARG_WITH(openmpi, [ --with-openmpi=path              use openmpi for MPI], [openmpi=$withval],[openmpi="no"])
-if test $openmpi != "no" ; then
+AC_ARG_WITH([openmpi], [ --with-openmpi=path              use openmpi for MPI], [openmpi=$withval],[openmpi="no"])
+if test ${openmpi} != "no" ; then
     ompincs=" -I"${openmpi}"/include -D__MPI__"
     scriptotherlibsinc=${scriptotherlibsinc} "-L"${openmpi}"/lib"
     scriptotherlibs=${scriptotherlibs} "-lmpi -lmpi_cxx -lpthread"
 fi
 
 
-AC_ARG_WITH(extra-incs,[  --with-extra-incs              a spot to put extra includes.],[extrai=$withval ],[extrai=" "])
+AC_ARG_WITH([extra-incs],[  --with-extra-incs              a spot to put extra includes.],[extrai=$withval ],[extrai=" "])
 
 AC_ARG_WITH(extra-libs,[  --with-extra-libs              a spot to put extra libs.],[extral=${withval} ],[extral=" " ])
 scriptotherlibs=${scriptotherlibs}${extral}
 
-AC_CHECK_HEADER(malloc.h,[malloch='yes'],[malloch='no'])
-systemincs=" "
-if test $malloch = 'no'; then
-                # darwin places malloc.h in malloc/malloc.h
-                AC_CHECK_HEADER(malloc/malloc.h,[mallochd='yes'],[mallochd='no'])
-                #systemincs=${systemincs}"-I/usr/include/malloc/ -I/usr/include/sys/"
-                systemincs=${systemincs}"-I/usr/include/malloc/ "
-                if test $mallochd = 'no'; then
-                        AC_MSG_ERROR([malloc.h cannot be found  please do something about this.])
-                
-                fi
-fi
- 
-AC_CHECK_FUNC(malloc,[malloc='yes'],[malloc='no'])
-                if test $malloc = 'no'; then
-                AC_MSG_ERROR([malloc cannot be found  please do something about this.])
-                fi
 
 #################################################
 ### TESTS TO BE PREFORMED FOR FRONTIER
 ################################################
 
-# checks for the function feenableexcept. If found -DHAS_FENV is set.
+AC_CHECK_HEADER([malloc.h],[malloch='yes'],[malloch='no'])
+systemincs=" "
+if test ${malloch} = 'no'; then
+    AC_CHECK_HEADER(malloc/malloc.h,[mallochd='yes'],[mallochd='no'])
+    systemincs=${systemincs}"-I/usr/include/malloc/ "
+    if test $mallochd = 'no'; then
+        AC_MSG_ERROR([malloc.h cannot be found  please do something about this.])
+    fi
+fi
+ 
+AC_CHECK_FUNC([malloc],[malloc='yes'],[malloc='no'])
+                if test ${malloc} = 'no'; then
+                AC_MSG_ERROR([malloc cannot be found  please do something about this.])
+                fi
 
-AC_CHECK_LIB(m,feenableexcept,[fenv=" -DHAS_FENV "],[fenv=""])
-
-#done feenableeexpcept test
-
-# checks for libieee
-AC_CHECK_LIB(ieee,main,[],[])
-AC_CHECK_LIB(hdf,main,[scriptotherlibs=${scriptotherlibs}" -lhdf " testhdff='yes'],[testhdff='no'])
-
-#done with ieee check
+AC_CHECK_LIB([m],[feenableexcept],[fenv=" -DHAS_FENV "],[fenv=""])
+AC_CHECK_LIB([ieee],[main],[],[])
 
 testmpi="no"
 mpiprexif="no"
@@ -119,113 +100,55 @@ testovertureprefix="neither"
 libover="neither"
 app="neither"
 testappprefix="neither"
-# check for overture
 
-AC_ARG_WITH(hdf,[  --with-hdf              Support for the hdf library],[hdffprefix=$withval hdff="yes"],[hdff="no"])
-if test $hdff = 'yes';then
-        hdfincs=" -I"${hdffprefix}"/include -DUSE_HDF "
+#################################################
+
+
+#This check for HDF should be done inside the hdf arg with blocks below if it is even done at all.
+#AC_SEARCH_LIBS is generally the  preferred choice for this type of test in order to avoid
+#function name collisions with the C standard library.
+#Speaking of which, how does the function main, below, not collide with C's main function?.
+AC_CHECK_LIB([hdf],[main],[scriptotherlibs=${scriptotherlibs}" -lhdf " testhdff='yes'],[testhdff='no'])
+#Good chance this isn't actually doing anything because hdf has split into versions
+#4 and 5 and will not be found in the system libraries.
+
+
+####################################################
+# HDF
+
+AC_ARG_WITH([hdf],[  --with-hdf              Support for the hdf library],[hdffprefix=${withval} hdff="yes"],[hdff="no"])
+if test ${hdff} = 'yes';then
+        hdfincs=" -I"${hdffprefix}"/include -DUSE_HDF4 "
         scriptotherlibsinc=${scriptotherlibsinc}" -L/usr/lib -L"${hdffprefix}"/lib "
         scriptotherlibs=${scriptotherlibs}" -lmfhdf -ldf -ljpeg -lz "        
 
 fi
-AC_ARG_WITH(hdf5,[  --with-hdf5              Support for the hdf5 library],[hdff5prefix=$withval hdff5="yes"],[hdff5="no"])
-if test $hdff5 = 'yes';then
-        hdf5incs=" -I"${hdff5prefix}"/include -DUSE_HDF5 "
-        scriptotherlibsinc=${scriptotherlibsinc}" -L"${hdff5prefix}"/lib "
-        scriptotherlibs=${scriptotherlibs}" -lhdf5"        
 
-fi
+AC_ARG_WITH([hdf5_dir],[  --with-hdf5-dir=path              Support for the hdf5 library],[hdf5_dir=${withval}],[hdf5_dir=""])
+AC_ARG_WITH([hdf5_inc],[  --with-hdf5-include=path              Support for the HDF5 includes],[hdf5_inc=${withval}],[hdf5_inc=""])
+AC_ARG_WITH([hdf5_lib],[  --with-hdf5-lib=path              Support for the HDF5 library],[hdf5_lib=${withval}],[hdf5_lib=""])
 
-AC_ARG_WITH(overture-prefix,[  --with-overture-prefix=PFX    Prefix where overture is installed],[testovertureprefix="yes" overtureprefix=$withval],[testovertureprefix="no"])
-
-if test $testovertureprefix = 'no' && test $libover = 'no'; then
-AC_MSG_ERROR([libOverture.so can not be found on this system, and its location is not specified. Please specify where it is using the --with-overture-prefix, or do not select the overture option.])
-fi
-
-AC_ARG_WITH(no-debugging,[  --with-no-debugging          Removes the -g option while compiling],[debug=" "],[debug=" -g "])
-
-
-##########################################################################################
-#              ||  all things required for overture.  ||
-#if overture is opted for and found, check for A++, Mesa, Xlibs, and hdf  and others
-
-if test $libover = 'yes' || test $testovertureprefix = 'yes'; then
-
-AC_CHECK_LIB(libApp,main,[app="yes"],[app="no"])
-##check for mesa on syste
-AC_CHECK_LIB(MesaGL,main,[mesagl="yes"],[mesagl="no"]) 
-AC_CHECK_LIB(MesaGLU,main,[mesaglu="yes"],[mesaglu="no"])
-AC_CHECK_LIB(GLw,main,[glw="yes"],[glw="no"])
-        sysmesa=yes
-        if test $mesagl = 'no' || test mesaglu = 'no'|| test GLw = 'no';then
-        sysmesa='no'
-        fi 
-### check for X libs 
-AC_PATH_X
-## check for hdf
-AC_CHECK_LIB(mfhdf,main,[mfhdf="yes"],[mfhdf="no"])
-AC_CHECK_LIB(df,main,[df="yes"],[df="no"])
-AC_CHECK_LIB(jpeg,main,[jpeg="yes"],[jpeg="no"])
-AC_CHECK_LIB(z,main,[z="yes"],[z="no"])
-syshdf=yes
-        if test $mfhdf = 'no' || test $df = 'no' || test $jpeg = 'no' || test $z = 'no';then
-        syshdf='no'
+if test ${hdf5_dir} = ""; then
+        if test ${hdf5_inc} = "" || test ${hdf5_lib} = ""; then
+            echo "HDF5 is not enabled"
+        else
+            echo "HDF5 is enabled"
+            hdf5incs=${hdf5_inc}" -DUSE_HDF5"
+            scriptotherlibsinc=${scriptotherlibsinc}" -L"${hdf5_lib}
+            scriptotherlibs=${scriptotherlibs}" -lhdf5"
         fi
-
-#now check for user specified.
-
-AC_ARG_WITH(overture-hdf-prefix,[  --with-overture-hdf-prefix=PFX    Prefix where HDF is installed (necessary for Overture)],[testhdfprefix="yes" hdfprefix=$withval],[testhdfprefix="no"])
-AC_ARG_WITH(overture-mesa-prefix,[  --with-overture-mesa-prefix=PFX    Prefix where mesa is installed (necessary for Overture)],[testmesaprefix="yes" mesaprefix=$withval],[testmesaprefix="no"])
-
-
-
-
-AC_ARG_WITH(overture-app-prefix,[  --with-overture-app-prefix=PFX    Prefix where A++ is installed(necessary for overture)],[testappprefix="yes" appprefix=$withval],[testappprefix="no"])
-
-
-# stop configure if neither is found.
-
-                if test $app = 'no' && test $testappprefix = 'no'; then
-                AC_MSG_ERROR([libApp.so can not be found on this system, and its location is not specified. It you are using overture, it is also necessary to use this library. Please specify where it is using the --with-overture-app-prefix, or do not select the overture option.])
-                fi
-                
-                if test $sysmesa = 'no' && test $testmesaprefix = 'no';then
-                AC_MSG_ERROR([parts of, or all of the mesa libraries are missing, and their location is not specified. If you are using overture it is necessary to use this library.  Please specify where it is using the --with-overture-mesa-prefix, or do not select the overture option.])
-                fi                
-                
-                if test $syshdf = 'no' && test $testhdfprefix = 'no';then
-                AC_MSG_ERROR([parts of, or all of the hdf libraries are missing, and their location is not specified. If you are using overture it is necessary to use this library.  Please specify where it is using the --with-overture-hdf-prefix, or do not select the overture option.])
-                fi
-
+else
+        echo "HDF5 enabled, hdf5_dir = ${hdf5_dir}"
+        hdf5incs="-I"${hdf5_dir}"/include -DUSE_HDF5"
+        scriptotherlibsinc=${scriptotherlibsinc}" -L"${hdf5_dir}"/lib "
+        scriptotherlibs=${scriptotherlibs}" -lhdf5"
 fi
 
-############################################################################################
-#done with overture
-########################### TSTT check #####################
 
-
-
-
-
-AC_ARG_ENABLE(itaps,
-AS_HELP_STRING([--enable-itaps],[compiles in extra data into intfc structure needed for all itaps components (iMesh)]),
-[if (test "$enableval" = "yes") ; then
-        itapsd=' -DIMESH '
-  else
-        itapsd=' '
-    fi
-    ])
-
-AC_ARG_ENABLE(imesh,
-AS_HELP_STRING([--enable-imesh],[compiles in extra data into intfc structure needed for iMesh]),
-[if (test ${enableval} = "yes") ; then
-        itapsd='-DIMESH'
- fi
-])
-    
 
 ####################################################
-# check generic for mpich
+# mpich
+
 AC_ARG_WITH(mpich,[  --with-mpich=PFX              Support for the mpich library, add the =PFX where PFX is the path to mpich, if it not in a system location,FronTier may suport other mpi implementations, that can put here also.],[mpichprefix=${withval} mpichh="yes"],[mpichh="no"])
 if test ${mpichh} = 'yes';then
         mpichincs=" -I"${mpichprefix}"/include -D__MPI__ "
@@ -233,35 +156,46 @@ if test ${mpichh} = 'yes';then
         scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichcxx -lpthread"
 fi
 
-AC_ARG_WITH(petsc_dir, [ --with-petsc=path                 compile with petsc support], [petsc_dir=${withval} iFluid="cd iFluid && \$(MAKE)"], [petsc_dir="" iFluid=""])
+
+####################################################
+# PETSc
+
+iFluid=""
+AC_ARG_WITH(petsc_dir, [ --with-petsc=path                 compile with petsc support], [petsc_dir=${withval}],[petsc_dir=""])
 AC_ARG_WITH(petsc_inc,[  --with-petsc-include=path              Support for the PETSc includes],[petsc_inc=${withval}],[petsc_inc=""])
 AC_ARG_WITH(petsc_lib,[  --with-petsc-lib=path              Support for the PETSc library],[petsc_lib=${withval}],[petsc_lib=""])
 if test ${petsc_dir} = ""; then
         if test ${petsc_inc} = "" || test ${petsc_lib} = ""; then
             echo "PETSc is not enabled"
-            echo "iFluid Module is disabled"
+            echo "Cannot build iFluid Module without PETSc"
         else
             echo "PETSc enabled"
             echo "iFluid Module enabled"
+            petsc_lib=${petsc_lib}" "${PETSC_LFLAGS}
             AC_SUBST(PETSC_DIR,${petsc_dir})
             AC_SUBST(PETSC_INCLUDE,${petsc_inc})
             AC_SUBST(PETSC_LIB,${petsc_lib})
+            iFluid="cd iFluid && \$(MAKE)"
         fi
 else
     if test ${mpichh} = 'no' -a ${ompi} = 'no' -a ${mpi} = 'no' ;then
-        echo "Cannot enable PETSC without mpi"
-        petsc_dir=""
-        iFluid=""
+        echo "Cannot use PETSc without a compatible MPI implementation"
+        echo "Cannot build iFluid Module without PETSc"
     else
-        echo "PETSC enabled, petsc_dir = ${petsc_dir}"
-        echo "iFluid Module enabled"
+        echo "PETSc enabled, petsc_dir = ${petsc_dir}"
+        echo "iFluid Module will be built"
         AC_SUBST(PETSC_DIR,${petsc_dir})
 	    AC_SUBST(PETSC_ARCH,${PETSC_ARCH})
 	    AC_SUBST(PETSC_INCLUDE,${PETSC_INCLUDE})
 	    AC_SUBST(PETSC_LIB,${PETSC_LIB})
+        iFluid="cd iFluid && \$(MAKE)"
     fi
 fi
 AC_SUBST(iFluid, ${iFluid})
+
+
+####################################################
+# CGAL
 
 Collision=""
 AC_ARG_WITH(cgal_dir,[  --with-cgal-dir=path             Support for the CGAL directory],[cgal_dir=${withval}],[cgal_dir=""])
@@ -289,6 +223,9 @@ else
 fi
 
 
+####################################################
+# Boost
+
 AC_ARG_WITH(boost_dir,[  --with-boost-dir              Support for the BOOST directory],[boost_dir=$withval],[boost_dir=""])
 if test "$boost_dir" = ""; then
         echo "BOOST is not enabled"
@@ -298,6 +235,10 @@ else
         AC_SUBST(BOOST_INCLUDE,"${BOOST_DIR}/include")
         AC_SUBST(BOOST_LIB,"${BOOST_DIR}/lib")
 fi
+
+
+####################################################
+# Cvode (SUNDIALS library)
 
 AC_ARG_WITH(cvodedir, [ --with-cvode-dir=path                 compile with cvode support], [cvodedir=$withval folding="cd folding && \$(MAKE)"], [cvodedir="" folding=""])
 if test "$cvodedir" = ""; then
@@ -309,51 +250,99 @@ else
     AC_SUBST(CVODE_INCLUDE,"${CVODE_INCLUDE}")
     AC_SUBST(CVODE_LIB,"${CVODE_LIB}")
 fi
-AC_SUBST(iFluid, ${iFluid})
 
 
-#/////////////////////////////
+
+##########################################################################################
+# Overture
+
+AC_ARG_WITH(overture-prefix,[  --with-overture-prefix=PFX    Prefix where overture is installed],[testovertureprefix="yes" overtureprefix=$withval],[testovertureprefix="no"])
+
+if test $testovertureprefix = 'no' && test $libover = 'no'; then
+AC_MSG_ERROR([libOverture.so can not be found on this system, and its location is not specified. Please specify where it is using the --with-overture-prefix, or do not select the overture option.])
+fi
+
+if test $libover = 'yes' || test $testovertureprefix = 'yes'; then
+
+AC_CHECK_LIB(libApp,main,[app="yes"],[app="no"])
+AC_CHECK_LIB(MesaGL,main,[mesagl="yes"],[mesagl="no"]) 
+AC_CHECK_LIB(MesaGLU,main,[mesaglu="yes"],[mesaglu="no"])
+AC_CHECK_LIB(GLw,main,[glw="yes"],[glw="no"])
+        sysmesa=yes
+        if test $mesagl = 'no' || test mesaglu = 'no'|| test GLw = 'no';then
+            sysmesa='no'
+        fi 
+AC_PATH_X
+AC_CHECK_LIB(mfhdf,main,[mfhdf="yes"],[mfhdf="no"])
+AC_CHECK_LIB(df,main,[df="yes"],[df="no"])
+AC_CHECK_LIB(jpeg,main,[jpeg="yes"],[jpeg="no"])
+AC_CHECK_LIB(z,main,[z="yes"],[z="no"])
+syshdf=yes
+        if test $mfhdf = 'no' || test $df = 'no' || test $jpeg = 'no' || test $z = 'no';then
+            syshdf='no'
+        fi
+
+AC_ARG_WITH(overture-hdf-prefix,[  --with-overture-hdf-prefix=PFX    Prefix where HDF is installed (necessary for Overture)],[testhdfprefix="yes" hdfprefix=$withval],[testhdfprefix="no"])
+AC_ARG_WITH(overture-mesa-prefix,[  --with-overture-mesa-prefix=PFX    Prefix where mesa is installed (necessary for Overture)],[testmesaprefix="yes" mesaprefix=$withval],[testmesaprefix="no"])
+AC_ARG_WITH(overture-app-prefix,[  --with-overture-app-prefix=PFX    Prefix where A++ is installed(necessary for overture)],[testappprefix="yes" appprefix=$withval],[testappprefix="no"])
+
+
+# stop configure if neither is found.
+
+                if test $app = 'no' && test $testappprefix = 'no'; then
+                AC_MSG_ERROR([libApp.so can not be found on this system, and its location is not specified. It you are using overture, it is also necessary to use this library. Please specify where it is using the --with-overture-app-prefix, or do not select the overture option.])
+                fi
+                
+                if test $sysmesa = 'no' && test $testmesaprefix = 'no';then
+                AC_MSG_ERROR([parts of, or all of the mesa libraries are missing, and their location is not specified. If you are using overture it is necessary to use this library.  Please specify where it is using the --with-overture-mesa-prefix, or do not select the overture option.])
+                fi                
+                
+                if test $syshdf = 'no' && test $testhdfprefix = 'no';then
+                AC_MSG_ERROR([parts of, or all of the hdf libraries are missing, and their location is not specified. If you are using overture it is necessary to use this library.  Please specify where it is using the --with-overture-hdf-prefix, or do not select the overture option.])
+                fi
+
+fi
+
+
+####################################################
+# Operating System dependent configuration
+
 if test $build_os = "irix" || test $build_cpu = "irix" || test $build_vendor = "irix" || test $build_os = "IRIX" || test $build_cpu = "IRIX"|| test $build_vendor = "IRIX";then
-echo made it in
+echo "made it in"
 AC_CHECK_LIB(gen,basename,[ibasename='yes'],[ibasename='no'])
 AC_CHECK_LIB(gen,dirname,[idirname='yes'],[idirname='no'])
 firix=" -DFTIRIX -common "
 scriptotherlibs=${scriptotherlibs}" -lgen -lmalloc "
 fi
-# done with irix
-
 echo  $build_os
-#check for linux
+
+#linux
 if test $build_os = "linux" || test $build_os = "linux-gnu";then
-echo using linux GCC optimizations when no debug option
-if test "$debug" = ""; then
-    optimization=" -O3 "
-else
-    optimization=" "
-fi
+    echo "using linux GCC optimizations when no debug option"
+    if test "$debug" = ""; then
+        optimization=" -O3 "
+    else
+        optimization=" "
+    fi
 fi
 
-#done with linux
+#darwin
 if test $build_os = "darwin7.8.0" || test $build_os = "darwin";then
-echo using  GCC optimizations
-optimization=" -O3 "
-scriptotherlibs=${scriptotherlibs}"  "
+    echo "using  GCC optimizations"
+    optimization=" -O3 "
 fi
 
-
-
-# check for sun
+#sun
 if test $build_os = "sun" || test $build_cpu = "sun" || test $build_vendor = "sun" || test $build_os = "SUN" || test $build_cpu = "SUN"|| test $build_vendor = "SUN";then
-scriptotherlibs=${scriptotherlibs}" -lmalloc "
-fsun=" -ext_names -w "
+    scriptotherlibs=${scriptotherlibs}" -lmalloc "
+    fsun=" -ext_names -w "
 fi
-# done with sun
 
 AC_CHECK_FUNC(basename,[basename='yes'],[basename='no'])
 AC_CHECK_FUNC(dirname,[dirname='yes'],[dirname='no'])
 
 if test $basename = 'no' && test $ibasename = 'no';then
-echo using alternate basename and dirname.
+echo "using alternate basename and dirname"
 AC_SUBST(name,name)
 noname=" -DNO_DIRNAME "
 echo ${scriptotherlibsinc}
@@ -435,10 +424,12 @@ fi
 
 ###################################
 #end overture
- 
+
+
 ftlibdubug=" "
 
 optimization=$optimization 
+
 
 ######################################################################
 ## The complete varibles as the are sent to their parts of the code.
@@ -450,17 +441,17 @@ optimization=$optimization
 #                          intfc 
 #                          tri
 
-scriptftlibincs=" -I.. -I../util"${debug}${cppflagss}${amrincs}${hdfincs}${hdf5incs}${mpichincs}${overinc}${appinc}${ftlibdubug}${itapsd}${fenv}${optimization}${over}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gdincs}${gpuincs}${gslincs}${hypreincs}${subgrid}
+scriptftlibincs=" -I.. -I../util"${debug}${cppflagss}${amrincs}${hdfincs}${hdf5incs}${mpichincs}${overinc}${appinc}${ftlibdubug}${itapsd}${fenv}${optimization}${over}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gdincs}${gpuincs}${gslincs}${hypreincs}
 
 
 #included in all code in: example and testfront 
-scriptexampleincs=${mpichincs}${amrincs}${hdfincs}${hdf5incs}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}${subgrid}
+scriptexampleincs=${mpichincs}${amrincs}${hdfincs}${hdf5incs}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
 
 #included in all code in: util/util
-scriptutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}${subgrid}
+scriptutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
 
 #include in all code in: util/dutil
-scriptdutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}${subgrid}
+scriptdutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
 
 flagsss=$FFLAGS${optimization}${firix}${fsun}${debug}${cppflagss}
 
@@ -481,8 +472,8 @@ AC_SUBST(utilincs,$scriptutilincs)
 AC_SUBST(exampleincs,$scriptexampleincs)
 AC_SUBST(dutilincs,$scriptdutilincs)
 AC_SUBST(CFLAGS,"")
-AC_SUBST(otherlibs,$scriptotherlibs)
 AC_SUBST(otherlibsinc,$scriptotherlibsinc)
+AC_SUBST(otherlibs,$scriptotherlibs)
 AC_SUBST(randy,$RANLIB)
 AC_SUBST_FILE(ftbuild)
 ftbuild=./src/util/ftrules

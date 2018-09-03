@@ -81,7 +81,7 @@ function config_ycshu {
         CONF="$CONF --with-gsl=/usr/local"
     fi
 
-    export CONF="--with-mpich=/usr/local/mpich --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/usr/local"
+    export CONF="--with-mpich=/usr/local/mpich --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr/local"
     PMAKE="-j2"
 }
 
@@ -139,7 +139,7 @@ function config_generic {
     export PETSC_DIR
 
     if [[ -n "$PETSC_DIR" ]]; then
-        export CONF="--with-petsc=$PETSC_DIR --with-devel ${CONF}"
+        export CONF="--with-petsc=$PETSC_DIR --with-deptrack ${CONF}"
 
         export PETSC_INCLUDE="-I${PETSC_DIR}/include -I${PETSC_DIR}/include"
 
@@ -202,7 +202,7 @@ function config_base {
     if [[ $WITHHDF -eq 1 ]]; then
         CONF="$CONF --with-hdf=/usr/local/pkg/hdf"
     fi
-    export CONF="--with-mpich=/usr/local/pkg/mpich2 -with-devel ${CONF}"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-deptrack ${CONF}"
     WITHHDF=0;
     WITHGD=0;
 
@@ -244,7 +244,7 @@ export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/usr"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr"
     PMAKE="-j2"
 }
 
@@ -268,7 +268,7 @@ function config_blade {
         CONF="$CONF --with-gsl=/home/netusers/visitor/xiaolin/newpkg/gd"
     fi
 
-    export CONF="--with-mpich=/home/netusers/visitor/xiaolin/newpkg/mpich --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/home/netusers/visitor/xiaolin/newpkg/gd"
+    export CONF="--with-mpich=/home/netusers/visitor/xiaolin/newpkg/mpich --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/home/netusers/visitor/xiaolin/newpkg/gd"
     PMAKE="-j2"
 }
 
@@ -296,7 +296,7 @@ function config_vogon {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-openmpi=/usr/local/pkg/openmpi --with-petsc=${PETSC_DIR} -with-devel ${CONF}"
+    export CONF="--with-openmpi=/usr/local/pkg/openmpi --with-petsc=${PETSC_DIR} --with-deptrack ${CONF}"
     PMAKE="-j2"
 }
 
@@ -306,18 +306,30 @@ function config_alpha {
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
 
-    export scriptotherlibs="${scriptotherlibs} /usr/lib/x86_64-linux-gnu/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3"
+    #export scriptotherlibs="${scriptotherlibs} /usr/lib/x86_64-linux-gnu/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3"
 
-    export PETSC_DIR=/usr/local/pkg/petsc
-    export PETSC_INCLUDE="-I${PETSC_DIR}/include"
-    export PETSC_LIB="-L${PETSC_DIR}/lib -lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
+    #export PETSC_DIR=/usr/local/pkg/petsc
+    #export PETSC_INCLUDE="-I${PETSC_DIR}/include"
+    #export PETSC_LIB="-L${PETSC_DIR}/lib -lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
     
-    export CVODE_DIR=/usr/local/pkg/cvode
-    export CVODE_INCLUDE="-I${CVODE_DIR}/include"
-    export CVODE_LIB="-L${CVODE_DIR}/lib"
-
+    PETSC_INCLUDE="-I/usr/lib/petscdir/3.7.7/x86_64-linux-gnu-real/include"
+    PETSC_LIBDIR="-L/usr/lib/petscdir/3.7.7/x86_64-linux-gnu-real/lib"
+    export PETSC_LFLAGS="-lpetsc_real -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
+        
     CGAL_INCLUDE="-I/usr/include"
     CGAL_LIB="-L/usr/lib/x86_64-linux-gnu"
+
+    HDF5_INCLUDE="-I/usr/include/hdf5/serial"
+    HDF5_LIB="-L/usr/lib/x86_64-linux-gnu/hdf5/serial"
+
+    ## Are we actually using this package in the folding module?
+    CVODE_DIR=/usr/local/pkg/cvode
+    CVODE_INCLUDE="-I${CVODE_DIR}/include"
+    CVODE_LIB="-L${CVODE_DIR}/lib"
+
+    #if [ $WITHHDF -eq 1 ]; then
+        #CONF="${CONF} --with-hdf=/usr/local/pkg/hdf"
+    #fi
 
     if [ $WITHHYPRE -eq 1 ]; then
         CONF="${CONF} --with-hypre"
@@ -333,11 +345,9 @@ function config_alpha {
 	    export USEGPU="no"
     fi
 
-    if [ $WITHHDF -eq 1 ]; then
-        CONF="${CONF} --with-hdf=/usr/local/pkg/hdf"
-    fi
-
-    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-devel ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
+    export CONF="--with-openmpi=/usr/lib/x86_64-linux-gnu/openmpi --with-petsc-include=${PETSC_INCLUDE} --with-petsc-lib=${PETSC_LIB} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-hdf5-include=${HDF5_INCLUDE} --with-hdf5-lib=${HDF5_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
+    #export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
+    
     PMAKE="-j2"
 }
 
@@ -377,7 +387,7 @@ function config_beta {
         CONF="$CONF --with-hdf=/usr/local/pkg/hdf"
     fi
 
-    export CONF="--with-mpi --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/usr/local/pkg/gd --with-cgal=${CGAL_DIR} --with-cvode=${CVODE_DIR}"
+    export CONF="--with-mpi --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr/local/pkg/gd --with-cgal=${CGAL_DIR} --with-cvode=${CVODE_DIR}"
     PMAKE="-j2"
 }
 
@@ -414,7 +424,7 @@ function config_intruder {
         CONF="$CONF --with-gd=/opt/gd"
     fi
 
-    export CONF="--with-mpi --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} -with-devel"
+    export CONF="--with-mpi --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack"
     PMAKE="-j2"
 }
 
@@ -451,7 +461,7 @@ function config_sigma {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/usr"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr"
     PMAKE="-j2"
 }
 
@@ -500,7 +510,7 @@ function config_icing {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} -with-devel ${CONF} --with-gd=/usr"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr"
     PMAKE="-j2"
 }
 
@@ -543,7 +553,7 @@ function config_omega {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} -with-devel ${CONF} --with-gd=/usr"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr"
     PMAKE="-j2"
 }
 
@@ -578,7 +588,7 @@ function config_lambda {
         CONF="$CONF --with-hdf=/usr/local/pkg/hdf"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/usr"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr"
     PMAKE="-j2"
 }
 
@@ -610,7 +620,7 @@ function config_gradOne {
      #   CONF="$CONF --with-hdf=/usr"
     #fi
 
-    export CONF="-with-devel ${CONF} --with-gd=/usr"
+    export CONF="--with-deptrack ${CONF} --with-gd=/usr"
     PMAKE="-j2"
 }
 
@@ -649,7 +659,7 @@ function config_delta {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/usr"
+    export CONF="--with-mpich=/usr/local/pkg/mpich --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr"
     PMAKE="-j2"
 }
 
@@ -677,7 +687,7 @@ function config_ubuntu {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-mpi --with-petsc=${PETSC_DIR} -with-devel ${CONF}"
+    export CONF="--with-mpi --with-petsc=${PETSC_DIR} --with-deptrack ${CONF}"
     PMAKE="-j2"
 }
 
@@ -706,7 +716,7 @@ function config_gentooORNL {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-openmpi=/usr/local/ompi --with-petsc=${PETSC_DIR} --with-devel ${CONF}"
+    export CONF="--with-openmpi=/usr/local/ompi --with-petsc=${PETSC_DIR} --with-deptrack ${CONF}"
     PMAKE="-j2"
 }
 
@@ -735,7 +745,7 @@ function config_fission {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-openmpi=/apps/local/openmpi/1.4.3/gcc-4.1.2/opt --with-petsc=${PETSC_DIR} --with-devel ${CONF}"
+    export CONF="--with-openmpi=/apps/local/openmpi/1.4.3/gcc-4.1.2/opt --with-petsc=${PETSC_DIR} --with-deptrack ${CONF}"
     PMAKE="-j2"
 }
 
@@ -759,7 +769,7 @@ function config_galaxy {
 	#CONF="$CONF --with-hdf5=/usr/local/pkg/HDF5"
     fi
 
-    export CONF="--with-openmpi=/usr/local/pkg/openmpi --with-petsc=${PETSC_DIR} --with-gd=/usr/local/pkg/gd --with-devel ${CONF}"
+    export CONF="--with-openmpi=/usr/local/pkg/openmpi --with-petsc=${PETSC_DIR} --with-gd=/usr/local/pkg/gd --with-deptrack ${CONF}"
     PMAKE="-j2"
 }
 
@@ -792,7 +802,7 @@ function config_seawulf {
         CONF="$CONF --with-hdf5=/nfs/user07/duowang/hdf5-1.8.5"
 	#CONF="$CONF --with-hdf5=/usr/local/pkg/HDF5"
     fi
-    export CONF="--with-openmpi --with-petsc=${PETSC_DIR} --with-devel ${CONF}"
+    export CONF="--with-openmpi --with-petsc=${PETSC_DIR} --with-deptrack ${CONF}"
     PMAKE="-j2"
 }
 
@@ -844,7 +854,7 @@ function config_pnnl {
     export PETSC_INCLUDE="-I${PETSC_DIR}/include -I${PETSC_DIR}/bmake/${PETSC_ARCH}"
     export PETSC_LIB="-lblas -L${PETSC_DIR}/lib/${PETSC_ARCH} -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc -ldl -fopenmp -lm -L/usr/X11R6/lib64"
     
-    ./configure --with-mpi --with-petsc=$PETSC_DIR --with-devel ${CONF}
+    ./configure --with-mpi --with-petsc=$PETSC_DIR --with-deptrack ${CONF}
     PMAKE="-j8"
 }
 
@@ -872,7 +882,7 @@ function config_abe {
         CONF="$CONF --with-hdf5=/usr/apps/hdf/phdf5/v185"
     fi
 
-    export CONF="-with-mpich --with-petsc=$PETSC_DIR --with-devel ${CONF}"
+    export CONF="-with-mpich --with-petsc=$PETSC_DIR --with-deptrack ${CONF}"
     PMAKE="-j8"
 }
 #################
@@ -897,7 +907,7 @@ function config_excalibur {
     export scriptotherlibs="${scriptotherlibs} -L/p/home/linli/pkg/szip/lib -L/p/home/linli/pkg/zlib/lib -lsz -limf"
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/p/home/linli/pkg/szip/lib "
     if [[ -n "$PETSC_DIR" ]]; then
-        export CONF="--with-petsc=$PETSC_DIR --with-devel ${CONF}"
+        export CONF="--with-petsc=$PETSC_DIR --with-deptrack ${CONF}"
 
         export PETSC_INCLUDE="-I${PETSC_DIR}/include -I${PETSC_DIR}/include"
 
@@ -960,7 +970,7 @@ function config_cm {
         CONF="$CONF --with-hdf=/home/zgao/pkg/hdf"
     fi
 
-    export CONF="--with-mpich=/software/mvapich2/2.0b-intel --with-petsc=${PETSC_DIR} -with-devel ${CONF} --with-gd=/home/zgao/pkg/gd"
+    export CONF="--with-mpich=/software/mvapich2/2.0b-intel --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/home/zgao/pkg/gd"
     PMAKE="-j2"
 }
 
@@ -989,7 +999,7 @@ function config_icestorm {
         CONF="$CONF --with-gsl=/usr"
     fi
 
-    export CONF="--with-openmpi=/usr/local/openmpi/openmpi-1.4.3/gcc-opt --with-petsc=${PETSC_DIR} --with-devel ${CONF}"
+    export CONF="--with-openmpi=/usr/local/openmpi/openmpi-1.4.3/gcc-opt --with-petsc=${PETSC_DIR} --with-deptrack ${CONF}"
     PMAKE="-j2"
 }
 
