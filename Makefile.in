@@ -267,6 +267,11 @@ $$ME/parachute2d/input-*/* \
 $$ME/parachute2d/mrun* \
 $$ME/Collision/*.cpp \
 $$ME/Collision/*.h \
+$$ME/BVH/*.h \
+$$ME/BVH/*.cpp \
+$$ME/BVH/Makefile \
+$$ME/BVH/tests/*.cpp \
+$$ME/BVH/tests/Makefile \
 $$ME/sprModel/*.cpp \
 $$ME/sprModel/Makefile.in \
 $$ME/sprModel/in-* \
