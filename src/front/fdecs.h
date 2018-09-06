@@ -47,15 +47,9 @@ typedef POINTER Locstate;
 #include <front/frp.h>
 #include <front/fvelo.h>
 
-#if defined(USE_HDF5)
-    #include <hdf5.h>
-    #define USE_HDF
-#endif
-
-#if defined(USE_HDF4)
+#if defined(USE_HDF)
     #include <hdf.h>
     #include <mfhdf.h>
-    #define USE_HDF
 #endif
 
 #if defined(c_plusplus) || defined(__cplusplus)

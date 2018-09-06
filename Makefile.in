@@ -173,6 +173,7 @@ $(header_files): include/FronTier/%: src/%
 	@echo "updating: "$@; \
 	sed -e "1,$$ s,include <,include <FronTier/,g" $^ | \
 	sed -e "1,$$ s,include <FronTier/hdf,include <hdf,g" | \
+	sed -e "1,$$ s,include <FronTier/hdf5,include <hdf5,g" | \
 	sed -e "1,$$ s,include <FronTier/mpi,include <mpi,g" | \
 	sed -e "1,$$ s,include <FronTier/mfhdf,include <mfhdf,g" | \
 	sed -e "1,$$ s,FronTier/cdecs.h,FronTier/util/cdecs.h,g" | \

@@ -114,7 +114,10 @@ FT_TRI* BVH_Tests::T5 = nullptr;
 using DISABLED_BVH_Tests = BVH_Tests;
 
 
-//TODO: Add factory death tests
+//TODO:  1. test drive a vector containing the
+//          leaf nodes
+//
+//       2. Add factory death tests
 
 
 TEST_F(BVH_Tests, FactoryCreateInternalNode)

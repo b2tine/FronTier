@@ -23,7 +23,7 @@ function parse_arguments {
     WITHHYPRE=1
     WITHHDF=1
     WITHGD=1
-    COPTS_GCC="-fopenmp -Wno-unused-result"
+    COPTS_GCC="-fopenmp -Wno-unused-result -Wformat-overflow=0"
     export BASECODE="no"
 
     for arg in $@ ; do
@@ -308,28 +308,17 @@ function config_alpha {
 
     #export scriptotherlibs="${scriptotherlibs} /usr/lib/x86_64-linux-gnu/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3"
 
-    #export PETSC_DIR=/usr/local/pkg/petsc
-    #export PETSC_INCLUDE="-I${PETSC_DIR}/include"
-    #export PETSC_LIB="-L${PETSC_DIR}/lib -lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
+    PETSC_DIR="/usr/local/pkg/petsc"
+    export PETSC_LDFLAGS="-lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
     
-    PETSC_INCLUDE="-I/usr/lib/petscdir/3.7.7/x86_64-linux-gnu-real/include"
-    PETSC_LIBDIR="-L/usr/lib/petscdir/3.7.7/x86_64-linux-gnu-real/lib"
-    export PETSC_LFLAGS="-lpetsc_real -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
-        
     CGAL_INCLUDE="-I/usr/include"
     CGAL_LIB="-L/usr/lib/x86_64-linux-gnu"
 
-    HDF5_INCLUDE="-I/usr/include/hdf5/serial"
-    HDF5_LIB="-L/usr/lib/x86_64-linux-gnu/hdf5/serial"
-
-    ## Are we actually using this package in the folding module?
     CVODE_DIR=/usr/local/pkg/cvode
-    CVODE_INCLUDE="-I${CVODE_DIR}/include"
-    CVODE_LIB="-L${CVODE_DIR}/lib"
 
-    #if [ $WITHHDF -eq 1 ]; then
-        #CONF="${CONF} --with-hdf=/usr/local/pkg/hdf"
-    #fi
+    if [ $WITHHDF -eq 1 ]; then
+        CONF="${CONF} --with-hdf=/usr/local/pkg/hdf"
+    fi
 
     if [ $WITHHYPRE -eq 1 ]; then
         CONF="${CONF} --with-hypre"
@@ -345,8 +334,7 @@ function config_alpha {
 	    export USEGPU="no"
     fi
 
-    export CONF="--with-openmpi=/usr/lib/x86_64-linux-gnu/openmpi --with-petsc-include=${PETSC_INCLUDE} --with-petsc-lib=${PETSC_LIB} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-hdf5-include=${HDF5_INCLUDE} --with-hdf5-lib=${HDF5_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
-    #export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-lib=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-library=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
     
     PMAKE="-j2"
 }

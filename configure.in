@@ -55,9 +55,9 @@ else
     AC_SUBST(USEHYPRE,${USEHYPRE})        
 fi
 
-AC_ARG_WITH([mpi], [ --with-mpi             generic MPI support. See manual.], [mpi=$withval ompincs=" -D__MPI__ "],[mpi="no"])
+AC_ARG_WITH(mpi, [ --with-mpi             generic MPI support. See manual.], [mpi=$withval ompincs=" -D__MPI__ "],[mpi="no"])
 
-AC_ARG_WITH([openmpi], [ --with-openmpi=path              use openmpi for MPI], [openmpi=$withval],[openmpi="no"])
+AC_ARG_WITH(openmpi, [ --with-openmpi=path              use openmpi for MPI], [openmpi=$withval],[openmpi="no"])
 if test ${openmpi} != "no" ; then
     ompincs=" -I"${openmpi}"/include -D__MPI__"
     scriptotherlibsinc=${scriptotherlibsinc} "-L"${openmpi}"/lib"
@@ -101,47 +101,17 @@ libover="neither"
 app="neither"
 testappprefix="neither"
 
-#################################################
-
-
-#This check for HDF should be done inside the hdf arg with blocks below if it is even done at all.
-#AC_SEARCH_LIBS is generally the  preferred choice for this type of test in order to avoid
-#function name collisions with the C standard library.
-#Speaking of which, how does the function main, below, not collide with C's main function?.
-AC_CHECK_LIB([hdf],[main],[scriptotherlibs=${scriptotherlibs}" -lhdf " testhdff='yes'],[testhdff='no'])
-#Good chance this isn't actually doing anything because hdf has split into versions
-#4 and 5 and will not be found in the system libraries.
 
 
 ####################################################
-# HDF
+ HDF
 
 AC_ARG_WITH([hdf],[  --with-hdf              Support for the hdf library],[hdffprefix=${withval} hdff="yes"],[hdff="no"])
 if test ${hdff} = 'yes';then
-        hdfincs=" -I"${hdffprefix}"/include -DUSE_HDF4 "
-        scriptotherlibsinc=${scriptotherlibsinc}" -L/usr/lib -L"${hdffprefix}"/lib "
-        scriptotherlibs=${scriptotherlibs}" -lmfhdf -ldf -ljpeg -lz "        
-
-fi
-
-AC_ARG_WITH([hdf5_dir],[  --with-hdf5-dir=path              Support for the hdf5 library],[hdf5_dir=${withval}],[hdf5_dir=""])
-AC_ARG_WITH([hdf5_inc],[  --with-hdf5-include=path              Support for the HDF5 includes],[hdf5_inc=${withval}],[hdf5_inc=""])
-AC_ARG_WITH([hdf5_lib],[  --with-hdf5-lib=path              Support for the HDF5 library],[hdf5_lib=${withval}],[hdf5_lib=""])
-
-if test ${hdf5_dir} = ""; then
-        if test ${hdf5_inc} = "" || test ${hdf5_lib} = ""; then
-            echo "HDF5 is not enabled"
-        else
-            echo "HDF5 is enabled"
-            hdf5incs=${hdf5_inc}" -DUSE_HDF5"
-            scriptotherlibsinc=${scriptotherlibsinc}" -L"${hdf5_lib}
-            scriptotherlibs=${scriptotherlibs}" -lhdf5"
-        fi
-else
-        echo "HDF5 enabled, hdf5_dir = ${hdf5_dir}"
-        hdf5incs="-I"${hdf5_dir}"/include -DUSE_HDF5"
-        scriptotherlibsinc=${scriptotherlibsinc}" -L"${hdf5_dir}"/lib "
-        scriptotherlibs=${scriptotherlibs}" -lhdf5"
+    echo "HDF enabled"
+    hdfincs=" -I"${hdffprefix}"/include -DUSE_HDF "
+    scriptotherlibsinc=${scriptotherlibsinc}" -L/usr/lib -L"${hdffprefix}"/lib "
+    scriptotherlibs=${scriptotherlibs}" -lmfhdf -ldf -ljpeg -lz "        
 fi
 
 
@@ -161,33 +131,21 @@ fi
 # PETSc
 
 iFluid=""
-AC_ARG_WITH(petsc_dir, [ --with-petsc=path                 compile with petsc support], [petsc_dir=${withval}],[petsc_dir=""])
-AC_ARG_WITH(petsc_inc,[  --with-petsc-include=path              Support for the PETSc includes],[petsc_inc=${withval}],[petsc_inc=""])
-AC_ARG_WITH(petsc_lib,[  --with-petsc-lib=path              Support for the PETSc library],[petsc_lib=${withval}],[petsc_lib=""])
+AC_ARG_WITH([petsc], [ --with-petsc=path                 compile with petsc support], [petsc_dir=${withval}],[petsc_dir=""])
 if test ${petsc_dir} = ""; then
-        if test ${petsc_inc} = "" || test ${petsc_lib} = ""; then
-            echo "PETSc is not enabled"
-            echo "Cannot build iFluid Module without PETSc"
-        else
-            echo "PETSc enabled"
-            echo "iFluid Module enabled"
-            petsc_lib=${petsc_lib}" "${PETSC_LFLAGS}
-            AC_SUBST(PETSC_DIR,${petsc_dir})
-            AC_SUBST(PETSC_INCLUDE,${petsc_inc})
-            AC_SUBST(PETSC_LIB,${petsc_lib})
-            iFluid="cd iFluid && \$(MAKE)"
-        fi
+    echo "Building without PETSc"
+    echo "Cannot build iFluid Module without PETSc"
 else
-    if test ${mpichh} = 'no' -a ${ompi} = 'no' -a ${mpi} = 'no' ;then
+    if test ${mpichh} = 'no' -a ${ompi} = 'no' -a ${mpi} = 'no' -a ${openmpi} = 'no';then
         echo "Cannot use PETSc without a compatible MPI implementation"
         echo "Cannot build iFluid Module without PETSc"
     else
         echo "PETSc enabled, petsc_dir = ${petsc_dir}"
         echo "iFluid Module will be built"
-        AC_SUBST(PETSC_DIR,${petsc_dir})
-	    AC_SUBST(PETSC_ARCH,${PETSC_ARCH})
-	    AC_SUBST(PETSC_INCLUDE,${PETSC_INCLUDE})
-	    AC_SUBST(PETSC_LIB,${PETSC_LIB})
+        #AC_SUBST(PETSC_DIR,$petsc_dir)
+	    #AC_SUBST(PETSC_ARCH,${PETSC_ARCH})
+	    AC_SUBST(PETSC_INCLUDE,"-I"${petsc_dir}"/include")
+	    AC_SUBST(PETSC_LIB,"-L"${petsc_dir}"/lib "${PETSC_LDFLAGS})
         iFluid="cd iFluid && \$(MAKE)"
     fi
 fi
@@ -198,9 +156,9 @@ AC_SUBST(iFluid, ${iFluid})
 # CGAL
 
 Collision=""
-AC_ARG_WITH(cgal_dir,[  --with-cgal-dir=path             Support for the CGAL directory],[cgal_dir=${withval}],[cgal_dir=""])
-AC_ARG_WITH(cgal_include,[  --with-cgal-include=path              Support for the CGAL includes],[cgal_inc=${withval}],[cgal_inc=""])
-AC_ARG_WITH(cgal_lib,[  --with-cgal-lib=path              Support for the CGAL library],[cgal_lib=${withval}],[cgal_lib=""])
+AC_ARG_WITH([cgal],[  --with-cgal=path             Support for the CGAL directory],[cgal_dir=${withval}],[cgal_dir=""])
+AC_ARG_WITH([cgal_include],[  --with-cgal-include=path              Support for the CGAL includes],[cgal_inc=${withval}],[cgal_inc=""])
+AC_ARG_WITH(cgal_library,[  --with-cgal-library=path              Support for the CGAL library],[cgal_lib=${withval}],[cgal_lib=""])
 if test ${cgal_dir} = ""; then
         if test ${cgal_inc} = "" || test ${cgal_lib} = ""; then
             echo "CGAL is not enabled"
@@ -226,29 +184,29 @@ fi
 ####################################################
 # Boost
 
-AC_ARG_WITH(boost_dir,[  --with-boost-dir              Support for the BOOST directory],[boost_dir=$withval],[boost_dir=""])
-if test "$boost_dir" = ""; then
+AC_ARG_WITH(boost,[  --with-boost=path              Support for the BOOST directory],[boost_dir=${withval}],[boost_dir=""])
+if test ${boost_dir} = ""; then
         echo "BOOST is not enabled"
 else
         echo "BOOST enabled, boost_dir = ${boost_dir}"
         AC_SUBST(BOOST_DIR,${boost_dir})
-        AC_SUBST(BOOST_INCLUDE,"${BOOST_DIR}/include")
-        AC_SUBST(BOOST_LIB,"${BOOST_DIR}/lib")
+        AC_SUBST(BOOST_INCLUDE,${boost_dir}"/include")
+        AC_SUBST(BOOST_LIB,${boost_dir}"/lib")
 fi
 
 
 ####################################################
 # Cvode (SUNDIALS library)
 
-AC_ARG_WITH(cvodedir, [ --with-cvode-dir=path                 compile with cvode support], [cvodedir=$withval folding="cd folding && \$(MAKE)"], [cvodedir="" folding=""])
-if test "$cvodedir" = ""; then
+AC_ARG_WITH([cvode], [ --with-cvode=path                 compile with cvode support], [cvode_dir=${withval} folding="cd folding && \$(MAKE)"], [cvode_dir="" folding=""])
+if test ${cvode_dir} = ""; then
     echo "CVODE not enabled, cannot implement implicit solver"
     echo "Folding disabled"
 else
     echo "CVODE enabled"
-    AC_SUBST(CVODE_DIR,${cvodedir})
-    AC_SUBST(CVODE_INCLUDE,"${CVODE_INCLUDE}")
-    AC_SUBST(CVODE_LIB,"${CVODE_LIB}")
+    AC_SUBST(CVODE_DIR,${cvode_dir})
+    AC_SUBST(CVODE_INCLUDE,${cvode_dir}"/include")
+    AC_SUBST(CVODE_LIB,${cvode_dir}"/lib")
 fi
 
 
@@ -441,17 +399,17 @@ optimization=$optimization
 #                          intfc 
 #                          tri
 
-scriptftlibincs=" -I.. -I../util"${debug}${cppflagss}${amrincs}${hdfincs}${hdf5incs}${mpichincs}${overinc}${appinc}${ftlibdubug}${itapsd}${fenv}${optimization}${over}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gdincs}${gpuincs}${gslincs}${hypreincs}
+scriptftlibincs=" -I.. -I../util"${debug}${cppflagss}${amrincs}${hdfincs}${mpichincs}${overinc}${appinc}${ftlibdubug}${itapsd}${fenv}${optimization}${over}${firix}${noname}${hdfincs}${systemincs}${ompincs}${gdincs}${gpuincs}${gslincs}${hypreincs}
 
 
 #included in all code in: example and testfront 
-scriptexampleincs=${mpichincs}${amrincs}${hdfincs}${hdf5incs}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
+scriptexampleincs=${mpichincs}${amrincs}${hdfincs}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
 
 #included in all code in: util/util
-scriptutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
+scriptutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${fenv}${optimization}${firix}${noname}${hdfincs}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
 
 #include in all code in: util/dutil
-scriptdutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${hdf5incs}${fenv}${optimization}${firix}${noname}${hdfinc}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
+scriptdutilincs=" -I../.. -I../ "${debug}${cppflagss}${mpichincs}${amrincs}${hdfincs}${fenv}${optimization}${firix}${noname}${hdfincs}${systemincs}${ompincs}${gpuincs}${gslincs}${hypreincs}
 
 flagsss=$FFLAGS${optimization}${firix}${fsun}${debug}${cppflagss}
 
