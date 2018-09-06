@@ -28,8 +28,8 @@ function parse_arguments {
 
     for arg in $@ ; do
         if [[ "$arg" == "-d" ]]; then
-	    OPTS="-g -rdynamic"
-	    COPTS_GCC="-fopenmp -pedantic -Wno-long-long -Wno-unused-result"
+	    OPTS="-g -rdynamic -Wformat-overflow=0"
+	    COPTS_GCC="-fopenmp -pedantic -Wno-long-long -Wno-unused-result -Wformat-overflow=0"
 	    COPTS_ICC="-Wall"
         elif [[ "$arg" == "-n" ]]; then
 	    NOMAKE=1
@@ -44,7 +44,7 @@ function parse_arguments {
         elif [[ "$arg" == "--with-gpu" ]]; then
             WITHGPU=1
         elif [[ "$arg" == "-o2" ]]; then
-	    OPTS="-fopenmp -O2"
+	    OPTS="-fopenmp -O2 -Wformat-overflow=0"
         elif [[ "$arg" == "--without-hypre" ]]; then
             WITHHYPRE=0
         elif [[ "$arg" == "--without-hdf" ]]; then
