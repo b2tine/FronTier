@@ -1,6 +1,9 @@
 #include "gmock/gmock.h"
-#include "../BV.h"
+#include "../BoundingVolume.h"
 
+//Save this fixture in comments for now.
+//This is the basic fixture that most test
+//fixtures should begin as.
 
 /*
 class AABBTestData : public ::testing::Test
@@ -227,6 +230,8 @@ TEST_F(AABBTests, BoxesOverlapVsContain)
 TEST_F(AABBTests, ConstructorAABBs)
 {
     AABB parentbox(bbT2,bbT3);
+    //TODO: write test checking
+    //      parent child relationship
 }
 
 TEST_F(AABBTests, ConstructorBV_Points)
@@ -239,25 +244,9 @@ TEST_F(AABBTests, ConstructorBV_Points)
 
 TEST_F(AABBTests, ConstructorFT_HSE)
 {
-    //See AABBTestData fixture (superclass of AABBtests)
     ASSERT_DOUBLE_EQ(bbT1.upper[0],9.0);
     ASSERT_DOUBLE_EQ(bbT1.lower[2],1.0);
 }
-
-//TODO: Degenerate Cases?:
-//      
-//      1.  Box has zero volume for a point;
-//          should AABB be allowed to be given
-//          a point as a constructor argument?
-//      
-//      2.  What about for bonds or tris that are parallel
-//          to two axis simultaneously and box is 2d?
-//          (resulting in volume = 0)
-//      
-//      3.  Is volume even necessary, since using
-//          hilbert curve for BVH construction?
-//          
-
 
 
 

@@ -12,8 +12,8 @@ class BVH_Tests : public ::testing::Test
     static FT_TRI *T1, *T2, *T3, *T4, *T5;
 
     BVH bvh;
-    BV_Leaf  *l1, *l2, *l3, *l4, *l5;
-    BV_Node *p1, *p2, *gp;
+    BVH_Leaf  *l1, *l2, *l3, *l4, *l5;
+    BVH_iNode *p1, *p2, *gp;
 
     static void SetUpTestCase()
     {

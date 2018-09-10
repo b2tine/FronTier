@@ -14,7 +14,7 @@ CGAL_LIB = -L/usr/lib/x86_64-linux-gnu -lCGAL_Core -lCGAL_ImageIO -lCGAL
 GMOCK_LIB = -lgmock -lgmock_main
 
 
-OBJS = ../FT_HSE.o FT_HSEtests.o ../BV.o AABBtests.o  ../BV_Node.o BV_Nodetests.o ../BVH.o BVHtests.o
+OBJS = ../FT_HSE.o FT_HSEtests.o ../BoundingVolume.o AABBtests.o  ../BVH_Node.o BVH_Nodetests.o ../BVH.o BVHtests.o
 
 
 testAll: main.cpp $(OBJS) FT_libs_testdir

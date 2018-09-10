@@ -1,35 +1,9 @@
-/*
- *                  BV.h
- *
- *
- * Every BV type must be constructable from a FT_HSE* and
- * have the following member functions.
- * 
- *      1. BV_Type typeBV()
- *
- *      2. BV_Point centroid()
- *
- *      3. bool contains()
- *      
- *      4. bool overlaps()
- *
- *      5. void inflate()
- *
- *
- *      More to come ...
- *      
-*/
-
 #include "BV_Point.h"
 #include "FT_HSE.h"
 
-#ifndef BV_H
-#define BV_H
+#ifndef BOUNDING_VOLUME_H
+#define BOUNDING_VOLUME_H
 
-//#include <vector>
-
-
-enum class BV_Type {AABB, OBB, KDOP, SPHERE};
 
 //using BV_Point = std::vector<double>;
 /*
@@ -41,20 +15,38 @@ enum class BV_Type {AABB, OBB, KDOP, SPHERE};
  *      compatability with the CGAL function
  *      hilbert_sort().
  *
- *      If we end up implementing our own
+ *      NOTE: If we end up implementing our own
  *      hilbert_sort() we will probably go
  *      back to using a std::vector<double>.
  *
  */
 
+
+
+enum class BV_Type {AABB, OBB, KDOP, SPHERE};
+
+
+
+
+class BoundingVolume
+{
+    public:
+        virtual const BV_Point centroid() const;
+        virtual bool contains(const AABB&) const;
+        virtual bool overlaps(const AABB&) const;
+        //virtual void inflate();
+        virtual BV_Type TypeBV() const;
+        virtual ~BoundingVolume();
+};
+
+
 //Axis Aligned Bounding Box (AABB)
-class AABB
+class AABB : public BoundingVolume
 {
     public:
 
         BV_Point lower;
         BV_Point upper;
-        //BV_Point centroid;
 
         AABB() = default;
         AABB(const AABB&) = default;
@@ -65,13 +57,15 @@ class AABB
 
         explicit AABB(FT_HSE*);
         AABB(const AABB&,const AABB&);
+        AABB(const AABB* const ,const AABB* const);
         AABB(const BV_Point&,const BV_Point&);
 
-        const BV_Point centroid() const;
-        bool contains(const AABB&) const;
-        bool overlaps(const AABB&) const;
-        //void inflate();
-        BV_Type getTypeBV() const;
+        const BV_Point centroid() const override;
+        bool contains(const AABB&) const override;
+        bool overlaps(const AABB&) const override;
+        //void inflate() override;
+        BV_Type getBvType() const override;
+
         void print() const;
 };
 

@@ -1,4 +1,4 @@
-#include "BV.h"
+#include "BoundingVolume.h"
 
 ///////////////////////////////////
 //////     AABB methods     //////
@@ -23,6 +23,15 @@ AABB::AABB(const AABB& A, const AABB& B)
     {
         lower[i] = std::min(A.lower[i],B.lower[i]);
         upper[i] = std::max(A.upper[i],B.upper[i]);
+    }
+}
+
+AABB::AABB(const AABB* const A, const AABB* const B)
+{
+    for( int i = 0; i < 3; i++ )
+    {
+        lower[i] = std::min(A->lower[i],B->lower[i]);
+        upper[i] = std::max(A->upper[i],B->upper[i]);
     }
 }
 
@@ -62,7 +71,7 @@ void AABB::print() const
     printf("   lower: (%3g,%3g,%3g) \n\n", lower[0], lower[1], lower[2]);
 }
 
-BV_Type AABB::getTypeBV() const
+BV_Type AABB::getBvType() const
 {
     return BV_Type::AABB;
 }

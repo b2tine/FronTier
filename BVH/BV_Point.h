@@ -2,6 +2,7 @@
 #define BV_POINT_H
 
 #include <CGAL/hilbert_sort.h>
+#include <vector>
 
 //TODO: figure out good way to test the hilbert_sort feature
 
@@ -12,11 +13,11 @@ class BV_Point
 {
     private:
 
-        double x{0}, y{0}, z{0};
+        std::vector<double> point{3, 0.0};
     
     public:
 
-        //need all default ctors for hilbert_sort()
+        //need all the default ctors to use in hilbert_sort()
         BV_Point() = default;
         BV_Point(const BV_Point&) = default;
         BV_Point& operator=(const BV_Point&) = default;
@@ -24,19 +25,17 @@ class BV_Point
         BV_Point& operator=(BV_Point&&) = default;
         ~BV_Point() = default;
 
-        BV_Point(double X, double Y, double Z)
-            : x{X}, y{Y}, z{Z}
-        {}
+        BV_Point(double x, double y, double z)
+        {
+            point[0] = X;
+            point[1] = y;
+            point[2] = z;
+        }
 
         const double& operator[](const std::size_t i) const
         {
             assert(i >=0 && i <= 2);
-            switch(i)
-            {
-                case 0: return x; break;
-                case 1: return y; break;
-                case 2: return z; break;
-            }
+            return point[i];
         }
 
         //calls const version through typecasts
@@ -49,15 +48,15 @@ class BV_Point
         //needed for use as key in std::map<key,val>
         bool operator < (const BV_Point& p)
         {
-            if( x == p[0] )
+            if( point[0] == p[0] )
             {
-                if( y == p[1] )
+                if( point[1] == p[1] )
                 {
-                    return z < p[2];
+                    return point[2] < p[2];
                 }
-                return y < p[1];
+                return point[1] < p[1];
             }
-            return x < p[0];
+            return point[0] < p[0];
         }
 };
 
