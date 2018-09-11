@@ -1,20 +1,20 @@
 #include "gmock/gmock.h"
-#include "../FT_HSE.h"
+#include "../HyperSurfElement.h"
 
-class FT_POINT_TESTS : public ::testing::Test
+class HsPoint_Tests : public ::testing::Test
 {
     protected:
 
     POINT* a;
-    FT_POINT* A;
+    HsPoint* A;
 
-    FT_POINT_TESTS()
+    HsPoint_Tests()
         : a{new POINT}
     {
-        Coords(a)[0] = 1.0;//     Coords(b)[0] = 1.0;
-        Coords(a)[1] = 0.0;//     Coords(b)[0] = 1.0;
-        Coords(a)[2] = 4.0;//     Coords(b)[0] = 1.0;
-        A = new FT_POINT(a);//    B = new FT_POINT(b);
+        Coords(a)[0] = 1.0;     //Coords(b)[0] = 1.0;
+        Coords(a)[1] = 0.0;     //Coords(b)[0] = 1.0;
+        Coords(a)[2] = 4.0;     //Coords(b)[0] = 1.0;
+        A = new HsPoint(a);    //B = new HsPoint(b);
     }
 
     void TearDown() override
@@ -25,41 +25,41 @@ class FT_POINT_TESTS : public ::testing::Test
 
 };
 
-using DISABLED_FT_POINT_TESTS = FT_POINT_TESTS;
+using DISABLED_HsPoint_Tests = HsPoint_Tests;
 
-TEST_F(FT_POINT_TESTS, PointOfHse)
+TEST_F(HsPoint_Tests, OutOfRangeDeathTest)
 {
-    POINT* b = A->Point_of_hse(0);
-    ASSERT_DOUBLE_EQ(Coords(b)[0],1.0);
-    ASSERT_DOUBLE_EQ(Coords(b)[1],0.0);
-    ASSERT_DOUBLE_EQ(Coords(b)[2],4.0);
+    ASSERT_DEATH(A->Point_of_hse(1),"");
+    ASSERT_DEATH(A->Point_of_hse(-1),"");
 }
 
-TEST_F(FT_POINT_TESTS, MaxCoordEqualMinCoord)
+TEST_F(HsPoint_Tests, MaxCoordIsEqualToMinCoord)
 {
     ASSERT_DOUBLE_EQ(A->min_coord(0),A->max_coord(0));
     ASSERT_DOUBLE_EQ(A->min_coord(2),A->max_coord(2));
 }
 
-TEST_F(FT_POINT_TESTS, OutOfRangeDeathTest)
+TEST_F(HsPoint_Tests, PointOfHseDefaultArgIsZero)
 {
-    ASSERT_DEATH(A->Point_of_hse(1),"");
-    ASSERT_DEATH(A->Point_of_hse(-1),"");
+    POINT* b = A->Point_of_hse();
+    ASSERT_DOUBLE_EQ(Coords(b)[0],1.0);
+    ASSERT_DOUBLE_EQ(Coords(b)[1],0.0);
+    ASSERT_DOUBLE_EQ(Coords(b)[2],4.0);
 }
 
 //////////////////////////////////////////////////////
 
 
 
-class FT_BOND_TESTS : public ::testing::Test
+class HsBond_Tests : public ::testing::Test
 {
     protected:
     
     BOND* s;
     POINT *a, *b;
-    FT_BOND* B;
+    HsBond* B;
 
-    FT_BOND_TESTS() 
+    HsBond_Tests() 
         : a{new POINT}, b{new POINT}, s{new BOND}
     {
         Coords(a)[0] = 1.0;     Coords(b)[0] = 1.0;
@@ -68,7 +68,7 @@ class FT_BOND_TESTS : public ::testing::Test
         
         s->start = a;   s->end = b;
 
-        B = new FT_BOND(s);
+        B = new HsBond(s);
     }
 
     void TearDown() override
@@ -80,7 +80,7 @@ class FT_BOND_TESTS : public ::testing::Test
 };
 
 
-TEST_F(FT_BOND_TESTS, OutOfRangeDeathTest)
+TEST_F(HsBond_Tests, OutOfRangeDeathTest)
 {
     ASSERT_DEATH(B->Point_of_hse(2),"");
     ASSERT_DEATH(B->Point_of_hse(-1),"");
@@ -91,15 +91,15 @@ TEST_F(FT_BOND_TESTS, OutOfRangeDeathTest)
 //////////////////////////////////////////////////////
 
 
-class FT_TRI_TESTS : public ::testing::Test
+class HsTri_Tests : public ::testing::Test
 {
     protected:
     
     TRI* t;
     POINT *a, *b, *c;
-    FT_TRI* T;
+    HsTri* T;
 
-    FT_TRI_TESTS() 
+    HsTri_Tests() 
         : a{new POINT}, b{new POINT},
         c{new POINT}, t{new TRI}
     {
@@ -111,7 +111,7 @@ class FT_TRI_TESTS : public ::testing::Test
         Coords(c)[1] = 0.0;     Point_of_tri(t)[1] = b;
         Coords(c)[2] = 2.0;     Point_of_tri(t)[2] = c;
 
-        T = new FT_TRI(t);
+        T = new HsTri(t);
     }
 
     void TearDown() override
@@ -122,7 +122,7 @@ class FT_TRI_TESTS : public ::testing::Test
 
 };
 
-TEST_F(FT_TRI_TESTS, OutOfRangeDeathTest)
+TEST_F(HsTri_Tests, OutOfRangeDeathTest)
 {
     ASSERT_DEATH(T->Point_of_hse(3),"");
     ASSERT_DEATH(T->Point_of_hse(-1),"");

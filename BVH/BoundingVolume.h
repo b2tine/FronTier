@@ -1,47 +1,18 @@
-#include "BV_Point.h"
-#include "FT_HSE.h"
+#include "HyperSurfElement.h"
 
 #ifndef BOUNDING_VOLUME_H
 #define BOUNDING_VOLUME_H
 
-
-//using BV_Point = std::vector<double>;
-/*
- * Note: BV_Point is now its own class that
- *      is compatible with as a key type in
- *      std::map<key,val>.
- *
- *      TODO: Test functors needed for
- *      compatability with the CGAL function
- *      hilbert_sort().
- *
- *      NOTE: If we end up implementing our own
- *      hilbert_sort() we will probably go
- *      back to using a std::vector<double>.
- *
- */
+#include <vector>
 
 
+enum class BV_Type {AABB};//, OBB, KDOP, SPHERE};
 
-enum class BV_Type {AABB, OBB, KDOP, SPHERE};
-
-
-
-
-class BoundingVolume
-{
-    public:
-        virtual const BV_Point centroid() const;
-        virtual bool contains(const AABB&) const;
-        virtual bool overlaps(const AABB&) const;
-        //virtual void inflate();
-        virtual BV_Type TypeBV() const;
-        virtual ~BoundingVolume();
-};
+using BV_Point = std::vector<double>;
 
 
 //Axis Aligned Bounding Box (AABB)
-class AABB : public BoundingVolume
+class AABB
 {
     public:
 
@@ -55,16 +26,18 @@ class AABB : public BoundingVolume
         AABB& operator=(AABB&&) = default;
         ~AABB() = default;
 
-        explicit AABB(FT_HSE*);
+        explicit AABB(Hse*);
         AABB(const AABB&,const AABB&);
-        AABB(const AABB* const ,const AABB* const);
         AABB(const BV_Point&,const BV_Point&);
 
-        const BV_Point centroid() const override;
-        bool contains(const AABB&) const override;
-        bool overlaps(const AABB&) const override;
-        //void inflate() override;
-        BV_Type getBvType() const override;
+        const BV_Point getLower() const {return lower;}
+        const BV_Point getUpper() const {return upper;}
+        
+        const BV_Point centroid() const;
+        bool contains(const AABB&) const;
+        bool overlaps(const AABB&) const;
+        //void inflate();
+        BV_Type getBvType() const;
 
         void print() const;
 };

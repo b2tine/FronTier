@@ -11,10 +11,12 @@ libs = -lgd  -ldf -ljpeg -lz -lmpich -lpthread
 
 CGAL_INCLUDE = -I/usr/include
 CGAL_LIB = -L/usr/lib/x86_64-linux-gnu -lCGAL_Core -lCGAL_ImageIO -lCGAL
-GMOCK_LIB = -lgmock -lgmock_main
+
+GMOCK_INCLUDE = -I/usr/local/include -DGTEST_LINKED_AS_SHARED_LIBRARY=1
+GMOCK_LIB = -L/usr/local/lib -lgmock -lgmock_main
 
 
-OBJS = ../FT_HSE.o FT_HSEtests.o ../BoundingVolume.o AABBtests.o  ../BVH_Node.o BVH_Nodetests.o ../BVH.o BVHtests.o
+OBJS = ../HyperSurfElement.o HSEtests.o ../BoundingVolume.o AABBtests.o  ../BVH_Node.o BVH_Nodetests.o ../BVH.o BVHtests.o
 
 
 testAll: main.cpp $(OBJS) FT_libs_testdir

@@ -14,9 +14,9 @@ class AABBTestData : public ::testing::Test
     BOND *s1, *s2;
     POINT *a, *b, *c, *d, *e, *f, *g;
 
-    FT_TRI *T1, *T2, *T3;
-    FT_BOND *B1, *B2;
-    FT_POINT* P;
+    HsTri *T1, *T2, *T3;
+    HsBond *B1, *B2;
+    HsPoint* P;
 
     BV_Point L = {-1,-1,-1};
     BV_Point U = {1,1,1};
@@ -59,11 +59,11 @@ class AABBTestData : public ::testing::Test
         s1->start = a;      s2->start = c;
         s1->end = b;        s2->end = f;
 
-        T1 = new FT_TRI(t1);    T2 = new FT_TRI(t2);
-        T3 = new FT_TRI(t3);
+        T1 = new HsTri(t1);    T2 = new HsTri(t2);
+        T3 = new HsTri(t3);
 
-        B1 = new FT_BOND(s1);   B2 = new FT_BOND(s2);
-        P = new FT_POINT(a);
+        B1 = new HsBond(s1);   B2 = new HsBond(s2);
+        P = new HsPoint(a);
     }
 
     virtual void TearDown()
@@ -111,9 +111,9 @@ class AABBTests : public ::testing::Test
     static BOND *s1, *s2;
     static POINT *a, *b, *c, *d, *e, *f, *g;
 
-    static FT_TRI *T1, *T2, *T3;
-    static FT_BOND *B1, *B2;
-    static FT_POINT* P;
+    static HsTri *T1, *T2, *T3;
+    static HsBond *B1, *B2;
+    static HsPoint* P;
 
     static BV_Point L;
     static BV_Point U;
@@ -137,30 +137,30 @@ class AABBTests : public ::testing::Test
         Coords(e)[1] = 10.0;    Coords(f)[1] = 0.0;
         Coords(e)[2] = 0.0;     Coords(f)[2] = 10.0;
 
-        g = new POINT;     //    h = new POINT;
-        Coords(g)[0] = 0.0;//    Coords(h)[0] = 0.0;
-        Coords(g)[1] = 0.0;//    Coords(h)[1] = 0.0;
-        Coords(g)[2] = 0.0;//    Coords(h)[2] = 10.0;
+        g = new POINT;          //h = new POINT;
+        Coords(g)[0] = 0.0;     //Coords(h)[0] = 0.0;
+        Coords(g)[1] = 0.0;     //Coords(h)[1] = 0.0;
+        Coords(g)[2] = 0.0;     //Coords(h)[2] = 10.0;
 
         t1 = new TRI;                t2 = new TRI;
         Point_of_tri(t1)[0] = a;     Point_of_tri(t2)[0] = d;
         Point_of_tri(t1)[1] = b;     Point_of_tri(t2)[1] = e;
         Point_of_tri(t1)[2] = c;     Point_of_tri(t2)[2] = f;
 
-        t3 = new TRI;           //     t2 = new TRI;
-        Point_of_tri(t3)[0] = e;//     Point_of_tri(t2)[0] = d;
-        Point_of_tri(t3)[1] = f;//     Point_of_tri(t2)[1] = e;
-        Point_of_tri(t3)[2] = g;//     Point_of_tri(t2)[2] = f;
+        t3 = new TRI;               //t2 = new TRI;
+        Point_of_tri(t3)[0] = e;    //Point_of_tri(t2)[0] = d;
+        Point_of_tri(t3)[1] = f;    //Point_of_tri(t2)[1] = e;
+        Point_of_tri(t3)[2] = g;    //Point_of_tri(t2)[2] = f;
 
         s1 = new BOND;      s2 = new BOND;
         s1->start = a;      s2->start = c;
         s1->end = b;        s2->end = f;
 
-        T1 = new FT_TRI(t1);    T2 = new FT_TRI(t2);
-        T3 = new FT_TRI(t3);
+        T1 = new HsTri(t1);    T2 = new HsTri(t2);
+        T3 = new HsTri(t3);
 
-        B1 = new FT_BOND(s1);   B2 = new FT_BOND(s2);
-        P = new FT_POINT(a);
+        B1 = new HsBond(s1);   B2 = new HsBond(s2);
+        P = new HsPoint(a);
     }
 
     static void TearDownTestCase()
@@ -199,12 +199,12 @@ POINT* AABBTests::d = nullptr;
 POINT* AABBTests::e = nullptr;
 POINT* AABBTests::f = nullptr;
 POINT* AABBTests::g = nullptr;
-FT_TRI* AABBTests::T1 = nullptr;
-FT_TRI* AABBTests::T2 = nullptr;
-FT_TRI* AABBTests::T3 = nullptr;
-FT_BOND* AABBTests::B1 = nullptr;
-FT_BOND* AABBTests::B2 = nullptr;
-FT_POINT* AABBTests::P = nullptr;
+HsTri* AABBTests::T1 = nullptr;
+HsTri* AABBTests::T2 = nullptr;
+HsTri* AABBTests::T3 = nullptr;
+HsBond* AABBTests::B1 = nullptr;
+HsBond* AABBTests::B2 = nullptr;
+HsPoint* AABBTests::P = nullptr;
 BV_Point AABBTests::L = {-1,-1,-1};
 BV_Point AABBTests::U = {1,1,1};
 
@@ -222,19 +222,25 @@ TEST_F(AABBTests, BoxesOverlapVsContain)
     EXPECT_TRUE(bbT1.overlaps(bbB1));
     EXPECT_TRUE(bbT1.overlaps(bbB2));
     //TODO: Is this the behavior we really want?
-    //      May need to add case(s) of
-    //      loose containment (share surface)
-    //      and/or not contained but share surfaces
+    //      May need to distinguish between:
+    //          1. No overlap but share surface.
+    //          2. Contained but share a surface
+    //
+    //      Too early to make a call.
 }
 
-TEST_F(AABBTests, ConstructorAABBs)
+TEST_F(AABBTests, ConstructorTwoAABBs)
 {
     AABB parentbox(bbT2,bbT3);
-    //TODO: write test checking
-    //      parent child relationship
+
+    BV_Point lower = parentbox.lower;
+    BV_Point upper = parentbox.upper;
+
+    ASSERT_DOUBLE_EQ(lower[2],0.0);
+    ASSERT_DOUBLE_EQ(upper[0],10.0);
 }
 
-TEST_F(AABBTests, ConstructorBV_Points)
+TEST_F(AABBTests, ConstructorTwoBV_Points)
 {
     BV_Point centroid = bbBVPts.centroid();
     ASSERT_DOUBLE_EQ(centroid[0],0.0);
@@ -242,7 +248,7 @@ TEST_F(AABBTests, ConstructorBV_Points)
     ASSERT_DOUBLE_EQ(centroid[2],0.0);
 }
 
-TEST_F(AABBTests, ConstructorFT_HSE)
+TEST_F(AABBTests, ConstructorOneHse)
 {
     ASSERT_DOUBLE_EQ(bbT1.upper[0],9.0);
     ASSERT_DOUBLE_EQ(bbT1.lower[2],1.0);

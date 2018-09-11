@@ -8,10 +8,10 @@ class AABB_NodeTests : public ::testing::Test
     static TRI *t1, *t2, *t3, *t4,*t5;
     static POINT *a, *b, *c, *d, *e, *f, *g;
 
-    static FT_TRI *T1, *T2, *T3, *T4, *T5;
+    static HsTri *T1, *T2, *T3, *T4, *T5;
 
-    BVH_Leaf  *l1, *l2, *l3, *l4, *l5;
-    BVH_iNode *p1, *p2, *gp;
+    LeafNode  *l1, *l2, *l3, *l4, *l5;
+    InternalNode *p1, *p2, *gp;
 
     static void SetUpTestCase()
     {
@@ -50,9 +50,9 @@ class AABB_NodeTests : public ::testing::Test
         Point_of_tri(t5)[1] = f;     //Point_of_tri(t6)[1] = g;
         Point_of_tri(t5)[2] = g;     //Point_of_tri(t6)[2] = h;
 
-        T1 = new FT_TRI(t1);    T2 = new FT_TRI(t2);
-        T3 = new FT_TRI(t3);    T4 = new FT_TRI(t4);
-        T5 = new FT_TRI(t5);    //T6 = new FT_TRI(t6);
+        T1 = new HsTri(t1);    T2 = new HsTri(t2);
+        T3 = new HsTri(t3);    T4 = new HsTri(t4);
+        T5 = new HsTri(t5);    //T6 = new HsTri(t6);
     }
 
     static void TearDownTestCase()
@@ -68,21 +68,21 @@ class AABB_NodeTests : public ::testing::Test
 
     void SetUp() override
     {
-        l1 = new BVH_Leaf(T1);
-        l2 = new BVH_Leaf(T2);
-        l3 = new BVH_Leaf(T3);
-        l4 = new BVH_Leaf(T4);
-        l5 = new BVH_Leaf(T5);
-        p1 = new BVH_iNode(l1,l2);
-        p2 = new BVH_iNode(l3,l4);
-        gp = new BVH_iNode(p1,p2);
+        l1 = new LeafNode(T1);
+        l2 = new LeafNode(T2);
+        l3 = new LeafNode(T3);
+        l4 = new LeafNode(T4);
+        l5 = new LeafNode(T5);
+        //p1 = new InternalNode(l1,l2);
+        //p2 = new InternalNode(l3,l4);
+        //gp = new InternalNode(p1,p2);
     }
 
     void TearDown() override
     {
         delete l1; delete l2;
         delete l3; delete l4; delete l5;
-        delete p1; delete p2; delete gp;
+        //delete p1; delete p2; delete gp;
     }
 
     ~AABB_NodeTests() = default;
@@ -100,11 +100,11 @@ POINT* AABB_NodeTests::d = nullptr;
 POINT* AABB_NodeTests::e = nullptr;
 POINT* AABB_NodeTests::f = nullptr;
 POINT* AABB_NodeTests::g = nullptr;
-FT_TRI* AABB_NodeTests::T1 = nullptr;
-FT_TRI* AABB_NodeTests::T2 = nullptr;
-FT_TRI* AABB_NodeTests::T3 = nullptr;
-FT_TRI* AABB_NodeTests::T4 = nullptr;
-FT_TRI* AABB_NodeTests::T5 = nullptr;
+HsTri* AABB_NodeTests::T1 = nullptr;
+HsTri* AABB_NodeTests::T2 = nullptr;
+HsTri* AABB_NodeTests::T3 = nullptr;
+HsTri* AABB_NodeTests::T4 = nullptr;
+HsTri* AABB_NodeTests::T5 = nullptr;
 
 
 
@@ -118,28 +118,32 @@ TEST_F(DISABLED_AABB_NodeTests, GetSibling)
     //ASSERT_EQ(s,l2);
 }
 
-TEST_F(AABB_NodeTests, ConstructorBVH_iNodeDeathTest)
+TEST_F(DISABLED_AABB_NodeTests, ConstructorInternalNodeDeathTest)
 {
-    BVH_iNode* achild;
-    ASSERT_DEATH(BVH_iNode* node = new BVH_iNode(l1,achild),"");
+    //InternalNode* achild;
+    //ASSERT_DEATH(InternalNode* node = new InternalNode(l1,achild),"");
 }
 
-TEST_F(AABB_NodeTests, ConstructorBVH_iNode)
+TEST_F(DISABLED_AABB_NodeTests, ConstructorInternalNode)
 {
-    BVH_iNode* p1 = new BVH_iNode(l1,l2);
+    /*
+    InternalNode* p1 = new InternalNode(l1,l2);
     ASSERT_NE(p1->getLeft(),nullptr);
     ASSERT_EQ(l1->getParent(),p1);
     ASSERT_EQ(l2->getParent(),p1);
     ASSERT_FALSE(p1->isLeaf());
     delete p1;
+    */
 }
 
-TEST_F(AABB_NodeTests, ConstructorBVH_Leaf)
+TEST_F(AABB_NodeTests, ConstructorLeafNode)
 {
     ASSERT_NE(l5->getHse(),nullptr);
     ASSERT_EQ(l5->getParent(),nullptr);
-    ASSERT_TRUE(l5->isLeaf());
-    ASSERT_FALSE(l5->isRoot());
+
+    BoundingVolume bv5 = l5->getBV();
+    ASSERT_DOUBLE_EQ(bv5.upper[0],0.0);
+    ASSERT_DOUBLE_EQ(bv5.lower[1],-1.0);
 }
 
 

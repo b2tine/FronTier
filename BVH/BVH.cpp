@@ -1,12 +1,13 @@
 #include "BVH.h"
 
-BV_Leaf* BVH::createLeaf(FT_HSE* h)
+/*
+LeafNode* BVH::createLeaf(Hse* h)
 {
-    return new BV_Leaf(h);
+    return new LeafNode(h);
 }
 
-BV_Node* BVH::createNode(BV_Node* lc, BV_Node* rc)
+InternalNode* BVH::createNode(BVH_Node* lc, BVH_Node* rc)
 {
-    return new BV_Node(lc,rc);
+    return new InternalNode(lc,rc);
 }
-
+*/

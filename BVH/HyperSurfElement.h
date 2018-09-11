@@ -1,5 +1,5 @@
-#ifndef FT_HSE_H
-#define FT_HSE_H
+#ifndef HYPER_SURF_ELEMENT_H
+#define HYPER_SURF_ELEMENT_H
 
 #include <algorithm>
 #include <iostream>
@@ -8,18 +8,18 @@
 
 
 //FronTier hypersurface elements wrapper base class.
-class FT_HSE
+class Hse
 {
     public:
 
-        FT_HSE() = default;
-        virtual ~FT_HSE() = default;
+        Hse() = default;
+        virtual ~Hse() = default;
 
         //delete copy and move ops since no member data
-        FT_HSE(const FT_HSE&) = delete;
-        FT_HSE& operator=(const FT_HSE&) = delete;
-        FT_HSE(FT_HSE&&) = delete;
-        FT_HSE& operator=(FT_HSE&&) = delete;
+        Hse(const Hse&) = delete;
+        Hse& operator=(const Hse&) = delete;
+        Hse(Hse&&) = delete;
+        Hse& operator=(Hse&&) = delete;
 
         virtual double max_coord(int) const = 0;
         virtual double min_coord(int) const = 0;
@@ -28,7 +28,7 @@ class FT_HSE
 };
 
 //Wrapper class for FronTier POINT
-class FT_POINT : public FT_HSE
+class HsPoint : public Hse
 {
     private:
 
@@ -36,29 +36,27 @@ class FT_POINT : public FT_HSE
 
     public:
 
-        FT_POINT() = default;
-        ~FT_POINT() = default;
-
-        //delete copy and move ops until there
-        //is a good reason not to.
-        FT_POINT(const FT_POINT&) = delete;
-        FT_POINT& operator=(const FT_POINT&) = delete;
-        FT_POINT(FT_POINT&&) = delete;
-        FT_POINT& operator=(FT_POINT&&) = delete;
-
         //NOTE: point is a shallow copy of p
-        explicit FT_POINT(POINT* p)
+        explicit HsPoint(POINT* p)
             : point{p}
         {}
 
-        POINT* Point_of_hse(int) const override;
+        HsPoint() = default;
+        ~HsPoint() = default;
+
+        HsPoint(const HsPoint&) = delete;
+        HsPoint& operator=(const HsPoint&) = delete;
+        HsPoint(HsPoint&&) = delete;
+        HsPoint& operator=(HsPoint&&) = delete;
+
+        POINT* Point_of_hse(int i = 0) const override;
         double min_coord(int) const override;
         double max_coord(int) const override;
         int num_pts() const override { return 1; }
 };
 
 //Wrapper class for FronTier BOND
-class FT_BOND : public FT_HSE
+class HsBond : public Hse
 {
     private:
 
@@ -66,18 +64,18 @@ class FT_BOND : public FT_HSE
 
     public:
 
-        FT_BOND() = default;
-        ~FT_BOND() = default;
+        HsBond() = default;
+        ~HsBond() = default;
 
         //delete copy and move ops until there
         //is a good reason not to.
-        FT_BOND(const FT_BOND&) = delete;
-        FT_BOND& operator=(const FT_BOND&) = delete;
-        FT_BOND(FT_BOND&&) = delete;
-        FT_BOND& operator=(FT_BOND&&) = delete;
+        HsBond(const HsBond&) = delete;
+        HsBond& operator=(const HsBond&) = delete;
+        HsBond(HsBond&&) = delete;
+        HsBond& operator=(HsBond&&) = delete;
         
         //NOTE: bond is a shallow copy of p
-        explicit FT_BOND(BOND* b)
+        explicit HsBond(BOND* b)
             : bond{b}
         {}
 
@@ -87,11 +85,11 @@ class FT_BOND : public FT_HSE
         int num_pts() const override { return 2; }
 };
 
-//TODO: Add method to check if an FT_HSE (FT_BOND or FT_TRI)
-//      is FT_BOND's neighbor.
+//TODO: Add method to check if an Hse (HsBond or HsTri)
+//      is HsBond's neighbor.
 
 //Wrapper class for FronTier TRI
-class FT_TRI : public FT_HSE
+class HsTri : public Hse
 {
     private:
 
@@ -99,18 +97,18 @@ class FT_TRI : public FT_HSE
 
     public:
 
-        FT_TRI() = default;
-        ~FT_TRI() = default;
+        HsTri() = default;
+        ~HsTri() = default;
 
         //delete copy and move ops until there
         //is a good reason not to.
-        FT_TRI(const FT_TRI&) = delete;
-        FT_TRI& operator=(const FT_TRI&) = delete;
-        FT_TRI(FT_TRI&&) = delete;
-        FT_TRI& operator=(FT_TRI&&) = delete;
+        HsTri(const HsTri&) = delete;
+        HsTri& operator=(const HsTri&) = delete;
+        HsTri(HsTri&&) = delete;
+        HsTri& operator=(HsTri&&) = delete;
         
         //NOTE: tri is a shallow copy of t
-        explicit FT_TRI(TRI* t)
+        explicit HsTri(TRI* t)
             : tri{t}
         {}
 
@@ -120,8 +118,8 @@ class FT_TRI : public FT_HSE
         int num_pts() const override { return 3; }
 };
 
-//TODO: Add method to check if an FT_HSE (FT_BOND or FT_TRI)
-//      is FT_TRI's neighbor.
+//TODO: Add method to check if an Hse (HsBond or HsTri)
+//      is HsTri's neighbor.
 
 
 

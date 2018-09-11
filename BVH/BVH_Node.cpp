@@ -4,7 +4,7 @@
 ////////           BVH_Node Methods             ////////
 ///////////////////////////////////////////////////////
 
-
+/*
 BoundingVolume* BVH_Node::createLeafBV(FT_HSE* h, const BV_Type& bvtype)
 {
     switch(bvtype)
@@ -29,11 +29,25 @@ BoundingVolume* BVH_Node::createParentBV(BVH_Node* lc, BVH_Node* rc)
             break;
     }
 }
+*/
+
+
+/////////////////////////////////////////////////////////
+////////            LeafNode Methods             ////////
+///////////////////////////////////////////////////////
+
+LeafNode::LeafNode(Hse* h)
+    : hse{h} 
+{
+    setBV(BoundingVolume(h));
+}
+
 
 /////////////////////////////////////////////////////////
 ////////           InternalNode Methods             ////////
 ///////////////////////////////////////////////////////
 
+/*
 InternalNode::InternalNode(BVH_Node* lc, BVH_Node* rc)
 {
     assert(lc != nullptr && rc != nullptr);
@@ -42,10 +56,10 @@ InternalNode::InternalNode(BVH_Node* lc, BVH_Node* rc)
     this->setRight(rc);
     rc->setParent(this);
     lc->setParent(this);
-    //TODO: need factory function for BoundingVolume class
-    bv = BVH_Node::createParentBV(lc,rc);
-}
+    //bv = BVH_Node::createParentBV(lc,rc);
+}*/
 
+/*
 const InternalNode* const InternalNode::getSibling() const
 {
     auto p = this->getParent();
@@ -55,16 +69,8 @@ const InternalNode* const InternalNode::getSibling() const
             p->getRight() : p->getLeft();
     }
 }
+*/
 
 
-/////////////////////////////////////////////////////////
-////////            LeafNode Methods             ////////
-///////////////////////////////////////////////////////
 
-
-LeafNode::LeafNode(FT_HSE* h, BV_Type bvtype)
-    : hse{h}
-{
-    setBV(BVH_Node::createLeafBV(h,bvtype));
-}
 
