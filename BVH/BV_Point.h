@@ -8,7 +8,8 @@
 
 
 
-//Point type that can be used in std::map 
+//Point type that can be used with std::map
+//and CGAL::hilbert_sort()
 class BV_Point
 {
     private:

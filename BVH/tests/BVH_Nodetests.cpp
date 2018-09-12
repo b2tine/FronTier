@@ -1,7 +1,7 @@
 #include "gmock/gmock.h"
 #include "../BVH_Node.h"
 
-class AABB_NodeTests : public ::testing::Test
+class BVH_NodeTests : public ::testing::Test
 {
     protected:
 
@@ -85,46 +85,46 @@ class AABB_NodeTests : public ::testing::Test
         //delete p1; delete p2; delete gp;
     }
 
-    ~AABB_NodeTests() = default;
+    ~BVH_NodeTests() = default;
 };
 
-TRI* AABB_NodeTests::t1 = nullptr;
-TRI* AABB_NodeTests::t2 = nullptr;
-TRI* AABB_NodeTests::t3 = nullptr;
-TRI* AABB_NodeTests::t4 = nullptr;
-TRI* AABB_NodeTests::t5 = nullptr;
-POINT* AABB_NodeTests::a = nullptr;
-POINT* AABB_NodeTests::b = nullptr;
-POINT* AABB_NodeTests::c = nullptr;
-POINT* AABB_NodeTests::d = nullptr;
-POINT* AABB_NodeTests::e = nullptr;
-POINT* AABB_NodeTests::f = nullptr;
-POINT* AABB_NodeTests::g = nullptr;
-HsTri* AABB_NodeTests::T1 = nullptr;
-HsTri* AABB_NodeTests::T2 = nullptr;
-HsTri* AABB_NodeTests::T3 = nullptr;
-HsTri* AABB_NodeTests::T4 = nullptr;
-HsTri* AABB_NodeTests::T5 = nullptr;
+TRI* BVH_NodeTests::t1 = nullptr;
+TRI* BVH_NodeTests::t2 = nullptr;
+TRI* BVH_NodeTests::t3 = nullptr;
+TRI* BVH_NodeTests::t4 = nullptr;
+TRI* BVH_NodeTests::t5 = nullptr;
+POINT* BVH_NodeTests::a = nullptr;
+POINT* BVH_NodeTests::b = nullptr;
+POINT* BVH_NodeTests::c = nullptr;
+POINT* BVH_NodeTests::d = nullptr;
+POINT* BVH_NodeTests::e = nullptr;
+POINT* BVH_NodeTests::f = nullptr;
+POINT* BVH_NodeTests::g = nullptr;
+HsTri* BVH_NodeTests::T1 = nullptr;
+HsTri* BVH_NodeTests::T2 = nullptr;
+HsTri* BVH_NodeTests::T3 = nullptr;
+HsTri* BVH_NodeTests::T4 = nullptr;
+HsTri* BVH_NodeTests::T5 = nullptr;
 
 
 
-using DISABLED_AABB_NodeTests = AABB_NodeTests;
+using DISABLED_BVH_NodeTests = BVH_NodeTests;
 
 
 
-TEST_F(DISABLED_AABB_NodeTests, GetSibling)
+TEST_F(DISABLED_BVH_NodeTests, GetSibling)
 {
     //auto s = l1->getSibling();
     //ASSERT_EQ(s,l2);
 }
 
-TEST_F(DISABLED_AABB_NodeTests, ConstructorInternalNodeDeathTest)
+TEST_F(DISABLED_BVH_NodeTests, ConstructorInternalNodeDeathTest)
 {
     //InternalNode* achild;
     //ASSERT_DEATH(InternalNode* node = new InternalNode(l1,achild),"");
 }
 
-TEST_F(DISABLED_AABB_NodeTests, ConstructorInternalNode)
+TEST_F(DISABLED_BVH_NodeTests, ConstructorInternalNode)
 {
     /*
     InternalNode* p1 = new InternalNode(l1,l2);
@@ -136,10 +136,10 @@ TEST_F(DISABLED_AABB_NodeTests, ConstructorInternalNode)
     */
 }
 
-TEST_F(AABB_NodeTests, ConstructorLeafNode)
+TEST_F(BVH_NodeTests, ConstructorLeafNode)
 {
     ASSERT_NE(l5->getHse(),nullptr);
-    ASSERT_EQ(l5->getParent(),nullptr);
+    ASSERT_EQ(l5->getParent().lock(),nullptr);
 
     BoundingVolume bv5 = l5->getBV();
     ASSERT_DOUBLE_EQ(bv5.upper[0],0.0);

@@ -17,13 +17,14 @@ GMOCK_LIB = -L/usr/local/lib -lgmock -lgmock_main
 
 
 OBJS = ../HyperSurfElement.o HSEtests.o ../BoundingVolume.o AABBtests.o  ../BVH_Node.o BVH_Nodetests.o ../BVH.o BVHtests.o
+HEADERS = ../HyperSurfElement.h ../BoundingVolume.h ../BVH_Node.h ../BVH.h
 
 
-testAll: main.cpp $(OBJS) FT_libs_testdir
+testAll: main.cpp FT_libs_testdir $(OBJS)
 	$(CXX) $< $(OBJS) $(GMOCK_LIB) $(CGAL_INCLUDE) $(CGAL_LIB) -I../../include $(incs) -L../../lib/x86_64 $(libincs) -lFronTier -lm $(libs) -o $@
 
 
-%.o: %.cpp
+%.o: %.cpp $(HEADERS)
 	$(CXX) -c $< $(CGAL_INCLUDE) $(CGAL_LIB) -I../../include $(incs) -L../../lib/x86_64 $(libincs) -lFronTier -lm $(libs)
 
 ../%.o: ../%.cpp

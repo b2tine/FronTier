@@ -110,15 +110,8 @@ HsTri* BVH_Tests::T4 = nullptr;
 HsTri* BVH_Tests::T5 = nullptr;
 
 
-
-
 using DISABLED_BVH_Tests = BVH_Tests;
 
-
-//TODO:  1. test drive a vector containing the
-//          leaf nodes
-//
-//       2. Add factory death tests
 
 
 TEST_F(DISABLED_BVH_Tests, FactoryCreateInternalNode)

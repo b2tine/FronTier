@@ -3,11 +3,13 @@
 
 #include <algorithm>
 #include <iostream>
+#include <exception>
 #include <cassert>
+
 #include "FronTier.h"
 
 
-//FronTier hypersurface elements wrapper base class.
+//FronTier hypersurface elements wrapper abstract base class.
 class Hse
 {
     public:
@@ -36,7 +38,7 @@ class HsPoint : public Hse
 
     public:
 
-        //NOTE: point is a shallow copy of p
+        //TODO: throw exception if p is nullptr
         explicit HsPoint(POINT* p)
             : point{p}
         {}
@@ -64,21 +66,19 @@ class HsBond : public Hse
 
     public:
 
+        //TODO: throw exception if b is nullptr
+        explicit HsBond(BOND* b)
+            : bond{b}
+        {}
+
         HsBond() = default;
         ~HsBond() = default;
 
-        //delete copy and move ops until there
-        //is a good reason not to.
         HsBond(const HsBond&) = delete;
         HsBond& operator=(const HsBond&) = delete;
         HsBond(HsBond&&) = delete;
         HsBond& operator=(HsBond&&) = delete;
         
-        //NOTE: bond is a shallow copy of p
-        explicit HsBond(BOND* b)
-            : bond{b}
-        {}
-
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;
         double max_coord(int) const override;
@@ -97,21 +97,19 @@ class HsTri : public Hse
 
     public:
 
+        //TODO: throw exception if t is nullptr
+        explicit HsTri(TRI* t)
+            : tri{t}
+        {}
+
         HsTri() = default;
         ~HsTri() = default;
 
-        //delete copy and move ops until there
-        //is a good reason not to.
         HsTri(const HsTri&) = delete;
         HsTri& operator=(const HsTri&) = delete;
         HsTri(HsTri&&) = delete;
         HsTri& operator=(HsTri&&) = delete;
         
-        //NOTE: tri is a shallow copy of t
-        explicit HsTri(TRI* t)
-            : tri{t}
-        {}
-
         POINT* Point_of_hse(int) const override;
         double min_coord(int) const override;
         double max_coord(int) const override;

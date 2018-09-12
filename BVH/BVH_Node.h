@@ -3,16 +3,18 @@
 #ifndef BVH_NODE_H
 #define BVH_NODE_H
 
+#include <memory>
+
 class InternalNode;
 using BoundingVolume = AABB;
 
 
-class BVH_Node
+class BVH_Node : public std::enable_shared_from_this<BVH_Node>
 {
     private:
 
         BoundingVolume bv;
-        InternalNode* parent{nullptr};
+        std::weak_ptr<InternalNode> parent;
         
     public:
 
@@ -27,15 +29,18 @@ class BVH_Node
         virtual const bool isLeaf() const = 0;
         virtual const bool isRoot() const = 0;
 
-        BoundingVolume& getBV() {return bv;}
-        const InternalNode* const getParent() const {return parent;}
-        
         void setBV(const BoundingVolume& BV) {bv = BV;}
-        void setParent(InternalNode* p) {parent = p;}
-
-        //static void createLeafBV(Hse*);
-        //static void createParentBV(const BoundingVolume&,const BoundingVolume&);
-    
+        const BoundingVolume& getBV() const {return bv;}
+        
+        void setParent(std::shared_ptr<InternalNode> P)
+        {
+            parent = P;
+        }
+        
+        const std::weak_ptr<const InternalNode> getParent() const
+        {
+            return parent;
+        }
 };
 
 
@@ -48,7 +53,12 @@ class LeafNode : public BVH_Node
 
     public:
 
-        LeafNode(Hse*);
+        LeafNode(Hse* h)
+            : hse{h}
+        {
+            setBV(BoundingVolume(h));
+        }
+
         LeafNode() = default;
         ~LeafNode() = default;
 
@@ -68,13 +78,17 @@ class InternalNode : public BVH_Node
 {
     private:
 
-        BVH_Node* left{nullptr};
-        BVH_Node* right{nullptr};
+        std::shared_ptr<BVH_Node> left;
+        std::shared_ptr<BVH_Node> right;
 
-        void setLeft(BVH_Node* lc) {left = lc;}
-        void setRight(BVH_Node* rc) {right = rc;}
+    protected:
+
+        void setLeft(std::shared_ptr<BVH_Node> lc) {left = lc;}
+        void setRight(std::shared_ptr<BVH_Node> rc) {right = rc;}
 
     public:
+
+        InternalNode(InternalNode* lc, InternalNode* rc);
 
         InternalNode() = default;
         virtual ~InternalNode() = default;
@@ -84,10 +98,16 @@ class InternalNode : public BVH_Node
         InternalNode(InternalNode&&) = delete;
         InternalNode& operator=(InternalNode&&) = delete;
 
-        InternalNode(InternalNode* lc, InternalNode* rc);
 
-        const BVH_Node* const getLeft() const {return left;}
-        const BVH_Node* const getRight() const {return right;}
+        const std::weak_ptr<const BVH_Node> getLeft() const
+        {
+            return std::weak_ptr<BVH_Node>(left);
+        }
+
+        const std::weak_ptr<const BVH_Node> getRight() const
+        {
+            return std::weak_ptr<BVH_Node>(right);
+        }
         
         const bool isLeaf() const override {return false;}
         const bool isRoot() const override {return false;}
