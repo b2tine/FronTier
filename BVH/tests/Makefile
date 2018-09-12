@@ -16,8 +16,8 @@ GMOCK_INCLUDE = -I/usr/local/include -DGTEST_LINKED_AS_SHARED_LIBRARY=1
 GMOCK_LIB = -L/usr/local/lib -lgmock -lgmock_main
 
 
-OBJS = ../HyperSurfElement.o HSEtests.o ../BoundingVolume.o AABBtests.o  ../BVH_Node.o BVH_Nodetests.o ../BVH.o BVHtests.o
-HEADERS = ../HyperSurfElement.h ../BoundingVolume.h ../BVH_Node.h ../BVH.h
+OBJS = ../HyperSurfElement.o HSEtests.o BV_Point_tests.o ../BoundingVolume.o AABBtests.o  ../BVH_Node.o BVH_Nodetests.o ../BVH.o BVHtests.o
+HEADERS = ../HyperSurfElement.h ../BV_Point.h ../BoundingVolume.h ../BVH_Node.h ../BVH.h
 
 
 testAll: main.cpp FT_libs_testdir $(OBJS)

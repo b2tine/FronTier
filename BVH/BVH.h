@@ -9,22 +9,31 @@ class BVH
 {
     private:
         
-        RootNode* root{nullptr};
+        std::shared_ptr<RootNode> root;
 
     public:
 
+        //TODO: Will want to enforce invariant
+        //      that root is always initialized,
+        //      but requires a build routine
+        //      since we want a bottom up construction
+              
         BVH() = default;
-        ~BVH() {delete root;}
+        ~BVH() = default;
 
         BVH(const BVH&) = delete;
         BVH& operator=(const BVH&) = delete;
         BVH(BVH&&) = delete;
         BVH& operator=(BVH&&) = delete;
 
-        const RootNode* const getRoot() const {return root;}
+        const std::weak_ptr<const RootNode> getRoot() const
+        {
+            return std::weak_ptr<RootNode>(root);
+        }
 
-        //static LeafNode* createLeaf(FT_HSE* h);
-        //static InternalNode* createNode(BV_Node* lc, BV_Node* rc);
+        //static std::shared_ptr<LeafNode> createLeaf(FT_HSE* h);
+        /*static std::shared_ptr<InternalNode>
+            createInternalNode(BV_Node* lc, BV_Node* rc);*/
 
 };
 

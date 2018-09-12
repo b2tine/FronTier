@@ -27,12 +27,6 @@ class HsPoint_Tests : public ::testing::Test
 
 using DISABLED_HsPoint_Tests = HsPoint_Tests;
 
-TEST_F(HsPoint_Tests, OutOfRangeDeathTest)
-{
-    ASSERT_DEATH(A->Point_of_hse(1),"");
-    ASSERT_DEATH(A->Point_of_hse(-1),"");
-}
-
 TEST_F(HsPoint_Tests, MaxCoordIsEqualToMinCoord)
 {
     ASSERT_DOUBLE_EQ(A->min_coord(0),A->max_coord(0));
@@ -45,6 +39,12 @@ TEST_F(HsPoint_Tests, PointOfHseDefaultArgIsZero)
     ASSERT_DOUBLE_EQ(Coords(b)[0],1.0);
     ASSERT_DOUBLE_EQ(Coords(b)[1],0.0);
     ASSERT_DOUBLE_EQ(Coords(b)[2],4.0);
+}
+
+TEST_F(HsPoint_Tests, OutOfRangeDeathTest)
+{
+    ASSERT_DEATH(A->Point_of_hse(1),"");
+    ASSERT_DEATH(A->Point_of_hse(-1),"");
 }
 
 //////////////////////////////////////////////////////

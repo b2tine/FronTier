@@ -2,7 +2,7 @@
 
 POINT* HsPoint::Point_of_hse(int i) const
 {
-    assert( i >= 0 && i < this->num_pts() );
+    assert( i == 0 );
     assert( point != nullptr );
     return point;
 }

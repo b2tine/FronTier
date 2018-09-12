@@ -4,34 +4,29 @@
 #include <CGAL/hilbert_sort.h>
 #include <vector>
 
-//TODO: figure out good way to test the hilbert_sort feature
 
-
-
-//Point type that can be used with std::map
-//and CGAL::hilbert_sort()
 class BV_Point
 {
     private:
 
-        std::vector<double> point{3, 0.0};
+        std::vector<double> point;
     
     public:
 
-        //need all the default ctors to use in hilbert_sort()
-        BV_Point() = default;
-        BV_Point(const BV_Point&) = default;
-        BV_Point& operator=(const BV_Point&) = default;
-        BV_Point(BV_Point&&) = default;
-        BV_Point& operator=(BV_Point&&) = default;
-        ~BV_Point() = default;
+        BV_Point()
+            : point(3,0.0)
+        {}
 
         BV_Point(double x, double y, double z)
-        {
-            point[0] = X;
-            point[1] = y;
-            point[2] = z;
-        }
+            : point{x,y,z}
+        {}
+
+        ~BV_Point() = default;
+        BV_Point(const BV_Point&) = default;
+
+        BV_Point& operator=(const BV_Point&) = delete;
+        BV_Point(BV_Point&&) = delete;
+        BV_Point& operator=(BV_Point&&) = delete;
 
         const double& operator[](const std::size_t i) const
         {
@@ -39,32 +34,38 @@ class BV_Point
             return point[i];
         }
 
-        //calls const version through typecasts
         double& operator[](const std::size_t i)
         {
             const_cast<double&>(
                     static_cast<const BV_Point&>(*this)[i]);
         }
 
-        //needed for use as key in std::map<key,val>
-        bool operator < (const BV_Point& p)
+        /*
+        bool operator < (const BV_Point& rhs) const
         {
-            if( point[0] == p[0] )
+            if( point[0] == rhs[0] )
             {
-                if( point[1] == p[1] )
+                if( point[1] == rhs[1] )
                 {
-                    return point[2] < p[2];
+                    return point[2] < rhs[2];
                 }
-                return point[1] < p[1];
+                return point[1] < rhs[1];
             }
-            return point[0] < p[0];
+            return point[0] < rhs[0];
         }
-};
 
+        bool operator == (const BV_Point& rhs) const
+        {
+            return point[0] == rhs[0] &&
+                point[1] == rhs[1]  && point[2] == rhs[2];
+        }
+        */
+};
 
 //additional structures allowing BV_Point to
 //be used in the CGAL function hilbert_sort();
 
+/*
 struct BV_LessX
 {
     bool operator()(const BV_Point& p, const BV_Point& q) const
@@ -89,7 +90,7 @@ struct BV_LessZ
     }
 };
 
-struct BV_HilberSortingTraits
+struct BV_HilbertSortingTraits
 {
     using Point_3 = BV_Point;
     using Less_x_3 = BV_LessX;
@@ -111,6 +112,6 @@ struct BV_HilberSortingTraits
         return Less_z_3();
     }
 };
-
+*/
 
 #endif

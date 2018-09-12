@@ -8,8 +8,7 @@
 
 #include "FronTier.h"
 
-
-//FronTier hypersurface elements wrapper abstract base class.
+//Abstract base class for FronTier hypersurface element wrappers
 class Hse
 {
     public:
@@ -17,7 +16,6 @@ class Hse
         Hse() = default;
         virtual ~Hse() = default;
 
-        //delete copy and move ops since no member data
         Hse(const Hse&) = delete;
         Hse& operator=(const Hse&) = delete;
         Hse(Hse&&) = delete;
@@ -29,7 +27,7 @@ class Hse
         virtual int num_pts() const = 0;
 };
 
-//Wrapper class for FronTier POINT
+//Wrapper for FronTier POINT
 class HsPoint : public Hse
 {
     private:
@@ -43,9 +41,9 @@ class HsPoint : public Hse
             : point{p}
         {}
 
-        HsPoint() = default;
         ~HsPoint() = default;
 
+        HsPoint() = delete;
         HsPoint(const HsPoint&) = delete;
         HsPoint& operator=(const HsPoint&) = delete;
         HsPoint(HsPoint&&) = delete;
@@ -55,9 +53,14 @@ class HsPoint : public Hse
         double min_coord(int) const override;
         double max_coord(int) const override;
         int num_pts() const override { return 1; }
+
+        //TODO: Add method to check if a Hse (HsPoint, HsBond, or HsTri)
+        //      is incident to an instance of HsPoint.
+        //      May not need this one since we don't associate
+        //      a bounding volume to points.
 };
 
-//Wrapper class for FronTier BOND
+//Wrapper for FronTier BOND
 class HsBond : public Hse
 {
     private:
@@ -71,9 +74,9 @@ class HsBond : public Hse
             : bond{b}
         {}
 
-        HsBond() = default;
         ~HsBond() = default;
 
+        HsBond() = delete;
         HsBond(const HsBond&) = delete;
         HsBond& operator=(const HsBond&) = delete;
         HsBond(HsBond&&) = delete;
@@ -83,12 +86,13 @@ class HsBond : public Hse
         double min_coord(int) const override;
         double max_coord(int) const override;
         int num_pts() const override { return 2; }
+        
+        //TODO: Add method to check if a Hse (HsPoint, HsBond, or HsTri)
+        //      is incident to an instance of HsBond.
 };
 
-//TODO: Add method to check if an Hse (HsBond or HsTri)
-//      is HsBond's neighbor.
 
-//Wrapper class for FronTier TRI
+//Wrapper for FronTier TRI
 class HsTri : public Hse
 {
     private:
@@ -102,9 +106,9 @@ class HsTri : public Hse
             : tri{t}
         {}
 
-        HsTri() = default;
         ~HsTri() = default;
 
+        HsTri() = delete;
         HsTri(const HsTri&) = delete;
         HsTri& operator=(const HsTri&) = delete;
         HsTri(HsTri&&) = delete;
@@ -114,10 +118,11 @@ class HsTri : public Hse
         double min_coord(int) const override;
         double max_coord(int) const override;
         int num_pts() const override { return 3; }
+
+        //TODO: Add method to check if a Hse (HsPoint, HsBond, or HsTri)
+        //      is incident to an instance of HsTri.
 };
 
-//TODO: Add method to check if an Hse (HsBond or HsTri)
-//      is HsTri's neighbor.
 
 
 

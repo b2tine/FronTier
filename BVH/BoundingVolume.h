@@ -30,14 +30,12 @@ class AABB
         AABB& operator=(AABB&&) = default;
         ~AABB() = default;
 
-        const BV_Point getLower() const {return lower;}
-        const BV_Point getUpper() const {return upper;}
-        
-        const BV_Point centroid() const;
+        const BV_Type getBvType() const;
+        const BV_Point getCentroid() const;
+
         bool contains(const AABB&) const;
         bool overlaps(const AABB&) const;
         //void inflate();
-        BV_Type getBvType() const;
 
         void print() const;
 };

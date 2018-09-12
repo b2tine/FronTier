@@ -26,7 +26,12 @@ AABB::AABB(const AABB& A, const AABB& B)
     }
 }
 
-const BV_Point AABB::centroid() const
+const BV_Type AABB::getBvType() const
+{
+    return BV_Type::AABB;
+}
+
+const BV_Point AABB::getCentroid() const
 {
     BV_Point centroid;
     for( int i = 0; i < 3; ++i )
@@ -54,14 +59,9 @@ bool AABB::overlaps(const AABB& BB) const
     return true;
 }
 
-BV_Type AABB::getBvType() const
-{
-    return BV_Type::AABB;
-}
-
 void AABB::print() const
 {
-    BV_Point centroid = this->centroid();
+    BV_Point centroid = this->getCentroid();
     printf("\n   upper: (%3g,%3g,%3g) \n", upper[0], upper[1], upper[2]);
     printf("centroid: (%3g,%3g,%3g) \n", centroid[0], centroid[1], centroid[2]);
     printf("   lower: (%3g,%3g,%3g) \n\n", lower[0], lower[1], lower[2]);

@@ -135,7 +135,7 @@ TEST_F(DISABLED_BVH_Tests, FactoryCreateLeafNode)
 
 TEST_F(BVH_Tests, RootNullByDefault)
 {
-    ASSERT_EQ(bvh.getRoot(),nullptr);
+    ASSERT_EQ(bvh.getRoot().lock(),nullptr);
 }
 
 
