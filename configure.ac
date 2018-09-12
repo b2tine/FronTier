@@ -42,7 +42,7 @@ echo "using alternate basename and dirname"
 AC_SUBST(name,name)
 noname=" -DNO_DIRNAME "
 echo ${scriptotherlibsinc}
-scriptotherlibsinc=${scriptotherlibsinc}" -L""../util/name "
+scriptotherlibsinc=${scriptotherlibsinc}" -L../util/name "
 echo ${scriptotherlibsinc}
 else
 AC_SUBST(name,[])
@@ -109,24 +109,24 @@ AS_IF([test "x$with_hdf4" != xno],
 
 AC_ARG_WITH([openmpi],
             AS_HELP_STRING([--with-openmpi=path],[use openmpi])],
-            [mpiprefix=${withval} mpi="yes"],[])
+            [openmpiprefix=${withval} mpi="yes"],[])
 
 AS_IF([test "x$with_openmpi" != xno],
-     [mpi_incs=" -I"${mpiprefix}"/include -D__MPI__"
-      scriptotherlibsinc=${scriptotherlibsinc} "-L"${mpiprefix}"/lib"
-      scriptotherlibs=${scriptotherlibs} "-lmpi -lmpi_cxx -lpthread"])
+     [mpi_incs=" -I"${openmpiprefix}"/include -D__MPI__"
+      scriptotherlibsinc=${scriptotherlibsinc} "-L"${openmpiprefix}"/lib"
+      scriptotherlibs=${scriptotherlibs} "-lmpi -lmpi_cxx -lpthread"],[])
 
 ####################################################
 # mpich
 
 AC_ARG_WITH([mpich],
             [AS_HELP_STRING([--with-mpich=path],[use mpich])],
-            [mpiprefix=${withval} mpi="yes"],[])
+            [mpichprefix=${withval} mpi="yes"],[])
 
 AS_IF([test "x$with_mpich" != xno],
-      [mpi_incs=" -I"${mpiprefix}"/include -D__MPI__"
-       scriptotherlibsinc=${scriptotherlibsinc}" -L"${mpiprefix}"/lib"
-       scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichcxx -lpthread"])
+      [mpi_incs=" -I"${mpichprefix}"/include -D__MPI__"
+       scriptotherlibsinc=${scriptotherlibsinc}" -L"${mpichprefix}"/lib"
+       scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichcxx -lpthread"],[])
 
 ####################################################
 # PETSc
@@ -138,11 +138,9 @@ AC_ARG_WITH([petsc],
 AS_IF([test "x$with_petsc" != xno],
      [AS_IF([test ${mpi} = yes],
            [AC_SUBST(PETSC_INCLUDE,"-I"${petsc_dir}"/include")
-           AC_SUBST(PETSC_LIB,"-L"${petsc_dir}"/lib "${PETSC_LDFLAGS})
-           iFluid="cd iFluid && \$(MAKE)"],
-           [AC_MSG_FAILURE([can't use PETSc without mpi]) iFluid=""])])
-
-AC_SUBST(iFluid, ${iFluid})
+           AC_SUBST(PETSC_LIB,"-L"${petsc_dir}"/lib "${PETSC_LDFLAGS})],
+           [AC_MSG_FAILURE([can't use PETSc without mpi])])
+     ])
 
 
 ####################################################
