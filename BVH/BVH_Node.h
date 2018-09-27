@@ -80,9 +80,6 @@ class InternalNode : public BVH_Node
 
         std::shared_ptr<BVH_Node> left;
         std::shared_ptr<BVH_Node> right;
-
-    protected:
-
         void setLeft(std::shared_ptr<BVH_Node> lc) {left = lc;}
         void setRight(std::shared_ptr<BVH_Node> rc) {right = rc;}
 
@@ -111,17 +108,9 @@ class InternalNode : public BVH_Node
         
         const bool isLeaf() const override {return false;}
         const bool isRoot() const override {return false;}
+        //TODO: need to check if parent is nullptr for root check
 };
 
-
-class RootNode : public InternalNode
-{
-
-    public:
-
-        const bool isRoot() const override {return true;}
-
-};
 
 
 #endif

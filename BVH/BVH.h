@@ -9,7 +9,7 @@ class BVH
 {
     private:
         
-        std::shared_ptr<RootNode> root;
+        std::shared_ptr<InternalNode> root;
 
     public:
 
@@ -26,9 +26,9 @@ class BVH
         BVH(BVH&&) = delete;
         BVH& operator=(BVH&&) = delete;
 
-        const std::weak_ptr<const RootNode> getRoot() const
+        const std::weak_ptr<const InternalNode> getRoot() const
         {
-            return std::weak_ptr<RootNode>(root);
+            return std::weak_ptr<InternalNode>(root);
         }
 
         //static std::shared_ptr<LeafNode> createLeaf(FT_HSE* h);

@@ -7,7 +7,7 @@ AC_CANONICAL_BUILD
 AC_PROG_AWK
 
 AC_PROG_CC(gcc gcc295 cc)
-AC_PROG_CXX
+AC_PROG_CXX(g++)
 AC_PROG_F77(gfortran)
 AC_LANG(C)
 
@@ -37,7 +37,7 @@ AC_CHECK_FUNC([malloc],[malloc='yes'],[malloc='no'])
 AC_CHECK_FUNC(basename,[basename='yes'],[basename='no'])
 AC_CHECK_FUNC(dirname,[dirname='yes'],[dirname='no'])
 
-if test $basename = 'no' && test $ibasename = 'no';then
+if test $basename = 'no' && test $dirname = 'no';then
 echo "using alternate basename and dirname"
 AC_SUBST(name,name)
 noname=" -DNO_DIRNAME "
@@ -52,123 +52,154 @@ fi
 
 #######################################################
 
-AC_ARG_WITH(no-debugging,[  --with-no-debugging          Removes the -g option while compiling],[debug=" "],[debug=" -g "])
+#WARNING: The white space on shell-style quoted strings is not trivial.
 
-AC_ARG_WITH([deptrack],[   --with-deptrack                Enables dependency tracking in examples for FronTier files],[ checklibs=FT_libs ] [ checklibs="" ] )
+AC_ARG_WITH([no-debugging],
+            [AS_HELP_STRING([--with-no-debugging],[remove -g option when compiling libFrontier])],
+            [debug=""],[debug="-g "])
+
+AC_ARG_WITH([deptrack],
+            [AS_HELP_STRING([--with-deptrack],[dependency tracking in examples for FronTier files])],
+            [checklibs=FT_libs],[checklibs=""])
 
 AC_SUBST(devel,${checklibs})
 
 
+
+#NOTE: These options have terrible names, that don't line up with what they do.
 basecode="full"
-AC_ARG_WITH([adv],[  --with-adv                 Compilation of the Advanced FronTier++ code ],[basecode="adv"],[])
-AC_ARG_WITH([base],[  --with-base                 Compilation of the Basic FronTier++ code ],[basecode="base"],[])
+AC_ARG_WITH([adv],
+            [AS_HELP_STRING([--with-adv],[Advanced FronTier++ code])],
+            [basecode="adv"])
 
-AC_ARG_WITH([gd],[  --with-gd=PFX             Links with gd library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgd "${scriptotherlibs} gdincs=" -D__GD__ -I"${withval}"/include "],[gdincs=""])
+AC_ARG_WITH([base],
+            [AS_HELP_STRING([--with-base],[Basic FronTier++ code])],
+            [basecode="base"])
 
-AC_ARG_WITH([gsl],[  --with-gsl=PFX             Links with gsl library for 1d post processing],[scriptotherlibsinc=" -L"${withval}"/lib " scriptotherlibs="-lgsl "${scriptotherlibs} gslincs=" -D__GSL__ -I"${withval}"/include "],[gslincs=""])
+AC_ARG_WITH([gd],
+            [AS_HELP_STRING([--with-gd=path],[use gd library for 1d post processing])],
+            [scriptotherlibsinc="-L"${withval}"/lib "
+             scriptotherlibs="-lgd "${scriptotherlibs}
+             gdincs="-D__GD__ -I"${withval}"/include "],[gdincs=""])
 
-AC_ARG_WITH([gpu],[--with-gpu  Support GPU],[gpuincs=" -D__GPU__ " ],[gpuincs="" ])
+AC_ARG_WITH([gsl],
+            [AS_HELP_STRING([--with-gsl=path],[use gsl library for 1d post processing])],
+            [scriptotherlibsinc="-L"${withval}"/lib "
+             scriptotherlibs="-lgsl "${scriptotherlibs}
+             gslincs="-D__GSL__ -I"${withval}"/include "],[gslincs=""])
+
+AC_ARG_WITH([gpu],
+            [AS_HELP_STRING([--with-gpu],[use GPU acceletated algorithms])],
+            [gpuincs="-D__GPU__ "],[gpuincs=""])
 
 if test "$gpuincs" = ""; then
     echo "GPU not enabled"
-    AC_SUBST(USEGPU,${USEGPU})        
 else
     echo "GPU enabled"
-    AC_SUBST(USEGPU,${USEGPU})        
 fi
 
-#HYPRE's arg_with statement should be near the PETSc arg_with statement,
-#and it should get its own distinct linker flag, rather than tacking it onto
-#the PETSC linker flags inside functions of the build script (of all places!).
-AC_ARG_WITH([hypre],
-            AS_HELP_STRING([--with-hypre=path],[use hypre preconditioners with PETSc]),
-            [hypreincs=" -D__HYPRE__"],[hypreincs=""])
+AC_SUBST(USEGPU,${USEGPU})        
 
-if test ${hypreincs} = ""; then
-    echo "HYPRE not enabled"
-    AC_SUBST(USEHYPRE,${USEHYPRE})        
-else
-    echo "HYPRE enabled"
-    AC_SUBST(USEHYPRE,${USEHYPRE})        
-fi
 
 ####################################################
 # HDF
 
 AC_ARG_WITH([hdf4],
             [AS_HELP_STRING([--with-hdf4=path],[hdf4 (default is no)])],
-            [hdfprefix=${withval}],[])
+            [hdfprefix=${withval}])
 
 AS_IF([test "x$with_hdf4" != xno],
-      [hdfincs=" -I"${hdfprefix}"/include -DUSE_HDF "
-       scriptotherlibsinc=${scriptotherlibsinc}" -L/usr/lib -L"${hdfprefix}"/lib"
-       scriptotherlibs=${scriptotherlibs}" -lmfhdf -ldf -ljpeg -lz"])
+      [hdfincs="-I"${hdfprefix}"/include -DUSE_HDF "
+       scriptotherlibsinc=${scriptotherlibsinc}"-L/usr/lib -L"${hdfprefix}"/lib "
+       scriptotherlibs=${scriptotherlibs}"-lmfhdf -ldf -ljpeg -lz "])
 
 ####################################################
 # openmpi
 
-AC_ARG_WITH([openmpi],
-            AS_HELP_STRING([--with-openmpi=path],[use openmpi])],
-            [openmpiprefix=${withval} mpi="yes"],[])
+#TODO: add with-openmpi-include and with-openmpi-library
 
-AS_IF([test "x$with_openmpi" != xno],
-     [mpi_incs=" -I"${openmpiprefix}"/include -D__MPI__"
-      scriptotherlibsinc=${scriptotherlibsinc} "-L"${openmpiprefix}"/lib"
-      scriptotherlibs=${scriptotherlibs} "-lmpi -lmpi_cxx -lpthread"],[])
+#AC_ARG_WITH([openmpi],
+ #           AS_HELP_STRING([--with-openmpi=path],[use openmpi])],
+  #          [openmpiprefix=${withval} mpi="yes"])
+
+#AS_IF([test "x$with_openmpi" != xno],
+ #    [mpi_incs="-I"${openmpiprefix}"/include -D__MPI__"
+  #    scriptotherlibsinc=${scriptotherlibsinc}" -L"${openmpiprefix}"/lib "
+   #   scriptotherlibs=${scriptotherlibs}"-lmpi -lmpi_cxx -lpthread "])
 
 ####################################################
 # mpich
+
+#TODO: add with-mpich-include and with-mpich-library
 
 AC_ARG_WITH([mpich],
             [AS_HELP_STRING([--with-mpich=path],[use mpich])],
             [mpichprefix=${withval} mpi="yes"],[])
 
 AS_IF([test "x$with_mpich" != xno],
-      [mpi_incs=" -I"${mpichprefix}"/include -D__MPI__"
-       scriptotherlibsinc=${scriptotherlibsinc}" -L"${mpichprefix}"/lib"
-       scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichcxx -lpthread"],[])
+      [mpi_incs="-I"${mpichprefix}"/include -D__MPI__ "
+       scriptotherlibsinc=${scriptotherlibsinc}"-L"${mpichprefix}"/lib "
+       scriptotherlibs=${scriptotherlibs}"-lmpich -lmpichcxx -lpthread "])
 
 ####################################################
 # PETSc
 
+#Only providing single directory installation since FronTier
+#is only compatable with PETSc version 3.1 which is no longer provided
+#by most package managers.
+
 AC_ARG_WITH([petsc],
-            [AS_HELP_STRING([--with-petsc],[needed to build iFluid module])],
+            [AS_HELP_STRING([--with-petsc=path],[needed to build iFluid module])],
             [petsc_dir=${withval}],[petsc_dir=""])
 
 AS_IF([test "x$with_petsc" != xno],
      [AS_IF([test ${mpi} = yes],
-           [AC_SUBST(PETSC_INCLUDE,"-I"${petsc_dir}"/include")
+           [AC_SUBST(PETSC_INCLUDE,"-I"${petsc_dir}"/include ")
            AC_SUBST(PETSC_LIB,"-L"${petsc_dir}"/lib "${PETSC_LDFLAGS})],
            [AC_MSG_FAILURE([can't use PETSc without mpi])])
      ])
+
+#This needs to be handled more robustly, but for now we will assume
+#HYPRE was installed by PETSc, which is the case on our machines.
+AC_ARG_WITH([hypre],
+            AS_HELP_STRING([--with-hypre=path],[use hypre preconditioners with PETSc]),
+            [hypreincs="-D__HYPRE__ "],[hypreincs=""])
+
+AS_IF([test "x$with_hypre" != xno],[echo "HYPRE enabled"])
 
 
 ####################################################
 # CGAL
 
-Collision=""
-AC_ARG_WITH([cgal],[  --with-cgal=path             Support for the CGAL directory],[cgal_dir=${withval}],[cgal_dir=""])
-AC_ARG_WITH([cgal_include],[  --with-cgal-include=path              Support for the CGAL includes],[cgal_inc=${withval}],[cgal_inc=""])
-AC_ARG_WITH(cgal_library,[  --with-cgal-library=path              Support for the CGAL library],[cgal_lib=${withval}],[cgal_lib=""])
-if test ${cgal_dir} = ""; then
-        if test ${cgal_inc} = "" || test ${cgal_lib} = ""; then
-            echo "CGAL is not enabled"
-            echo "Collision Detection disabled"
-        else
+AC_ARG_WITH([cgal],
+            [AS_HELP_STRING([--with-cgal=path],[use single directory installed CGAL])],
+            [cgal_dir=${withval}],[cgal_dir=""])
+
+AC_ARG_WITH([cgal_include],
+            AS_HELP_STRING([--with-cgal-include=path],[specify location of CGAL headers])],
+            [cgal_inc=${withval}],[cgal_inc=""])
+
+AC_ARG_WITH(cgal_library,
+            [AS_HELP_STRING([--with-cgal-library=path],[specify location of CGAL libs])],
+            [cgal_lib=${withval}],[cgal_lib=""])
+
+if test "x$with_cgal" != xno; then
+    echo "CGAL enabled"
+    echo "cgal_dir = ${cgal_dir}"
+    AC_SUBST(CGAL_DIR,${cgal_dir})
+    AC_SUBST(CGAL_INCLUDE,"${cgal_dir}/include")
+    AC_SUBST(CGAL_LIB,"${cgal_dir}/lib")
+    else
+        if test "x$with_cgal_include" != xno && test "x$with_cgal_library" != xno; then
             echo "CGAL enabled"
-            echo "Collision Detection enabled"
+            echo "cgal_inc = ${cgal_inc}"
+            echo "cgal_lib = ${cgal_lib}"
             AC_SUBST(CGAL_DIR,${cgal_dir})
             AC_SUBST(CGAL_INCLUDE,${cgal_inc})
             AC_SUBST(CGAL_LIB,${cgal_lib})
-            Collision="cd Collision && \$(MAKE)"
+        else
+            echo "CGAL is not enabled"
         fi
-else
-        echo "CGAL enabled, cgal_dir = ${cgal_dir}"
-        echo "Collision Detection enabled"
-        AC_SUBST(CGAL_DIR,${cgal_dir})
-        AC_SUBST(CGAL_INCLUDE,"${cgal_dir}/include")
-        AC_SUBST(CGAL_LIB,"${cgal_dir}/lib")
-        Collision="cd Collision && \$(MAKE)"
 fi
 
 
@@ -181,8 +212,8 @@ if test ${boost_dir} = ""; then
 else
         echo "BOOST enabled, boost_dir = ${boost_dir}"
         AC_SUBST(BOOST_DIR,${boost_dir})
-        AC_SUBST(BOOST_INCLUDE,${boost_dir}"/include")
-        AC_SUBST(BOOST_LIB,${boost_dir}"/lib")
+        AC_SUBST(BOOST_INCLUDE,${boost_dir}"/include ")
+        AC_SUBST(BOOST_LIB,${boost_dir}"/lib ")
 fi
 
 
@@ -196,8 +227,8 @@ if test ${cvode_dir} = ""; then
 else
     echo "CVODE enabled"
     AC_SUBST(CVODE_DIR,${cvode_dir})
-    AC_SUBST(CVODE_INCLUDE,${cvode_dir}"/include")
-    AC_SUBST(CVODE_LIB,${cvode_dir}"/lib")
+    AC_SUBST(CVODE_INCLUDE,${cvode_dir}"/include ")
+    AC_SUBST(CVODE_LIB,${cvode_dir}"/lib ")
 fi
 
 ####################################################
@@ -235,7 +266,7 @@ cppflagss=""
 #                          intfc 
 #                          tri
 
-scriptftlibincs=" -I.. -I../util"${debug}${optimization}${cppflagss}${hdfincs}${mpi_incs}${itapsd}${fenv}${noname}${hdfincs}${systemincs}${gdincs}${gpuincs}${gslincs}${hypreincs}
+scriptftlibincs=" -I.. -I../util "${debug}${optimization}${cppflagss}${hdfincs}${mpi_incs}${itapsd}${fenv}${noname}${hdfincs}${systemincs}${gdincs}${gpuincs}${gslincs}${hypreincs}
 
 
 #included in all code in: example and testfront 

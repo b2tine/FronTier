@@ -46,36 +46,34 @@ TEST_F(BV_Point_Tests, OutOfRangeDeathTest)
     ASSERT_DEATH(xyzTriplePoint[3],"");
 }
 
-TEST_F(DISABLED_BV_Point_Tests, xCoordsNotEqualLessThan)
+TEST_F(BV_Point_Tests, xCoordsNotEqualLessThan)
 {
-    //ASSERT_TRUE(p1 < p2);
+    ASSERT_TRUE(p1 < p2);
 }
 
-TEST_F(DISABLED_BV_Point_Tests, xCoordsEqualLessThan)
+TEST_F(BV_Point_Tests, xCoordsEqualLessThan)
 {
-    //ASSERT_TRUE(p1 < p3);
+    ASSERT_TRUE(p1 < p3);
 }
 
-TEST_F(DISABLED_BV_Point_Tests, xyCoordsBothEqualLessThan)
+TEST_F(BV_Point_Tests, xyCoordsBothEqualLessThan)
 {
-    //ASSERT_TRUE(p4 < p2);
+    ASSERT_TRUE(p4 < p2);
 }
 
-TEST_F(DISABLED_BV_Point_Tests, PointsAreEqualLessThan)
+TEST_F(BV_Point_Tests, PointsAreEqualLessThan)
 {
-    //ASSERT_FALSE(defaultPoint < p1);
+    ASSERT_FALSE(defaultPoint < p1);
 }
 
-TEST_F(DISABLED_BV_Point_Tests, IsValidKeyForStdMap)
+TEST_F(BV_Point_Tests, IsValidKeyForStdMap)
 {
-    /*
     std::map<BV_Point,int> imap;
     ASSERT_TRUE(imap.empty());
 
     imap[p1] = 1;
     ASSERT_FALSE(imap.empty());
     ASSERT_EQ(imap[p1],1);
-    */
 }
 
 //TODO: Start test driving HilbertSortingTraits

@@ -40,7 +40,6 @@ class BV_Point
                     static_cast<const BV_Point&>(*this)[i]);
         }
 
-        /*
         bool operator < (const BV_Point& rhs) const
         {
             if( point[0] == rhs[0] )
@@ -54,12 +53,6 @@ class BV_Point
             return point[0] < rhs[0];
         }
 
-        bool operator == (const BV_Point& rhs) const
-        {
-            return point[0] == rhs[0] &&
-                point[1] == rhs[1]  && point[2] == rhs[2];
-        }
-        */
 };
 
 //additional structures allowing BV_Point to

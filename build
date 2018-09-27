@@ -1,7 +1,7 @@
 #!/bin/bash
 
-function parse_arguments {
- # Parse command-line arguments
+function parse_arguments
+{   
     if [[ "$1" == "-h" || "$1" == "--h" ]]; then
         echo "$0    High-level build script for FronTier++."
         echo "Usage: $0 [-d] [-n] [-g] [--with-hdf]"
@@ -23,28 +23,31 @@ function parse_arguments {
     WITHHYPRE=1
     WITHHDF=1
     WITHGD=1
+
+    OPTS="-Wformat-overflow=0"
     COPTS_GCC="-fopenmp -Wno-unused-result -Wformat-overflow=0"
+
     export BASECODE="no"
 
     for arg in $@ ; do
         if [[ "$arg" == "-d" ]]; then
-	    OPTS="-g -rdynamic -Wformat-overflow=0"
-	    COPTS_GCC="-fopenmp -pedantic -Wno-long-long -Wno-unused-result -Wformat-overflow=0"
-	    COPTS_ICC="-Wall"
+            OPTS="-g -rdynamic ${OPTS}"
+	        COPTS_GCC="-pedantic -Wno-long-long ${COPTS_GCC}"
+	        COPTS_ICC="-Wall"
         elif [[ "$arg" == "-n" ]]; then
-	    NOMAKE=1
+	        NOMAKE=1
         elif [[ "$arg" == "--enable-itaps" ]]; then
-	    CONF="$CONF --enable-itaps"
+	        CONF="$CONF --enable-itaps"
         elif [[ "$arg" == "--enable-imesh" ]]; then
-	    CONF="$CONF --enable-imesh"
+	        CONF="$CONF --enable-imesh"
         elif [[ "$arg" == "-a" ]]; then
-	    export BASECODE="adv"
+	        export BASECODE="adv"
         elif [[ "$arg" == "-b" ]]; then
-	    export BASECODE="base"
+	        export BASECODE="base"
         elif [[ "$arg" == "--with-gpu" ]]; then
             WITHGPU=1
         elif [[ "$arg" == "-o2" ]]; then
-	    OPTS="-fopenmp -O2 -Wformat-overflow=0"
+	        OPTS="-O2 ${OPTS}"
         elif [[ "$arg" == "--without-hypre" ]]; then
             WITHHYPRE=0
         elif [[ "$arg" == "--without-hdf" ]]; then
@@ -53,50 +56,21 @@ function parse_arguments {
             WITHGD=0
         elif [[ "$arg" == "--with-gsl" ]]; then
             WITHGSL=1
-	else
-	    CONF="$CONF ${arg}"
+        else
+            CONF="$CONF ${arg}"
         fi
     done
-    if [[ "$OPTS" != "-g" ]]; then
-        CONF="$CONF --with-no-debugging"
-    fi
+
 }
 
-function config_ycshu {
-    export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
-    export F77="mpif77 ${OPTS}"
-    export CC="mpicc ${OPTS} ${COPTS_GCC}"
-
-    export PETSC_DIR=/usr/local/petsc
-    export PETSC_INCLUDE="-I${PETSC_DIR}/include"
-    export PETSC_LIB="-L${PETSC_DIR}/lib -lpetsc -lflapack -lfblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11 -lgfortran" 
-
-    if [[ -n "$WITHHDF" ]]; then
-        CONF="$CONF --with-hdf=/usr/local/"
-    fi
-    if [[ -n "$WITHGD" ]]; then
-        CONF="$CONF --with-gd=/usr/local"
-    fi
-    if [[ -n "$WITHGSL" ]]; then
-        CONF="$CONF --with-gsl=/usr/local"
-    fi
-
-    export CONF="--with-mpich=/usr/local/mpich --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr/local"
-    PMAKE="-j2"
-}
-
-#################
-function config_generic {
-    # Generic platforms. 
-    
+function config_generic
+{
     HASMPI=`which mpicxx`
     if [[ -n "$HASMPI" ]]; then
-        # Assume MPICH2.
         export CXX="mpicxx ${OPTS}"
         export F77="mpif77 ${OPTS}"
         export CC="mpicc ${OPTS}"
     else
-        # Assume gcc and gfortran.
         export CXX="g++ ${OPTS}"
         export F77="gfortran ${OPTS}"
         export CC="gcc ${OPTS}"
@@ -175,18 +149,15 @@ function config_generic {
     PMAKE="-j2"
 }
 
-#################
-function config_base {
-    # Simple platforms. 
+function config_base
+{
     CONF="--with-base"
     HASMPI=`which mpicxx`
     if [[ -n "$HASMPI" ]]; then
-        # Assume OpenMPI.
         export CXX="mpicxx ${OPTS}"
         export F77="mpif77 ${OPTS}"
         export CC="mpicc ${OPTS}"
     else
-        # Assume gcc and gfortran.
         export CXX="g++ ${OPTS}"
         export F77="gfortran ${OPTS}"
         export CC="gcc ${OPTS}"
@@ -209,10 +180,11 @@ function config_base {
     PMAKE="-j2"
 }
 
-function config_adv {
+function config_adv
+{
     # advance platforms. 
     CONF="--with-adv"
-export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
+    export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
 
@@ -248,8 +220,8 @@ export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     PMAKE="-j2"
 }
 
-#################
-function config_blade {
+function config_blade
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -272,8 +244,8 @@ function config_blade {
     PMAKE="-j2"
 }
 
-#################
-function config_vogon {
+function config_vogon
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -300,13 +272,16 @@ function config_vogon {
     PMAKE="-j2"
 }
 
-#################
-function config_alpha {
+function config_alpha
+{
     export CXX="mpic++ ${OPTS} ${COPTS_GCC}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
 
     #export scriptotherlibs="${scriptotherlibs} /usr/lib/x86_64-linux-gnu/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3"
+
+    GD_DIR=/usr/lib/x86_64-linux-gnu
+    HDF4_DIR=/usr/local/pkg/hdf
 
     PETSC_DIR=/usr/local/pkg/petsc
     export PETSC_LDFLAGS="-lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
@@ -316,9 +291,6 @@ function config_alpha {
 
     CVODE_DIR=/usr/local/pkg/cvode
 
-    if [[ $WITHHDF == 1 ]]; then
-        CONF="${CONF} --with-hdf4=/usr/local/pkg/hdf"
-    fi
 
     if [[ $WITHHYPRE == 1 ]]; then
         CONF="${CONF} --with-hypre"
@@ -334,13 +306,13 @@ function config_alpha {
 	    export USEGPU="no"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-library=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack ${CONF} --with-gd=/usr/lib/x86_64-linux-gnu"
+    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-library=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack --with-hdf4=${HDF4_DIR} --with-gd=/usr/lib/x86_64-linux-gnu ${CONF}"
     
     PMAKE="-j2"
 }
 
-#################
-function config_beta {
+function config_beta
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -379,7 +351,8 @@ function config_beta {
     PMAKE="-j2"
 }
 
-function config_intruder {
+function config_intruder
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -416,7 +389,8 @@ function config_intruder {
     PMAKE="-j2"
 }
 
-function config_sigma {
+function config_sigma
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -453,10 +427,8 @@ function config_sigma {
     PMAKE="-j2"
 }
 
-#################
-
-#################
-function config_icing {
+function config_icing
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -502,8 +474,8 @@ function config_icing {
     PMAKE="-j2"
 }
 
-#################
-function config_omega {
+function config_omega
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -545,9 +517,8 @@ function config_omega {
     PMAKE="-j2"
 }
 
-#################
-
-function config_lambda {
+function config_lambda
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -580,7 +551,8 @@ function config_lambda {
     PMAKE="-j2"
 }
 
-function config_gradOne {
+function config_gradOne
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -612,9 +584,8 @@ function config_gradOne {
     PMAKE="-j2"
 }
 
-#################
-
-function config_delta {
+function config_delta
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -651,8 +622,32 @@ function config_delta {
     PMAKE="-j2"
 }
 
-#################
-function config_ubuntu {
+function config_ycshu
+{
+    export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
+    export F77="mpif77 ${OPTS}"
+    export CC="mpicc ${OPTS} ${COPTS_GCC}"
+
+    export PETSC_DIR=/usr/local/petsc
+    export PETSC_INCLUDE="-I${PETSC_DIR}/include"
+    export PETSC_LIB="-L${PETSC_DIR}/lib -lpetsc -lflapack -lfblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11 -lgfortran" 
+
+    if [[ -n "$WITHHDF" ]]; then
+        CONF="$CONF --with-hdf=/usr/local/"
+    fi
+    if [[ -n "$WITHGD" ]]; then
+        CONF="$CONF --with-gd=/usr/local"
+    fi
+    if [[ -n "$WITHGSL" ]]; then
+        CONF="$CONF --with-gsl=/usr/local"
+    fi
+
+    export CONF="--with-mpich=/usr/local/mpich --with-petsc=${PETSC_DIR} --with-deptrack ${CONF} --with-gd=/usr/local"
+    PMAKE="-j2"
+}
+
+function config_ubuntu
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -679,8 +674,8 @@ function config_ubuntu {
     PMAKE="-j2"
 }
 
-#################
-function config_gentooORNL {
+function config_gentooORNL
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -708,8 +703,8 @@ function config_gentooORNL {
     PMAKE="-j2"
 }
 
-#################
-function config_fission {
+function config_fission
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -737,8 +732,9 @@ function config_fission {
     PMAKE="-j2"
 }
 
-#################
-function config_galaxy {
+
+function config_galaxy
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -761,8 +757,8 @@ function config_galaxy {
     PMAKE="-j2"
 }
 
-#################
-function config_seawulf {
+function config_seawulf
+{
     if [[ -z "$LD_LIBRARY_PATH" ]]; then
         echo "#### There seems to be a problem in your environment setting."
         echo "#### You need to set LD_LIBRARY_PATH to include /usr/local/pkg/openmpi/lib."
@@ -794,8 +790,8 @@ function config_seawulf {
     PMAKE="-j2"
 }
 
-#################
-function config_nybluel {
+function config_nybluel
+{
     export PETSC_ARCH=bgl-ibm-opt
     export PETSC_DIR=/bgl/apps/petsc-2.3.3-p8/petsc-2.3.3-p8
     export PETSC_INCLUDE="-I${PETSC_DIR}/include -I${PETSC_DIR}/bmake/${PETSC_ARCH}"
@@ -820,8 +816,9 @@ function config_nybluel {
     PMAKE="-j8"
 }
 
-#################
-function config_nybluep {
+
+function config_nybluep
+{
     export CXX="mpixlcxx_r -DMPICH_IGNORE_CXX_SEEK ${OPTS}"
     export F77="mpixlf77_r ${OPTS}"
     export CC="mpixlc_r ${OPTS}"
@@ -830,8 +827,8 @@ function config_nybluep {
     PMAKE="-j8"
 }
 
-################
-function config_pnnl {
+function config_pnnl
+{
     export CXX="mpiCC ${OPTS} ${COPTS_ICC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_ICC}"
@@ -842,12 +839,12 @@ function config_pnnl {
     export PETSC_INCLUDE="-I${PETSC_DIR}/include -I${PETSC_DIR}/bmake/${PETSC_ARCH}"
     export PETSC_LIB="-lblas -L${PETSC_DIR}/lib/${PETSC_ARCH} -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc -ldl -fopenmp -lm -L/usr/X11R6/lib64"
     
-    ./configure --with-mpi --with-petsc=$PETSC_DIR --with-deptrack ${CONF}
+    export CONF="--with-mpi --with-petsc=$PETSC_DIR --with-deptrack ${CONF}"
     PMAKE="-j8"
 }
 
-################
-function config_abe {
+function config_abe
+{
     export CXX="mpicxx -DMPICH_IGNORE_CXX_SEEK -Wcheck ${OPTS} ${COPTS_ICC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_ICC}"
@@ -873,8 +870,9 @@ function config_abe {
     export CONF="-with-mpich --with-petsc=$PETSC_DIR --with-deptrack ${CONF}"
     PMAKE="-j8"
 }
-#################
-function config_excalibur {
+
+function config_excalibur
+{
      export CXX="CC ${OPTS}"
      export F77="ftn ${OPTS}"
      export CC="cc ${OPTS}"
@@ -926,10 +924,10 @@ function config_excalibur {
     fi
 
     PMAKE="-j2"
-
 }
 
-function config_cm {
+function config_cm
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -962,8 +960,8 @@ function config_cm {
     PMAKE="-j2"
 }
 
-#################
-function config_icestorm {
+function config_icestorm
+{
     export CXX="mpicxx ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
     export CC="mpicc ${OPTS} ${COPTS_GCC}"
@@ -991,14 +989,13 @@ function config_icestorm {
     PMAKE="-j2"
 }
 
+#########################################
 
-################# Main code starts here
 
 parse_arguments $*
 
-# Invoke machine specific config function
 HOST=`uname -n`;
-# Choose proper compilers based on machine
+# Invoke machine specific config function
 if [[ "${BASECODE}" == "base" ]] || [[ "${BASECODE}" == "adv" ]]; then
     echo "Base code, using generic configuration"
     config_generic
@@ -1094,6 +1091,7 @@ else
     config_generic
 fi
 
+
 echo "Configuring FronTier with the following commands:"
 echo "export CC=\"$CC\""
 echo "export CXX=\"$CXX\""
@@ -1123,3 +1121,5 @@ fi
 if [[ -z "$NOMAKE" ]]; then
     make ${PMAKE}
 fi
+
+
