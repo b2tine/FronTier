@@ -2,7 +2,7 @@
 #include "../BVH.h"
 
 
-class BVH_Tests : public ::testing::Test
+class BVH_Tests : public testing::Test
 {
     protected:
 
@@ -11,9 +11,9 @@ class BVH_Tests : public ::testing::Test
 
     static HsTri *T1, *T2, *T3, *T4, *T5;
 
-    BVH bvh;
-    LeafNode  *l1, *l2, *l3, *l4, *l5;
-    InternalNode *p1, *p2, *gp;
+    //BVH bvh;
+    std::shared_ptr<LeafNode>  l1, l2, l3, l4, l5;
+    std::shared_ptr<InternalNode> p1, p2, gp;
 
     static void SetUpTestCase()
     {
@@ -68,25 +68,21 @@ class BVH_Tests : public ::testing::Test
         delete g;
     }
 
-    /*
     void SetUp() override
     {
-        l1 = BVH::createLeaf(T1);
-        l2 = BVH::createLeaf(T2);
-        l3 = BVH::createLeaf(T3);
-        l4 = BVH::createLeaf(T4);
-        l5 = BVH::createLeaf(T5);
-        p1 = BVH::createNode(l1,l2);
-        p2 = BVH::createNode(l3,l4);
-        gp = BVH::createNode(p1,p2);
+        l1 = BVH::createLeafNode(T1);
+        l2 = BVH::createLeafNode(T2);
+        l3 = BVH::createLeafNode(T3);
+        l4 = BVH::createLeafNode(T4);
+        l5 = BVH::createLeafNode(T5);
+        p1 = BVH::createInternalNode(l1,l2);
+        p2 = BVH::createInternalNode(l3,l4);
+        gp = BVH::createInternalNode(p1,p2);
     }
 
     void TearDown() override
     {
-        delete l1; delete l2;
-        delete l3; delete l4; delete l5;
-        delete p1; delete p2; delete gp;
-    }*/
+    }
 
     ~BVH_Tests() = default;
 };
@@ -114,29 +110,21 @@ using DISABLED_BVH_Tests = BVH_Tests;
 
 
 
-TEST_F(DISABLED_BVH_Tests, FactoryCreateInternalNode)
+TEST_F(BVH_Tests, FactoryCreateInternalNode)
 {
-    /*
     ASSERT_NE(p1,nullptr);
     ASSERT_NE(p2,nullptr);
     ASSERT_NE(gp,nullptr);
-    */
 }
 
-TEST_F(DISABLED_BVH_Tests, FactoryCreateLeafNode)
+TEST_F(BVH_Tests, FactoryCreateLeafNode)
 {
-    /*
     ASSERT_NE(l1,nullptr);
     ASSERT_NE(l2,nullptr);
     ASSERT_NE(l3,nullptr);
     ASSERT_NE(l4,nullptr);
-    */
 }
 
-TEST_F(BVH_Tests, RootNullByDefault)
-{
-    ASSERT_EQ(bvh.getRoot().lock(),nullptr);
-}
 
 
 

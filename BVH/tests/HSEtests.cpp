@@ -1,7 +1,9 @@
 #include "gmock/gmock.h"
 #include "../HyperSurfElement.h"
 
-class HsPoint_Tests : public ::testing::Test
+
+
+class HsPoint_Tests : public testing::Test
 {
     protected:
 
@@ -51,7 +53,7 @@ TEST_F(HsPoint_Tests, OutOfRangeDeathTest)
 
 
 
-class HsBond_Tests : public ::testing::Test
+class HsBond_Tests : public testing::Test
 {
     protected:
     
@@ -91,7 +93,7 @@ TEST_F(HsBond_Tests, OutOfRangeDeathTest)
 //////////////////////////////////////////////////////
 
 
-class HsTri_Tests : public ::testing::Test
+class HsTri_Tests : public testing::Test
 {
     protected:
     

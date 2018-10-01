@@ -1,17 +1,15 @@
 #include "gmock/gmock.h"
 #include "../BVH_Node.h"
 
-class BVH_NodeTests : public ::testing::Test
+class BVH_NodeTests : public testing::Test
 {
     protected:
 
-    static TRI *t1, *t2, *t3, *t4,*t5;
     static POINT *a, *b, *c, *d, *e, *f, *g;
-
+    static TRI *t1, *t2, *t3, *t4,*t5;
     static HsTri *T1, *T2, *T3, *T4, *T5;
 
-    LeafNode  *l1, *l2, *l3, *l4, *l5;
-    InternalNode *p1, *p2, *gp;
+    std::shared_ptr<LeafNode>  l1, l2, l3, l4, l5;
 
     static void SetUpTestCase()
     {
@@ -68,21 +66,16 @@ class BVH_NodeTests : public ::testing::Test
 
     void SetUp() override
     {
-        l1 = new LeafNode(T1);
-        l2 = new LeafNode(T2);
-        l3 = new LeafNode(T3);
-        l4 = new LeafNode(T4);
-        l5 = new LeafNode(T5);
-        //p1 = new InternalNode(l1,l2);
-        //p2 = new InternalNode(l3,l4);
-        //gp = new InternalNode(p1,p2);
+        l1 = std::make_shared<LeafNode>(T1);
+        l2 = std::make_shared<LeafNode>(T2);
+        l3 = std::make_shared<LeafNode>(T3);
+        l4 = std::make_shared<LeafNode>(T4);
+        l5 = std::make_shared<LeafNode>(T5);
     }
 
     void TearDown() override
     {
-        delete l1; delete l2;
-        delete l3; delete l4; delete l5;
-        //delete p1; delete p2; delete gp;
+
     }
 
     ~BVH_NodeTests() = default;
@@ -118,26 +111,61 @@ TEST_F(DISABLED_BVH_NodeTests, GetSibling)
     //ASSERT_EQ(s,l2);
 }
 
-TEST_F(DISABLED_BVH_NodeTests, ConstructorInternalNodeDeathTest)
+TEST_F(BVH_NodeTests, ConstructorInternalNodeDeathTest)
 {
-    //InternalNode* achild;
-    //ASSERT_DEATH(InternalNode* node = new InternalNode(l1,achild),"");
+    std::shared_ptr<LeafNode> l6;
+    std::shared_ptr<InternalNode> p;
+    ASSERT_DEATH(p = std::make_shared<InternalNode>(l1,l6),"");
 }
-
-TEST_F(DISABLED_BVH_NodeTests, ConstructorInternalNode)
+      
+TEST_F(BVH_NodeTests, InternalNodePrototypeFactoryTest)
 {
-    /*
-    InternalNode* p1 = new InternalNode(l1,l2);
-    ASSERT_NE(p1->getLeft(),nullptr);
-    ASSERT_EQ(l1->getParent(),p1);
-    ASSERT_EQ(l2->getParent(),p1);
+    //See ../BVH_Node.cpp for why construction of a
+    //shared_ptr<InternalNode> must be decoupled from
+    //the linking of parent and children.
+    std::shared_ptr<InternalNode> p1 =
+        std::make_shared<InternalNode>(l1,l2);
+    p1->setChildren(l1,l2);
+    
+    std::shared_ptr<InternalNode> p2 =
+        std::make_shared<InternalNode>(l3,l4);
+    p2->setChildren(l3,l4);
+
+    std::shared_ptr<InternalNode> gp =
+        std::make_shared<InternalNode>(p1,p2);
+    gp->setChildren(p1,p2);
+    
     ASSERT_FALSE(p1->isLeaf());
-    delete p1;
-    */
+    ASSERT_FALSE(p1->isRoot());
+
+    ASSERT_EQ(p1->getLeftChild().lock(),l1);
+    ASSERT_EQ(p1->getRightChild().lock(),l2);
+    ASSERT_EQ(l1->getParent().lock(),p1);
+    ASSERT_EQ(l2->getParent().lock(),p1);
+
+    BoundingVolume bvp1 = p1->getBV();
+    ASSERT_DOUBLE_EQ(bvp1.lower[0],0.0);
+    ASSERT_DOUBLE_EQ(bvp1.upper[0],1.0);
+
+    BoundingVolume bvp2 = p2->getBV();
+    ASSERT_DOUBLE_EQ(bvp2.lower[1],-1.0);
+    ASSERT_DOUBLE_EQ(bvp2.upper[1],1.0);
+
+    ASSERT_EQ(gp->getLeftChild().lock(),p1);
+    ASSERT_EQ(gp->getRightChild().lock(),p2);
+    ASSERT_EQ(p1->getParent().lock(),gp);
+    ASSERT_EQ(p2->getParent().lock(),gp);
+
+    BoundingVolume bvgp = gp->getBV();
+    ASSERT_DOUBLE_EQ(bvgp.lower[0],-1.0);
+    ASSERT_DOUBLE_EQ(bvgp.upper[2],1.0);
 }
 
 TEST_F(BVH_NodeTests, ConstructorLeafNode)
 {
+    ASSERT_TRUE(l5->isLeaf());
+    ASSERT_FALSE(l5->isRoot());
+
     ASSERT_NE(l5->getHse(),nullptr);
     ASSERT_EQ(l5->getParent().lock(),nullptr);
 

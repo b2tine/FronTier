@@ -20,8 +20,8 @@ OBJS = ../HyperSurfElement.o HSEtests.o ../BoundingVolume.o AABBtests.o  ../BVH_
 HEADERS = ../HyperSurfElement.h ../BV_Point.h ../BoundingVolume.h ../BVH_Node.h ../BVH.h
 
 
-testAll: main.cpp FT_libs_testdir $(OBJS)
-	$(CXX) $< $(OBJS) $(GMOCK_LIB) $(CGAL_INCLUDE) $(CGAL_LIB) -I../../include $(incs) -L../../lib/x86_64 $(libincs) -lFronTier -lm $(libs) -o $@
+testAll: main.cpp FT_libs_testdir $(OBJS) $(HEADERS)
+	$(CXX) $< $(OBJS) $(GMOCK_INCLUDE) $(GMOCK_LIB) $(CGAL_INCLUDE) $(CGAL_LIB) -I../../include $(incs) -L../../lib/x86_64 $(libincs) -lFronTier -lm $(libs) -o $@
 
 
 %.o: %.cpp $(HEADERS)

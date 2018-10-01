@@ -3,35 +3,93 @@
 /////////////////////////////////////////////////////////
 ////////           BVH_Node Methods             ////////
 ///////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////
-////////            LeafNode Methods             ////////
-///////////////////////////////////////////////////////
-
-/*
-LeafNode::LeafNode(Hse* h)
-    : hse{h} 
+        
+void BVH_Node::setBV(const BoundingVolume& BV)
 {
-    setBV(BoundingVolume(h));
+    bv = BV;
 }
-*/
+const BoundingVolume& BVH_Node::getBV() const
+{
+    return bv;
+}
+
+void BVH_Node::setParent(std::shared_ptr<InternalNode> P)
+{
+    parent = std::move(P);
+}
+        
+const std::weak_ptr<const InternalNode> BVH_Node::getParent() const
+{
+    return std::weak_ptr<InternalNode>(parent);
+}
+
+const bool BVH_Node::isLeaf() const
+{
+    return false;
+}
+
+const bool BVH_Node::isRoot() const
+{
+    return false;
+}
 
 /////////////////////////////////////////////////////////
-////////           InternalNode Methods             ////////
+////////         InternalNode Methods           ////////
 ///////////////////////////////////////////////////////
 
-/*
-InternalNode::InternalNode(BVH_Node* lc, BVH_Node* rc)
+InternalNode::InternalNode(std::shared_ptr<BVH_Node> lc,
+        std::shared_ptr<BVH_Node> rc)
 {
-    assert(lc != nullptr && rc != nullptr);
+    assert(lc && rc);
+    setBV(BoundingVolume(lc->getBV(), rc->getBV()));
+}
 
-    this->setLeft(lc);
-    this->setRight(rc);
-    rc->setParent(this);
-    lc->setParent(this);
-    //bv = BVH_Node::createParentBV(lc,rc);
-}*/
+//SetChildren() is a temporary solution for testing.
+//It is not possible to call shared_from_this() in the
+//constructor of InternalNode since an existing shared_ptr
+//managing "this" must already exist.
+//The above constructor and SetChildren() are consolidated
+//inside a static factory function of the BVH class,
+//but setChildren(), unforunately, remains exposed to the
+//public interface.
+void InternalNode::setChildren(std::shared_ptr<BVH_Node> lc,
+        std::shared_ptr<BVH_Node> rc)
+{
+    setLeftChild(lc);
+    setRightChild(rc);
+}
+
+void InternalNode::setLeftChild(std::shared_ptr<BVH_Node> lc)
+{
+    lc->setParent(shared_from_this());
+    left = std::move(lc);
+}
+
+void InternalNode::setRightChild(std::shared_ptr<BVH_Node> rc)
+{
+    rc->setParent(shared_from_this());
+    right = std::move(rc);
+}
+
+const std::weak_ptr<const BVH_Node> InternalNode::getLeftChild() const
+{
+    return std::weak_ptr<BVH_Node>(left);
+}
+
+const std::weak_ptr<const BVH_Node> InternalNode::getRightChild() const
+{
+    return std::weak_ptr<BVH_Node>(right);
+}
+
+const bool InternalNode::isLeaf() const
+{
+    return BVH_Node::isLeaf();
+}
+
+const bool InternalNode::isRoot() const
+{
+    return BVH_Node::isRoot();
+}
 
 /*
 const InternalNode* const InternalNode::getSibling() const
@@ -46,5 +104,29 @@ const InternalNode* const InternalNode::getSibling() const
 */
 
 
+/////////////////////////////////////////////////////////
+////////            LeafNode Methods             ////////
+///////////////////////////////////////////////////////
+
+LeafNode::LeafNode(Hse* h)
+    : hse{h} 
+{
+    setBV(BoundingVolume(h));
+}
+
+const Hse* const LeafNode::getHse() const
+{
+    return hse;
+}
+
+const bool LeafNode::isLeaf() const
+{
+    return true;
+}
+
+const bool LeafNode::isRoot() const
+{
+    return BVH_Node::isRoot();
+}
 
 

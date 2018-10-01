@@ -5,11 +5,21 @@
 
 #include <memory>
 
+//Design Considerations:
+//
+//  1. Do we really need smart_ptrs for Node linkage?
+//     No deletion or rotations are going to be performed,
+//     and the objects will persist for the entirety of
+//     the program.
+//  2. How much of an impact will the use of smart_ptrs
+//     have on performance?
+
+
 class InternalNode;
 using BoundingVolume = AABB;
 
 
-class BVH_Node : public std::enable_shared_from_this<BVH_Node>
+class BVH_Node
 {
     private:
 
@@ -29,63 +39,29 @@ class BVH_Node : public std::enable_shared_from_this<BVH_Node>
         virtual const bool isLeaf() const = 0;
         virtual const bool isRoot() const = 0;
 
-        void setBV(const BoundingVolume& BV) {bv = BV;}
-        const BoundingVolume& getBV() const {return bv;}
+        void setBV(const BoundingVolume& BV);
+        const BoundingVolume& getBV() const;
         
-        void setParent(std::shared_ptr<InternalNode> P)
-        {
-            parent = P;
-        }
-        
-        const std::weak_ptr<const InternalNode> getParent() const
-        {
-            return parent;
-        }
+        void setParent(std::shared_ptr<InternalNode> P);
+        const std::weak_ptr<const InternalNode> getParent() const;
 };
 
 
-//has a Hse* and does not have children
-class LeafNode : public BVH_Node
-{
-    private:
-
-        Hse* hse{nullptr};
-
-    public:
-
-        LeafNode(Hse* h)
-            : hse{h}
-        {
-            setBV(BoundingVolume(h));
-        }
-
-        LeafNode() = default;
-        ~LeafNode() = default;
-
-        LeafNode(const LeafNode&) = delete;
-        LeafNode& operator=(const LeafNode&) = delete;
-        LeafNode(LeafNode&&) = delete;
-        LeafNode& operator=(LeafNode&&) = delete;
-
-        const bool isLeaf() const override {return true;}
-        const bool isRoot() const override {return false;}
-
-        const Hse* const getHse() const {return hse;}
-};
-
-
-class InternalNode : public BVH_Node
+class InternalNode : public BVH_Node,
+    public std::enable_shared_from_this<InternalNode>
 {
     private:
 
         std::shared_ptr<BVH_Node> left;
         std::shared_ptr<BVH_Node> right;
-        void setLeft(std::shared_ptr<BVH_Node> lc) {left = lc;}
-        void setRight(std::shared_ptr<BVH_Node> rc) {right = rc;}
+        
+        void setLeftChild(std::shared_ptr<BVH_Node> lc);
+        void setRightChild(std::shared_ptr<BVH_Node> rc);
 
     public:
 
-        InternalNode(InternalNode* lc, InternalNode* rc);
+        InternalNode(std::shared_ptr<BVH_Node> lc,
+                std::shared_ptr<BVH_Node> rc);
 
         InternalNode() = default;
         virtual ~InternalNode() = default;
@@ -95,23 +71,44 @@ class InternalNode : public BVH_Node
         InternalNode(InternalNode&&) = delete;
         InternalNode& operator=(InternalNode&&) = delete;
 
-
-        const std::weak_ptr<const BVH_Node> getLeft() const
-        {
-            return std::weak_ptr<BVH_Node>(left);
-        }
-
-        const std::weak_ptr<const BVH_Node> getRight() const
-        {
-            return std::weak_ptr<BVH_Node>(right);
-        }
+        //Would be better if this could be made private,
+        //or coupled to the constructor. However, this does
+        //not seem possible given the use of smart_ptrs for
+        //node linkage. See InternalNode constructor in
+        //BVH_Node.cpp for details.
+        void setChildren(std::shared_ptr<BVH_Node> lc,
+                std::shared_ptr<BVH_Node> rc);
+       
+        const std::weak_ptr<const BVH_Node> getLeftChild() const;
+        const std::weak_ptr<const BVH_Node> getRightChild() const;
         
-        const bool isLeaf() const override {return false;}
-        const bool isRoot() const override {return false;}
-        //TODO: need to check if parent is nullptr for root check
+        const bool isLeaf() const override;
+        const bool isRoot() const override;
 };
 
 
+class LeafNode : public BVH_Node
+{
+    private:
+
+        Hse* hse{nullptr};
+
+    public:
+
+        LeafNode(Hse* h);
+        LeafNode() = default;
+        ~LeafNode() = default;
+
+        LeafNode(const LeafNode&) = delete;
+        LeafNode& operator=(const LeafNode&) = delete;
+        LeafNode(LeafNode&&) = delete;
+        LeafNode& operator=(LeafNode&&) = delete;
+
+        const bool isLeaf() const override;
+        const bool isRoot() const override;
+
+        const Hse* const getHse() const;
+};
 
 #endif
 

@@ -19,11 +19,11 @@ class AABB
         BV_Point lower;
         BV_Point upper;
 
+        AABB();
         explicit AABB(Hse*);
         AABB(const AABB&,const AABB&);
         AABB(const BV_Point&,const BV_Point&);
 
-        AABB() = default;
         AABB(const AABB&) = default;
         AABB& operator=(const AABB&) = default;
         AABB(AABB&&) = default;

@@ -2,7 +2,7 @@
 #include "../BoundingVolume.h"
 
 
-class AABBTests : public ::testing::Test
+class AABBTests : public testing::Test
 {
     protected:
 

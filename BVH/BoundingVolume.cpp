@@ -4,6 +4,10 @@
 //////     AABB methods     //////
 /////////////////////////////////
 
+AABB::AABB()
+    : lower(3,HUGE), upper(3,-HUGE)
+{}
+
 AABB::AABB(Hse* h)
 {
     for( int i = 0; i < 3; ++i )

@@ -9,14 +9,15 @@ class BVH
 {
     private:
         
-        std::shared_ptr<InternalNode> root;
+        //std::shared_ptr<InternalNode> root;
+        //std::vector<std::shared_ptr<InternalNode>> Leaves;
 
     public:
 
-        //TODO: Will want to enforce invariant
-        //      that root is always initialized,
-        //      but requires a build routine
-        //      since we want a bottom up construction
+        //TODO: Will want to enforce the invariant that
+        //      the root is always initialized, but this
+        //      requires a build routine since we are
+        //      performing a bottom up construction.
               
         BVH() = default;
         ~BVH() = default;
@@ -26,14 +27,16 @@ class BVH
         BVH(BVH&&) = delete;
         BVH& operator=(BVH&&) = delete;
 
+        /*
         const std::weak_ptr<const InternalNode> getRoot() const
         {
             return std::weak_ptr<InternalNode>(root);
         }
+        */
 
-        //static std::shared_ptr<LeafNode> createLeaf(FT_HSE* h);
-        /*static std::shared_ptr<InternalNode>
-            createInternalNode(BV_Node* lc, BV_Node* rc);*/
+        static std::shared_ptr<LeafNode> createLeafNode(Hse* h);
+        static std::shared_ptr<InternalNode> createInternalNode(
+                std::shared_ptr<BVH_Node> lc, std::shared_ptr<BVH_Node> rc);
 
 };
 
