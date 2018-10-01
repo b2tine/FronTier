@@ -136,8 +136,6 @@ TEST_F(BVH_NodeTests, InternalNodePrototypeFactoryTest)
     gp->setChildren(p1,p2);
     
     ASSERT_FALSE(p1->isLeaf());
-    ASSERT_FALSE(p1->isRoot());
-
     ASSERT_EQ(p1->getLeftChild().lock(),l1);
     ASSERT_EQ(p1->getRightChild().lock(),l2);
     ASSERT_EQ(l1->getParent().lock(),p1);
@@ -164,8 +162,6 @@ TEST_F(BVH_NodeTests, InternalNodePrototypeFactoryTest)
 TEST_F(BVH_NodeTests, ConstructorLeafNode)
 {
     ASSERT_TRUE(l5->isLeaf());
-    ASSERT_FALSE(l5->isRoot());
-
     ASSERT_NE(l5->getHse(),nullptr);
     ASSERT_EQ(l5->getParent().lock(),nullptr);
 

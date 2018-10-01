@@ -67,6 +67,7 @@ AC_SUBST(devel,${checklibs})
 
 
 #NOTE: These options have terrible names, that don't line up with what they do.
+
 basecode="full"
 AC_ARG_WITH([adv],
             [AS_HELP_STRING([--with-adv],[Advanced FronTier++ code])],
@@ -90,15 +91,12 @@ AC_ARG_WITH([gsl],
 
 AC_ARG_WITH([gpu],
             [AS_HELP_STRING([--with-gpu],[use GPU acceletated algorithms])],
-            [gpuincs="-D__GPU__ "],[gpuincs=""])
-
-if test "$gpuincs" = ""; then
-    echo "GPU not enabled"
-else
-    echo "GPU enabled"
-fi
-
-AC_SUBST(USEGPU,${USEGPU})        
+            [echo "GPU enabled"
+             AC_SUBST(USEGPU,"yes")
+             gpuincs="-D__GPU__ "],
+             [echo "GPU disabled"
+             AC_SUBST(USEGPU,"no")
+             gpuincs=""])
 
 
 ####################################################
@@ -106,9 +104,9 @@ AC_SUBST(USEGPU,${USEGPU})
 
 AC_ARG_WITH([hdf4],
             [AS_HELP_STRING([--with-hdf4=path],[hdf4 (default is no)])],
-            [hdfprefix=${withval}])
+            [hdfprefix=${withval} hdf="yes"])
 
-AS_IF([test "x$with_hdf4" != xno],
+AS_IF([test ${hdf} = "yes"],
       [hdfincs="-I"${hdfprefix}"/include -DUSE_HDF "
        scriptotherlibsinc=${scriptotherlibsinc}"-L/usr/lib -L"${hdfprefix}"/lib "
        scriptotherlibs=${scriptotherlibs}"-lmfhdf -ldf -ljpeg -lz "])
@@ -116,16 +114,14 @@ AS_IF([test "x$with_hdf4" != xno],
 ####################################################
 # openmpi
 
-#TODO: add with-openmpi-include and with-openmpi-library
+AC_ARG_WITH([openmpi],
+            AS_HELP_STRING([--with-openmpi=path],[use openmpi])],
+            [openmpiprefix=${withval} ompi="yes"])
 
-#AC_ARG_WITH([openmpi],
- #           AS_HELP_STRING([--with-openmpi=path],[use openmpi])],
-  #          [openmpiprefix=${withval} mpi="yes"])
-
-#AS_IF([test "x$with_openmpi" != xno],
- #    [mpi_incs="-I"${openmpiprefix}"/include -D__MPI__"
-  #    scriptotherlibsinc=${scriptotherlibsinc}" -L"${openmpiprefix}"/lib "
-   #   scriptotherlibs=${scriptotherlibs}"-lmpi -lmpi_cxx -lpthread "])
+AS_IF([test ${ompi} = "yes"],
+     [mpi_incs="-I"${openmpiprefix}"/include -D__MPI__"
+      scriptotherlibsinc=${scriptotherlibsinc}" -L"${openmpiprefix}"/lib "
+      scriptotherlibs=${scriptotherlibs}"-lmpi -lmpi_cxx -lpthread "])
 
 ####################################################
 # mpich
@@ -144,6 +140,14 @@ AS_IF([test ${mpi} = "yes"],
 ####################################################
 # PETSc
 
+#This needs to be handled more robustly, but for now we will assume
+#HYPRE was installed by PETSc, which is the case on our machines.
+AC_ARG_WITH([hypre],
+            AS_HELP_STRING([--with-hypre=path],[use hypre preconditioners with PETSc]),
+            [echo "HYPRE enabled"
+             hypreincs="-D__HYPRE__ "],
+             [hypreincs=""])
+
 #Only providing single directory installation since FronTier
 #is only compatable with PETSc version 3.1 which is no longer provided
 #by most package managers.
@@ -152,20 +156,12 @@ AC_ARG_WITH([petsc],
             [AS_HELP_STRING([--with-petsc=path],[needed to build iFluid module])],
             [petsc_dir=${withval}],[petsc_dir=""])
 
-AS_IF([test "x$with_petsc" != xno],
-     [AS_IF([test ${mpi} = yes],
+AS_IF([test ${petsc_dir} != ""],
+     [AS_IF([test ${mpi} = "yes" || test ${ompi} = "yes"],
            [AC_SUBST(PETSC_INCLUDE,"-I"${petsc_dir}"/include ")
            AC_SUBST(PETSC_LIB,"-L"${petsc_dir}"/lib "${PETSC_LDFLAGS})],
            [AC_MSG_FAILURE([can't use PETSc without mpi])])
      ])
-
-#This needs to be handled more robustly, but for now we will assume
-#HYPRE was installed by PETSc, which is the case on our machines.
-AC_ARG_WITH([hypre],
-            AS_HELP_STRING([--with-hypre=path],[use hypre preconditioners with PETSc]),
-            [hypreincs="-D__HYPRE__ "],[hypreincs=""])
-
-AS_IF([test "x$with_hypre" != xno],[echo "HYPRE enabled"])
 
 
 ####################################################
@@ -183,45 +179,44 @@ AC_ARG_WITH(cgal_library,
             [AS_HELP_STRING([--with-cgal-library=path],[specify location of CGAL libs])],
             [cgal_lib=${withval}],[cgal_lib=""])
 
-if test "x$with_cgal" != xno; then
-    echo "CGAL enabled"
-    echo "cgal_dir = ${cgal_dir}"
-    AC_SUBST(CGAL_DIR,${cgal_dir})
-    AC_SUBST(CGAL_INCLUDE,"${cgal_dir}/include")
-    AC_SUBST(CGAL_LIB,"${cgal_dir}/lib")
-    else
-        if test "x$with_cgal_include" != xno && test "x$with_cgal_library" != xno; then
-            echo "CGAL enabled"
-            echo "cgal_inc = ${cgal_inc}"
+AS_IF([test ${cgal_dir} != ""],
+          [echo "cgal_dir = ${cgal_dir}"
+           AC_SUBST(CGAL_DIR,${cgal_dir})
+           AC_SUBST(CGAL_INCLUDE,"${cgal_dir}/include")
+           AC_SUBST(CGAL_LIB,"${cgal_dir}/lib")],
+       [test ${cgal_inc} != "" && test ${cgal_lib} != ""],
+           [echo "cgal_inc = ${cgal_inc}"
             echo "cgal_lib = ${cgal_lib}"
             AC_SUBST(CGAL_DIR,${cgal_dir})
             AC_SUBST(CGAL_INCLUDE,${cgal_inc})
-            AC_SUBST(CGAL_LIB,${cgal_lib})
-        else
-            echo "CGAL is not enabled"
-        fi
-fi
+            AC_SUBST(CGAL_LIB,${cgal_lib})])
 
 
 ####################################################
 # Boost
 
-AC_ARG_WITH(boost,[  --with-boost=path              Support for the BOOST directory],[boost_dir=${withval}],[boost_dir=""])
-if test ${boost_dir} = ""; then
-        echo "BOOST is not enabled"
-else
-        echo "BOOST enabled, boost_dir = ${boost_dir}"
-        AC_SUBST(BOOST_DIR,${boost_dir})
-        AC_SUBST(BOOST_INCLUDE,${boost_dir}"/include ")
-        AC_SUBST(BOOST_LIB,${boost_dir}"/lib ")
-fi
+AC_ARG_WITH([boost],
+            [AS_HELP_STRING([--with-boost=path],[use single directory installed BOOST])],
+            [boost_dir=${withval}],[boost_dir=""])
+
+AS_IF([test ${boost_dir} != ""],
+      [echo "BOOST enabled, boost_dir = ${boost_dir}"
+       AC_SUBST(BOOST_DIR,${boost_dir})
+       AC_SUBST(BOOST_INCLUDE,${boost_dir}"/include ")
+       AC_SUBST(BOOST_LIB,${boost_dir}"/lib ")])
 
 
 ####################################################
 # Cvode (SUNDIALS library)
 
-AC_ARG_WITH([cvode], [ --with-cvode=path                 compile with cvode support], [cvode_dir=${withval} folding="cd folding && \$(MAKE)"], [cvode_dir="" folding=""])
-if test ${cvode_dir} = ""; then
+#TODO: figure what is going on with the folding shell variable,
+#       and use AS_IF for the test block
+
+AC_ARG_WITH([cvode],
+            [AS_HELP_STRING([--with-cvode=path],[cvode required for folding module])],
+            [cvode_dir=${withval} folding="cd folding && \$(MAKE)"], [cvode_dir="" folding=""])
+
+if test ${folding} = ""; then
     echo "CVODE not enabled, cannot implement implicit solver"
     echo "Folding disabled"
 else

@@ -23,15 +23,6 @@ const std::weak_ptr<const InternalNode> BVH_Node::getParent() const
     return std::weak_ptr<InternalNode>(parent);
 }
 
-const bool BVH_Node::isLeaf() const
-{
-    return false;
-}
-
-const bool BVH_Node::isRoot() const
-{
-    return false;
-}
 
 /////////////////////////////////////////////////////////
 ////////         InternalNode Methods           ////////
@@ -83,12 +74,7 @@ const std::weak_ptr<const BVH_Node> InternalNode::getRightChild() const
 
 const bool InternalNode::isLeaf() const
 {
-    return BVH_Node::isLeaf();
-}
-
-const bool InternalNode::isRoot() const
-{
-    return BVH_Node::isRoot();
+    return false;
 }
 
 /*
@@ -124,9 +110,5 @@ const bool LeafNode::isLeaf() const
     return true;
 }
 
-const bool LeafNode::isRoot() const
-{
-    return BVH_Node::isRoot();
-}
 
 

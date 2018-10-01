@@ -350,12 +350,12 @@ static void matmvec(
 
     	for(i = 0; i < 5; ++i)
     	{
-	    b[i] = 0.0;
-	    for(j = 0; j < 5; ++j)
-	    {
-	    	b[i] += L[i][j] * x[j]; 
-	    }
-    	}
+            b[i] = 0.0;
+            for(j = 0; j < 5; ++j)
+	        {
+                b[i] += L[i][j] * x[j]; 
+	        }
+        }
 }
 
 static void u2f(

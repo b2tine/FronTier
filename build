@@ -302,9 +302,6 @@ function config_alpha
 
     if [[ $WITHGPU == 1 ]]; then
         CONF="${CONF} --with-gpu"
-	    export USEGPU="yes"
-    else
-	    export USEGPU="no"
     fi
 
     export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-library=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack --with-hdf4=${HDF4_DIR} --with-gd=/usr/lib/x86_64-linux-gnu ${CONF}"

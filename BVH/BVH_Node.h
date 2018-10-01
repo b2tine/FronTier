@@ -36,7 +36,6 @@ class BVH_Node
         BVH_Node& operator=(BVH_Node&&) = delete;
 
         virtual const bool isLeaf() const = 0;
-        virtual const bool isRoot() const = 0;
 
         void setBV(const BoundingVolume& BV);
         const BoundingVolume& getBV() const;
@@ -69,6 +68,8 @@ class InternalNode : public BVH_Node,
         InternalNode& operator=(const InternalNode&) = delete;
         InternalNode(InternalNode&&) = delete;
         InternalNode& operator=(InternalNode&&) = delete;
+        
+        const bool isLeaf() const override;
 
         //Would be better if this could be made private,
         //or coupled to the constructor. However, this does
@@ -81,8 +82,6 @@ class InternalNode : public BVH_Node,
         const std::weak_ptr<const BVH_Node> getLeftChild() const;
         const std::weak_ptr<const BVH_Node> getRightChild() const;
         
-        const bool isLeaf() const override;
-        const bool isRoot() const override;
 };
 
 
@@ -104,7 +103,6 @@ class LeafNode : public BVH_Node
         LeafNode& operator=(LeafNode&&) = delete;
 
         const bool isLeaf() const override;
-        const bool isRoot() const override;
 
         const Hse* const getHse() const;
 };

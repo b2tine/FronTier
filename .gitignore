@@ -38,6 +38,7 @@ Makefile
 configure
 include
 crystal
+cFluid
 iFluid
 testAll
 
