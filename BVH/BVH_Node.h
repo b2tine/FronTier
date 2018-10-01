@@ -14,7 +14,6 @@
 //  2. How much of an impact will the use of smart_ptrs
 //     have on performance?
 
-
 class InternalNode;
 using BoundingVolume = AABB;
 
@@ -76,6 +75,7 @@ class InternalNode : public BVH_Node,
         //not seem possible given the use of smart_ptrs for
         //node linkage. See InternalNode constructor in
         //BVH_Node.cpp for details.
+        
         void setChildren(std::shared_ptr<BVH_Node> lc,
                 std::shared_ptr<BVH_Node> rc);
        

@@ -136,10 +136,10 @@ AC_ARG_WITH([mpich],
             [AS_HELP_STRING([--with-mpich=path],[use mpich])],
             [mpichprefix=${withval} mpi="yes"],[])
 
-AS_IF([test "x$with_mpich" != xno],
+AS_IF([test ${mpi} = "yes"],
       [mpi_incs="-I"${mpichprefix}"/include -D__MPI__ "
-       scriptotherlibsinc=${scriptotherlibsinc}"-L"${mpichprefix}"/lib "
-       scriptotherlibs=${scriptotherlibs}"-lmpich -lmpichcxx -lpthread "])
+       scriptotherlibsinc=${scriptotherlibsinc}" -L"${mpichprefix}"/lib "
+       scriptotherlibs=${scriptotherlibs}" -lmpich -lmpichcxx -lpthread "])
 
 ####################################################
 # PETSc

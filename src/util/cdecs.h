@@ -105,7 +105,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #   endif /*!defined(isnan)*/
 #elif !defined(__alpha) && !defined(__hpux) && !defined(linux) && !defined(_AIX)
 #   include <ieeefp.h>
-#   define isnan(x)    isnand(x)
+#   define isnan(x) isnand(x)
 #endif /* defined(cray) */
 
 #define MACH_EPS DBL_EPSILON
