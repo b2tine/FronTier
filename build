@@ -24,14 +24,13 @@ function parse_arguments
     WITHHDF=1
     WITHGD=1
 
-    OPTS="-Wformat-overflow=0"
     COPTS_GCC="-fopenmp -Wno-unused-result"
 
     export BASECODE="no"
 
     for arg in $@ ; do
         if [[ "$arg" == "-d" ]]; then
-            OPTS="-g -rdynamic ${OPTS}"
+            OPTS="-g -rdynamic "
 	        COPTS_GCC="-pedantic -Wno-long-long ${COPTS_GCC}"
 	        COPTS_ICC="-Wall"
         elif [[ "$arg" == "-n" ]]; then
@@ -274,8 +273,8 @@ function config_vogon
 
 function config_alpha
 {
-    export CXX="mpic++ ${OPTS} ${COPTS_GCC}"
-    export CC="mpicc ${OPTS} ${COPTS_GCC}"
+    export CXX="mpic++ -no-pie -Wformat-overflow=0 ${OPTS} ${COPTS_GCC}"
+    export CC="mpicc -no-pie -Wformat-overflow=0 ${OPTS} ${COPTS_GCC}"
     export F77="mpif77 ${OPTS}"
 
     export scriptotherlibs="${scriptotherlibs} -lblas -lgfortran "
@@ -285,7 +284,6 @@ function config_alpha
     HDF4_DIR=/usr/local/pkg/hdf
 
     PETSC_DIR=/usr/local/pkg/petsc
-    #PETSC_DIR=/usr/local/pkg/petsc_gcc-5
     export PETSC_LDFLAGS="-lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
     
     CGAL_INCLUDE="-I/usr/include"
@@ -306,7 +304,6 @@ function config_alpha
     fi
 
     MPICH="mpich-3.2.1"
-    #MPICH="mpich-3.2.1_gcc-5"
 
     export CONF="--with-mpich=/usr/local/pkg/${MPICH} --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-library=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack --with-hdf4=${HDF4_DIR} --with-gd=/usr ${CONF}"
     
