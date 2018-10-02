@@ -25,7 +25,7 @@ function parse_arguments
     WITHGD=1
 
     OPTS="-Wformat-overflow=0"
-    COPTS_GCC="-fopenmp -Wno-unused-result -Wformat-overflow=0"
+    COPTS_GCC="-fopenmp -Wno-unused-result"
 
     export BASECODE="no"
 
@@ -279,12 +279,13 @@ function config_alpha
     export F77="mpif77 ${OPTS}"
 
     export scriptotherlibs="${scriptotherlibs} -lblas -lgfortran "
-    #export scriptotherlibs="${scriptotherlibs} /usr/lib/x86_64-linux-gnu/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.3"
+    #export scriptotherlibs="${scriptotherlibs} /usr/lib/x86_64-linux-gnu/libblas.so /usr/lib/x86_64-linux-gnu/libgfortran.so.4 "
 
     GD_DIR=/usr/lib/x86_64-linux-gnu
     HDF4_DIR=/usr/local/pkg/hdf
 
     PETSC_DIR=/usr/local/pkg/petsc
+    #PETSC_DIR=/usr/local/pkg/petsc_gcc-5
     export PETSC_LDFLAGS="-lpetsc -lHYPRE -llapack -lblas -ldl -fopenmp -lm -L/usr/X11R6/lib -lX11"
     
     CGAL_INCLUDE="-I/usr/include"
@@ -304,7 +305,10 @@ function config_alpha
         CONF="${CONF} --with-gpu"
     fi
 
-    export CONF="--with-mpich=/usr/local/pkg/mpich2-3.2 --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-library=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack --with-hdf4=${HDF4_DIR} --with-gd=/usr/lib/x86_64-linux-gnu ${CONF}"
+    MPICH="mpich-3.2.1"
+    #MPICH="mpich-3.2.1_gcc-5"
+
+    export CONF="--with-mpich=/usr/local/pkg/${MPICH} --with-petsc=${PETSC_DIR} --with-cgal-include=${CGAL_INCLUDE} --with-cgal-library=${CGAL_LIB} --with-cvode=${CVODE_DIR} --with-deptrack --with-hdf4=${HDF4_DIR} --with-gd=/usr ${CONF}"
     
     PMAKE="-j2"
 }

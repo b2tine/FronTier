@@ -493,22 +493,24 @@ void G_CARTESIAN::addFluxInDirection(
 	FSWEEP *m_flux,
 	double delta_t)
 {
-	int i,j,icoords[MAXD];
+	int icoords[MAXD];
 	switch (dim)
 	{
 	case 1:
 	    addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
 	    break;
 	case 2:
-	    for (i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
+        #pragma omp parallel for num_threads(1)
+	    for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
 	    {
 	    	icoords[(dir+1)%dim] = i;
 	    	addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
 	    }
 	    break;
 	case 3:
-	    for (i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
-	    for (j = imin[(dir+2)%dim]; j <= imax[(dir+2)%dim]; ++j)
+        #pragma omp parallel for collapse(2) num_threads(1)
+	    for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
+	    for (int j = imin[(dir+2)%dim]; j <= imax[(dir+2)%dim]; ++j)
 	    {
 	    	icoords[(dir+1)%dim] = i;
 	    	icoords[(dir+2)%dim] = j;
