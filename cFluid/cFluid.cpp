@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "cFluid.h"
 
 
-static void gas_driver(Front*,G_CARTESIAN&);
+static void gas_driver(Front*,G_CARTESIAN*);
 static int g_cartesian_vel(POINTER,Front*,
         POINT*,HYPER_SURF_ELEMENT*,HYPER_SURF*,double*);
 static boolean compare_with_base_data(Front *front);
@@ -183,14 +183,13 @@ int main(int argc, char **argv)
 
 	/* Propagate the front */
 
-	gas_driver(&front, g_cartesian);
+	gas_driver(&front,&g_cartesian);
 
 	clean_up(0);
 }
 
-//This could be made a method of G_CARTESIAN
-static void gas_driver(Front *front,
-        G_CARTESIAN &g_cartesian)
+void gas_driver(Front *front,
+        G_CARTESIAN* g_cartesian)
 {
     double CFL;
 
@@ -206,21 +205,21 @@ static void gas_driver(Front *front,
 	    FrontPreAdvance(front);
 	    FT_Propagate(front);
 
-        g_cartesian.solve();
+        g_cartesian->solve();
 
 	    FT_Save(front);
-        g_cartesian.printFrontInteriorStates(out_name);
+        g_cartesian->printFrontInteriorStates(out_name);
         
         if (compare_with_base_data(front))
         {
-            g_cartesian.compareWithBaseData(out_name);
-            g_cartesian.freeBaseFront();
+            g_cartesian->compareWithBaseData(out_name);
+            g_cartesian->freeBaseFront();
         }
 
         FT_Draw(front);
 
 	    FT_SetTimeStep(front);
-	    front->dt = std::min(front->dt,CFL*g_cartesian.max_dt);
+	    front->dt = std::min(front->dt,CFL*g_cartesian->max_dt);
 	    FT_SetOutputCounter(front);
         
     }
@@ -255,7 +254,7 @@ static void gas_driver(Front *front,
         FrontPreAdvance(front);
         FT_Propagate(front);
 
-        g_cartesian.solve();
+        g_cartesian->solve();
         
         if (debugging("trace")) 
             print_storage("Storage after time step","trace");
@@ -267,23 +266,23 @@ static void gas_driver(Front *front,
         {
             (void) printf("Step size from front:    %20.14f\n",front->dt);
             (void) printf("Step size from interior: %20.14f\n",
-                    CFL*g_cartesian.max_dt);
+                    CFL*g_cartesian->max_dt);
         }
 
-        front->dt = std::min(front->dt,CFL*g_cartesian.max_dt);
+        front->dt = std::min(front->dt,CFL*g_cartesian->max_dt);
 
-            /* Output section */
+        /* Output section */
 
         start_clock("output");
         if (FT_IsSaveTime(front))
         {
             FT_Save(front);
-            g_cartesian.printFrontInteriorStates(out_name);
+            g_cartesian->printFrontInteriorStates(out_name);
         
             if (compare_with_base_data(front))
             {
-                g_cartesian.compareWithBaseData(out_name);
-                g_cartesian.freeBaseFront();
+                g_cartesian->compareWithBaseData(out_name);
+                g_cartesian->freeBaseFront();
             }
         }
         
@@ -298,7 +297,7 @@ static void gas_driver(Front *front,
             if (!FT_IsSaveTime(front))
             {
                 FT_Save(front);
-                g_cartesian.printFrontInteriorStates(out_name);
+                g_cartesian->printFrontInteriorStates(out_name);
             }
     
             if (!FT_IsDrawTime(front))
@@ -317,7 +316,9 @@ static void gas_driver(Front *front,
     }
 
 	if (FT_Dimension() == 1)
-        g_cartesian.errFunction();
+    {
+        g_cartesian->errFunction();
+    }
 
 	if (debugging("trace"))
         printf("After time loop\n");
