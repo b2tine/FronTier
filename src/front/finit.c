@@ -1668,7 +1668,7 @@ EXPORT  void    FT_StartUp(
 	{
 		Init.use_default_front_data = NO;
 		init_default_debugging(init_data(&Init));
-        	set_binary_output(NO);
+        set_binary_output(NO);
 		dim = ft_basic->dim;
 		front->out_name = ft_basic->out_name;
 

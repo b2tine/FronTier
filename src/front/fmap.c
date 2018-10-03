@@ -3297,7 +3297,17 @@ EXPORT void FT_AddTimeStepToCounter(Front *front)
 	front->dt = 0.0;
 }	/* end FT_AddTimeStepToCounter */
 
-EXPORT	void FT_SetTimeStep(
+
+/* FT_SetTimeStep() summary:
+ *
+ *      Next time step determined by maximum speed of
+ *      the previous step, assuming the propagation is
+ *      hyperbolic and  is not dependent on the second
+ *      order derivatives of the interface such as
+ *      curvature, etc.
+ */
+
+ EXPORT	void FT_SetTimeStep(
 	Front *front)
 {
 	double fcrds[MAXD];

@@ -1244,7 +1244,7 @@ void Incompress_Solver_Smooth_Basis::computeSubgridModel(void)
         FT_FreeThese(5,vel_u,vel_v,vel_uu,vel_uv,vel_vv);
         FT_FreeThese(11,co_coords_y,ma11,ma12,la11,la12,la22,r,cs,cs_ave,
 					deno,nume);
-}       /* end compSGS */
+}       /* end computeSubgridModel */
 
 //-------------------------------------------------------------------------------
 //               Incompress_Solver_Smooth_2D_Basis

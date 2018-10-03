@@ -29,7 +29,7 @@ extern void read_cFluid_params(
 {
 	char string[100];
 	FILE *infile = fopen(inname,"r");
-	int i,dim = eqn_params->dim;
+	int dim = eqn_params->dim;
 
 	eqn_params->prob_type = ERROR_TYPE;
 	eqn_params->tracked = YES;		// Default
@@ -176,7 +176,7 @@ extern void read_cFluid_params(
             (void) printf("%d\n",eqn_params->num_step);
             FT_VectorMemoryAlloc((POINTER*)&eqn_params->steps,
                                 eqn_params->num_step,sizeof(int));
-            for (i = 0; i < eqn_params->num_step; ++i)
+            for (int i = 0; i < eqn_params->num_step; ++i)
             {
                 sprintf(string,"Enter index of step %d:",i+1);
                 CursorAfterString(infile,string);
@@ -193,4 +193,8 @@ extern void read_cFluid_params(
 
 	if (eqn_params->use_base_soln == YES)
 	    FT_ReadComparisonDomain(inname,eqn_params->f_basic);
+
 }	/* end read_cFluid_params */
+
+
+

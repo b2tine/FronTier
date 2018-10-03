@@ -125,7 +125,8 @@ typedef struct {
 	double *engy;
 	double *pres;
 	double *vort;
-	//GFM
+
+    //GFM
 	double **gnor;
 	double **Gdens;
 	double ***Gvel;
@@ -133,10 +134,11 @@ typedef struct {
 
 	// Base front for comparison
 	boolean use_base_soln;
-        char base_dir_name[200];
-        int num_step;
-        int *steps;
-        F_BASIC_DATA *f_basic;
+    char base_dir_name[200];
+    int num_step;
+    int *steps;
+    F_BASIC_DATA *f_basic;
+
 } EQN_PARAMS;
 
 struct _SCHEME_PARAMS
@@ -314,11 +316,12 @@ typedef struct _FSWEEP FSWEEP;
 
 typedef struct _SWEEP SWEEP;
 
-class G_CARTESIAN{
+class G_CARTESIAN
+{
 
 public:
 
-	explicit G_CARTESIAN(Front* front);
+	explicit G_CARTESIAN(Front* frnt);
 
 	~G_CARTESIAN() = default;
 
@@ -329,23 +332,20 @@ public:
     G_CARTESIAN& operator=(G_CARTESIAN&&) = delete;
 
 	int dim;
-	double m_dt;			// time increment
+	//double m_dt;			// time increment
 	double max_dt;			// max_dt from cartesian
 	double hmin;			// smallest spacing
 
-	void setInitialIntfc(LEVEL_FUNC_PACK*,char*);// setup initial geometry
+	void setInitialIntfc(LEVEL_FUNC_PACK*);// setup initial geometry
 	void setInitialStates(); 	// setup initial state
-	void setProbParams(char*); 	// setup initial state
 	void initMesh(void);		// setup the cartesian grid
 	void readInteriorStates(char*);
 	void printFrontInteriorStates(char*);
 	void initMovieVariables();
 	void getVelocity(double*,double*);
-	//void initSampleVelocity(char *in_name); //now a nonmember helper
 	void compareWithBaseData(char *out_name);
 	void freeBaseFront();
 	void errFunction();
-	//void solve(double dt); // main step function
 	void solve(); // main step function
 
 private:
@@ -417,13 +417,16 @@ private:
 	void setAdvectionDt(void);
 	void computeAdvection(void);
 
+
 	/* Mesh memory management */
-	bool withinStencilLen(int*,int);
+    int size;
+    void allocEqnVariables();
 	void allocMeshVst(SWEEP*);
 	void allocMeshFlux(FSWEEP*);
 	void allocDirVstFlux(SWEEP*,FSWEEP*);
 	void freeVst(SWEEP*);
 	void freeFlux(FSWEEP*);
+	bool withinStencilLen(int*,int);
 
 	/* Mesh operations */
 	void solveRungeKutta(int);
@@ -446,6 +449,7 @@ private:
 	// -------------------------------------------------------
 	// 		initialization functions
 	// -------------------------------------------------------
+	void setProbParams(); 	// setup initial state
 	void initSinePertIntfc(LEVEL_FUNC_PACK*,char*);
 	void initRandPertIntfc(LEVEL_FUNC_PACK*,char*);
 	void initCirclePlaneIntfc(LEVEL_FUNC_PACK*,char*);
@@ -535,11 +539,12 @@ private:
 	void scatMeshGhost();
 	void GFMGhostState(int*,int,STATE*);
 	void checkCorrectForTolerance(STATE*);
+    void setGFMStatesToZero();
 	void adjustGFMStates();
 }; // end G_CARTESIAN class
 
 //Former members of G_CARTESIAN that are now helpers
-void initSampleVelocity(Front* front, char *in_name);
+void initSampleVelocity(Front* front, char* infile_name);
 
 
 // cFsub.cpp
