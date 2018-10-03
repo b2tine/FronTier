@@ -46,7 +46,7 @@ void G_CARTESIAN::initSinePertIntfc(
 	FILE *infile = fopen(inname,"r");
 	int i,j,num_modes;
 	char mesg[100];
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	static double	L[3], U[3];
 
 	FT_ScalarMemoryAlloc((POINTER*)&level_func_params,sizeof(FOURIER_POLY));
@@ -132,7 +132,7 @@ void G_CARTESIAN::setRayleiTaylorParams(char *inname)
 {
 	int i;
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char s[100], str[256];
 
@@ -183,7 +183,7 @@ void G_CARTESIAN::setRayleiTaylorParams(char *inname)
 void G_CARTESIAN::initRayleiTaylorStates()
 {
 	int i,j,k,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -246,7 +246,7 @@ void G_CARTESIAN::initRayleiTaylorStates()
 void G_CARTESIAN::setRichtmyerMeshkovParams(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	char s[100], str[256];
 	double	pinf, einf, gamma;
 	int i, dim = FT_Dimension();
@@ -340,7 +340,7 @@ void G_CARTESIAN::setRichtmyerMeshkovParams(char *inname)
 void G_CARTESIAN::initRichtmyerMeshkovStates()
 {
 	int i,j,k,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -617,7 +617,7 @@ void G_CARTESIAN::initCirclePlaneIntfc(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
 {
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	FILE *infile = fopen(inname,"r");
 	static CIRCLE_PARAMS *circle_params;
 	int i,dim;
@@ -673,7 +673,7 @@ void G_CARTESIAN::initCirclePlaneIntfc(
 void G_CARTESIAN::initBubbleStates()
 {
 	int i,j,k,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -795,7 +795,7 @@ void G_CARTESIAN::setBubbleParams(char *inname)
 {
 	int i;
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char s[100], str[256];
 
@@ -844,7 +844,7 @@ void G_CARTESIAN::setImplosionParams(char *inname)
 {
 	int i;
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char s[100], str[256];
 
@@ -896,7 +896,7 @@ void G_CARTESIAN::setMTFusionParams(char *inname)
 {
 	int i;
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char s[100], str[256];
 
@@ -1230,7 +1230,7 @@ void G_CARTESIAN::initProjectileIntfc2d(
 void G_CARTESIAN::initImplosionStates()
 {
 	int i,j,k,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -1293,7 +1293,7 @@ void G_CARTESIAN::initImplosionStates()
 void G_CARTESIAN::initMTFusionStates()
 {
 	int i,j,k,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -1421,7 +1421,7 @@ void G_CARTESIAN::setProjectileParams(char *inname)
 {
 	int i;
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char str[256];
 
@@ -1449,7 +1449,7 @@ void G_CARTESIAN::setProjectileParams(char *inname)
 void G_CARTESIAN::initProjectileStates()
 {
 	int i,j,k,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -1513,7 +1513,7 @@ void G_CARTESIAN::initRiemannProb(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
 {
-	eqn_params = (EQN_PARAMS*)front->extra1;
+	//eqn_params = (EQN_PARAMS*)front->extra1;
 	FILE *infile = fopen(inname,"r");
 	double x;
 	char string[100];
@@ -1575,7 +1575,7 @@ void G_CARTESIAN::setRiemProbParams(char *inname)
 void G_CARTESIAN::setRiemProbParams2d(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char str[256];
 
@@ -1627,7 +1627,7 @@ void G_CARTESIAN::setRiemProbParams2d(char *inname)
 void G_CARTESIAN::setRiemProbParams1d(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char str[256];
 
@@ -1657,7 +1657,7 @@ void G_CARTESIAN::setRiemProbParams1d(char *inname)
 void G_CARTESIAN::setOnedParams(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double		pinf,einf,gamma;
 	char str[256];
 
@@ -1676,7 +1676,7 @@ void G_CARTESIAN::setOnedParams(char *inname)
 void G_CARTESIAN::initRiemProbStates()
 {
 	int i,j,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	double center[MAXD];
 	COMPONENT comp;
@@ -1785,7 +1785,7 @@ void G_CARTESIAN::initRiemProbStates()
 void G_CARTESIAN::initBlastWaveStates()
 {
 	int i,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -1836,7 +1836,7 @@ void G_CARTESIAN::initBlastWaveStates()
 void G_CARTESIAN::initShockSineWaveStates()
 {
 	int i,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -1890,7 +1890,7 @@ void G_CARTESIAN::initShockSineWaveStates()
 void G_CARTESIAN::initAccuracySineWaveStates()
 {
 	int i,l,index;
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
@@ -2020,7 +2020,7 @@ void G_CARTESIAN::initRectPlaneIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
 {
-        EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+        //EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
         FILE *infile = fopen(inname,"r");
         static RECT_BOX_PARAMS *rect_params;
         int i,dim;
@@ -2064,7 +2064,7 @@ void G_CARTESIAN::initTrianglePlaneIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
 {
-        EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+        //EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
         FILE *infile = fopen(inname,"r");
         static TRIANGLE_PARAMS *tri_params;
         int i,dim;
@@ -2105,7 +2105,7 @@ void G_CARTESIAN::initCylinderPlaneIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
 {
-        EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+        //EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
         FILE *infile = fopen(inname,"r");
         static CYLINDER_PARAMS *cylinder_params;
         int i;
@@ -2491,7 +2491,7 @@ void G_CARTESIAN::initRandPertIntfc(
         FILE *infile = fopen(inname,"r");
         int i,j,num_modes;
         char mesg[100], s[10];
-        EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+        //EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
         static double   L[3], U[3];
 
         FT_ScalarMemoryAlloc((POINTER*)&level_func_params,
@@ -2774,7 +2774,7 @@ void G_CARTESIAN::initObliqueIntfc(
         char *inname)
 {
 	static FOURIER_POLY *level_func_params;
-        EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+        //EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
         FILE *infile = fopen(inname,"r");
         int i, num_nodes;
 	COMPONENT neg_comp,pos_comp;

@@ -30,17 +30,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 #include "cFluid.h"
 
-	/*  Function Declarations */
+
 static void gas_driver(Front*,G_CARTESIAN&);
-static int g_cartesian_vel(POINTER,Front*,POINT*,HYPER_SURF_ELEMENT*,
-                        HYPER_SURF*,double*);
+static int g_cartesian_vel(POINTER,Front*,
+        POINT*,HYPER_SURF_ELEMENT*,HYPER_SURF*,double*);
 static boolean compare_with_base_data(Front *front);
 static void rgb_init(Front*,RG_PARAMS);
 
 char *in_name,*restart_state_name,*restart_name,*out_name;
+int RestartStep;
 boolean RestartRun;
 boolean ReadFromInput;
-int RestartStep;
 
 int main(int argc, char **argv)
 {
@@ -49,46 +49,45 @@ int main(int argc, char **argv)
 	static LEVEL_FUNC_PACK level_func_pack;
 	static VELO_FUNC_PACK velo_func_pack;
 	static EQN_PARAMS eqn_params;
-	int i;
-	RG_PARAMS rgb_params;
-        char test_name[100];
+	static RG_PARAMS rgb_params;
+    
+    char test_name[100];
 
-	G_CARTESIAN	g_cartesian(front);
-
-
-	/* Initialize basic computational data */
+	//G_CARTESIAN	g_cartesian(&front);
 
 	FT_Init(argc,argv,&f_basic);
 	f_basic.size_of_intfc_state = sizeof(STATE);
-	
-	//Initialize the Petsc
-	//PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
-	//if (debugging("trace")) printf("Passed PetscInitialize()\n");
 
-        in_name                 = f_basic.in_name;
-        restart_state_name      = f_basic.restart_state_name;
-        out_name                = f_basic.out_name;
-        restart_name            = f_basic.restart_name;
-        RestartRun              = f_basic.RestartRun;
-        RestartStep             = f_basic.RestartStep;
+    in_name = f_basic.in_name;
+    restart_state_name = f_basic.restart_state_name;
+    out_name = f_basic.out_name;
+    restart_name = f_basic.restart_name;
+    RestartRun = f_basic.RestartRun;
+    RestartStep = f_basic.RestartStep;
 
-        sprintf(restart_state_name,"%s/state.ts%s",restart_name,
-                        right_flush(RestartStep,7));
-        sprintf(restart_name,"%s/intfc-ts%s",restart_name,
-			right_flush(RestartStep,7));
-	if (pp_numnodes() > 1)
+    sprintf(restart_state_name,"%s/state.ts%s",restart_name,
+                    right_flush(RestartStep,7));
+    sprintf(restart_name,"%s/intfc-ts%s",restart_name,
+        right_flush(RestartStep,7));
+
+    if (pp_numnodes() > 1)
 	{
-            sprintf(restart_name,"%s-nd%s",restart_name,
-			right_flush(pp_mynode(),4));
-            sprintf(restart_state_name,"%s-nd%s",restart_state_name,
-                        right_flush(pp_mynode(),4));
+        sprintf(restart_name,"%s-nd%s",restart_name,
+                right_flush(pp_mynode(),4));
+        sprintf(restart_state_name,"%s-nd%s",restart_state_name,
+                right_flush(pp_mynode(),4));
 	}
 
 	FT_ReadSpaceDomain(in_name,&f_basic);
 	FT_StartUp(&front,&f_basic);
 	FT_InitDebug(in_name);
+
+
 	if (debugging("sample_velocity"))
-            g_cartesian.initSampleVelocity(in_name);
+    {
+        initSampleVelocity(&front,in_name);
+        //g_cartesian.initSampleVelocity(in_name);
+    }
 
 	if (debugging("trace")) printf("Passed FT_StartUp()\n");
 
@@ -97,16 +96,21 @@ int main(int argc, char **argv)
 
 	if (eqn_params.use_base_soln == YES)
 	{
-            for (i = 0; i < f_basic.dim; ++i)
-                eqn_params.f_basic->subdomains[i] = f_basic.subdomains[i];
+        for(int i = 0; i < f_basic.dim; ++i)
+            eqn_params.f_basic->subdomains[i] = f_basic.subdomains[i];
 	}
 
 	front.extra1 = (POINTER)&eqn_params;
+
 	if (debugging("trace")) printf("Passed read_cFluid_params()\n");
+
+    //TODO: construct g_cartesian here
+
+	G_CARTESIAN	g_cartesian(&front);
+	g_cartesian.setProbParams(in_name);
 
 	/* Initialize interface through level function */
 
-	g_cartesian.setProbParams(in_name);
 
 	if (!RestartRun)
 	{
@@ -153,8 +157,9 @@ int main(int argc, char **argv)
 	    printf("Passed FT_InitFrontVeloFunc()\n");
 
 	g_cartesian.initMesh();
-        g_cartesian.initMovieVariables();
-	if (RestartRun)
+    g_cartesian.initMovieVariables();
+
+    if (RestartRun)
 	{
 	    readFrontStates(&front,restart_state_name);
 	    g_cartesian.readInteriorStates(restart_state_name);
@@ -163,6 +168,7 @@ int main(int argc, char **argv)
 	{
 	    g_cartesian.setInitialStates();
 	}
+
 	if (debugging("trace"))
 	    printf("Passed state initialization()\n");
 
@@ -174,11 +180,11 @@ int main(int argc, char **argv)
 	clean_up(0);
 }
 
-static  void gas_driver(
-        Front *front,
-	G_CARTESIAN &g_cartesian)
+//This could be made a method of G_CARTESIAN
+static void gas_driver(Front *front,
+        G_CARTESIAN &g_cartesian)
 {
-        double CFL;
+    double CFL;
 
 	Curve_redistribution_function(front) = full_redistribute;
 
@@ -191,7 +197,12 @@ static  void gas_driver(
 
 	    FrontPreAdvance(front);
 	    FT_Propagate(front);
-	    g_cartesian.solve(front->dt);
+
+        //TODO: Make callable as g_cartesian.solve(),
+        //      since front is a member of G_CARTESIAN
+	    
+        g_cartesian.solve();
+	    //g_cartesian.solve(front->dt);
 
 	    FT_Save(front);
             g_cartesian.printFrontInteriorStates(out_name);
@@ -230,7 +241,8 @@ static  void gas_driver(
 	    FrontPreAdvance(front);
 	    FT_Propagate(front);
 
-	    g_cartesian.solve(front->dt);
+	    g_cartesian.solve();
+	    //g_cartesian.solve(front->dt);
 	    if (debugging("trace")) 
 	    {
 		print_storage("Storage after time step","trace");
@@ -306,7 +318,7 @@ static int g_cartesian_vel(
 	double *vel)
 {
 	double *coords = Coords(p);
-	((G_CARTESIAN_EB*)params)->getVelocity(coords, vel);
+	((G_CARTESIAN*)params)->getVelocity(coords, vel);
 	return YES;
 }	/* end g_cartesian_vel */
 

@@ -73,10 +73,10 @@ output :
 	rm -rf out/*
 
 TagsFile:
-	ctags *.h *.cpp ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]
+	ctags *.cpp *.h ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]
 
 tagsfile:
-	ctags *.h *.cpp ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]
+	ctags *.cpp *.h ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]
 
 etagsfile:
-	etags *.h *.cpp ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]
+	etags *.cpp *.h ../src/front/*.[ch] ../src/intfc/*.[ch] ../src/util/*.[ch]

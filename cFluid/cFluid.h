@@ -174,8 +174,6 @@ struct _RG_PARAMS {
 };
 typedef struct _RG_PARAMS RG_PARAMS;
 
-typedef class G_CARTESIAN G_CARTESIAN_EB;
-
 
 struct _VAR_BDRY_PARAMS {
 	int dim;
@@ -317,10 +315,19 @@ typedef struct _FSWEEP FSWEEP;
 typedef struct _SWEEP SWEEP;
 
 class G_CARTESIAN{
-	Front *front;
+
 public:
-	//G_CARTESIAN();
-	G_CARTESIAN(Front &front);
+
+	explicit G_CARTESIAN(Front* front);
+
+	~G_CARTESIAN() = default;
+
+    G_CARTESIAN() = delete;
+    G_CARTESIAN(const G_CARTESIAN&) = delete;
+    G_CARTESIAN(G_CARTESIAN&&) = delete;
+    G_CARTESIAN& operator=(const G_CARTESIAN&) = delete;
+    G_CARTESIAN& operator=(G_CARTESIAN&&) = delete;
+
 	int dim;
 	double m_dt;			// time increment
 	double max_dt;			// max_dt from cartesian
@@ -334,21 +341,18 @@ public:
 	void printFrontInteriorStates(char*);
 	void initMovieVariables();
 	void getVelocity(double*,double*);
-	void initSampleVelocity(char *in_name);
+	//void initSampleVelocity(char *in_name); //now a nonmember helper
 	void compareWithBaseData(char *out_name);
 	void freeBaseFront();
 	void errFunction();
-
-	// main step function
-	void solve(double dt);		
-
-	// constructor
-	~G_CARTESIAN();
+	//void solve(double dt); // main step function
+	void solve(); // main step function
 
 private:
-	// On topological grid
-	RECT_GRID *top_grid;
-	double *array;		// for scatter states;
+
+	Front* front;
+	RECT_GRID *top_grid;    // On topological grid
+	double *array;		    // for scatter states;
 	COMPONENT *top_comp;
 	EQN_PARAMS *eqn_params;
 	FIELD field;
@@ -381,8 +385,11 @@ private:
 
 
 	// for parallel partition
-	int             NLblocks,ilower,iupper;
-        int             *n_dist;
+	int NLblocks;
+    int ilower;
+    int iupper;
+
+    int* n_dist;
 
 	// mesh: full cells mesh
 	void setComponent(void);	// init components	
@@ -530,6 +537,9 @@ private:
 	void checkCorrectForTolerance(STATE*);
 	void adjustGFMStates();
 }; // end G_CARTESIAN class
+
+//Former members of G_CARTESIAN that are now helpers
+void initSampleVelocity(Front* front, char *in_name);
 
 
 // cFsub.cpp

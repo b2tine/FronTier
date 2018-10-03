@@ -56,9 +56,25 @@ void L_RECTANGLE::setCoords(
 // 		G_CARTESIAN
 //--------------------------------------------------------------------------
 
+G_CARTESIAN::G_CARTESIAN(Front* frnt)
+    : front{frnt}, dim{frnt->rect_grid->dim},
+    eqn_params{(EQN_PARAMS*)front->extra1}
+{
+    //eqn_params = (EQN_PARAMS*)front->extra1;
+
+    //TODO: Handle resource allocation that is
+    //      currently being done inside methods
+    //      the first time the are called via a
+    //      static boolean flag variable, usually
+    //      called "first".
+}
+
+/*
 G_CARTESIAN::~G_CARTESIAN()
 {
+
 }
+*/
 
 //---------------------------------------------------------------
 //	initMesh
@@ -206,7 +222,8 @@ void G_CARTESIAN::setInitialIntfc(
 	char *inname)
 {
 	dim = front->rect_grid->dim;
-	eqn_params = (EQN_PARAMS*)front->extra1;
+	//eqn_params = (EQN_PARAMS*)front->extra1;
+
 	switch (eqn_params->prob_type)
 	{
 	case TWO_FLUID_RT:
@@ -256,7 +273,8 @@ void G_CARTESIAN::setInitialIntfc(
 void G_CARTESIAN::setProbParams(char *inname)
 {
 	dim = front->rect_grid->dim;
-	eqn_params = (EQN_PARAMS*)front->extra1;
+	//eqn_params = (EQN_PARAMS*)front->extra1;
+
 	switch (eqn_params->prob_type)
 	{
 	case TWO_FLUID_RT:
@@ -751,17 +769,23 @@ void G_CARTESIAN::addSourceTerm(
 // for initial condition: 
 // 		setInitialCondition();	
 // this function should be called before solve()
+//
 // for the source term of the momentum equation: 	
 // 		computeSourceTerm();
-void G_CARTESIAN::solve(double dt)
+
+//void G_CARTESIAN::solve(double dt)
+void G_CARTESIAN::solve()
 {
-	m_dt = dt;
+	m_dt = front->dt;
+	//m_dt = dt;
 	max_speed = 0.0;
 
 	if (debugging("trace"))
 	    printf("Entering solve()\n");
-	start_clock("solve");
-	setDomain();
+	
+    start_clock("solve");
+	
+    setDomain();
 	appendOpenEndStates(); /* open boundary test */
 	scatMeshStates();
 
@@ -774,9 +798,11 @@ void G_CARTESIAN::solve(double dt)
 	// 1) solve for intermediate velocity
 	start_clock("computeAdvection");
 	computeAdvection();
+
 	if (debugging("trace"))
 	    printf("max_speed after computeAdvection(): %20.14f\n",max_speed);
-	stop_clock("computeAdvection");
+	
+    stop_clock("computeAdvection");
 	
 	if (debugging("sample_velocity"))
 	{
@@ -789,8 +815,10 @@ void G_CARTESIAN::solve(double dt)
 
 	setAdvectionDt();
 	stop_clock("solve");
-	if (debugging("trace"))
+	
+    if (debugging("trace"))
 	    printf("Leaving solve()\n");
+
 }	/* end solve */
 
 
@@ -933,24 +961,26 @@ void G_CARTESIAN::save(char *filename)
 	fclose(hfile);
 }
 
-G_CARTESIAN::G_CARTESIAN(Front &front):front(&front)
-{
-}
 
 void G_CARTESIAN::setDomain()
 {
-	static boolean first = YES;
 	INTERFACE *grid_intfc;
 	Table *T;
 	int i,j,k;
-	static int size;
 
 	grid_intfc = front->grid_intfc;
 	top_grid = &topological_grid(grid_intfc);
 	T = table_of_interface(grid_intfc);
 	top_comp = T->components;
-	eqn_params = (EQN_PARAMS*)front->extra1;
 	
+    //eqn_params = (EQN_PARAMS*)front->extra1;
+
+    //TODO: Put this whole if block inside
+    //      the constructor for G_CARTESIANi,
+    //      and delete static boolean "first".
+    //      Make int "size" a private variable.
+	static int size;
+	static boolean first = YES;
 	if (first)
 	{
 	    first = NO;
@@ -958,11 +988,11 @@ void G_CARTESIAN::setDomain()
 
 	    hmin = HUGE;
 	    size = 1;
-	    
-            for (i = 0; i < 3; ++i)
-	    	top_gmax[i] = 0;
 
-            for (i = 0; i < dim; ++i)
+        for (i = 0; i < 3; ++i)
+            top_gmax[i] = 0;
+
+        for (i = 0; i < dim; ++i)
 	    {
 	    	lbuf[i] = front->rect_grid->lbuf[i];
 	    	ubuf[i] = front->rect_grid->ubuf[i];
@@ -971,11 +1001,14 @@ void G_CARTESIAN::setDomain()
 	    	top_U[i] = top_grid->U[i];
 	    	top_h[i] = top_grid->h[i];
 
-                if (hmin > top_h[i]) hmin = top_h[i];
+            if (hmin > top_h[i])
+                hmin = top_h[i];
+
 	        size *= (top_gmax[i]+1);
-	    	imin[i] = (lbuf[i] == 0) ? 1 : lbuf[i];
-	    	imax[i] = (ubuf[i] == 0) ? top_gmax[i] - 1 : 
-				top_gmax[i] - ubuf[i];
+	    	
+            imin[i] = (lbuf[i] == 0) ? 1 : lbuf[i];
+	    	imax[i] = (ubuf[i] == 0) ?
+                top_gmax[i] - 1 : top_gmax[i] - ubuf[i];
 	    }
 
 	    FT_VectorMemoryAlloc((POINTER*)&eqn_params->dens,size,
@@ -1008,14 +1041,22 @@ void G_CARTESIAN::setDomain()
 	    field.momn = eqn_params->mom;
 	    field.vel = eqn_params->vel;
 	}
+
+    //This is the only thing setDomain() should have.
+    //Note: size needs to be a private member variable
 	for (i = 0; i < size; ++i)
-	for (j = 0; j < 2; ++j)
-	{
+    {
+        for (j = 0; j < 2; ++j)
+        {
 	    eqn_params->Gdens[j][i] = 0.0;
 	    eqn_params->Gpres[j][i] = 0.0;
-	    for (k = 0; k < dim; ++k)
-		eqn_params->Gvel[j][k][i] = 0.0;
-	}
+	    
+        for (k = 0; k < dim; ++k)
+            eqn_params->Gvel[j][k][i] = 0.0;
+	
+        }
+    }
+
 }
 
 void G_CARTESIAN::allocMeshVst(
@@ -2020,388 +2061,392 @@ void G_CARTESIAN::sampleVelocity3d()
 	char *out_name = front-> out_name;
 	double dens;
 
-	if (front->step < sample->start_step || front->step > sample->end_step)
-	    return;
-	if ((front->step - sample->start_step)%sample->step_interval)
-	    return;
-        if (step != front->step)
-        {
-            step = front->step;
-            count = 0;
-        }
-        switch (sample_type[0])
-        {
-        case 'x':
-            if (l == -1)
-            {
-                double x1,x2;
-                do
-                {
-                    ++l;
-                    index = d_index3d(l,0,0,top_gmax);
-                    getRectangleCenter(index, coords);
-                }while(sample_line[0]>=coords[0]);
-                --l;
-                index = d_index3d(l,0,0,top_gmax);
-                getRectangleCenter(index,coords);
-                x1 = coords[0];
-                index = d_index3d(l+1,0,0,top_gmax);
-                getRectangleCenter(index,coords);
-                x2 = coords[0];
-                lambda1 = (sample_line[0] - x1) / (x2 - sample_line[0]);
-            }
+	if (front->step < sample->start_step
+            || front->step > sample->end_step)
+        return;
 
-            switch (sample_type[1])
+	if ((front->step - sample->start_step)%sample->step_interval)
+        return;
+
+    if (step != front->step)
+    {
+        step = front->step;
+        count = 0;
+    }
+
+    switch (sample_type[0])
+    {
+    case 'x':
+        if (l == -1)
+        {
+            double x1,x2;
+            do
             {
-                case 'y':
-                    if (m == -1)
+                ++l;
+                index = d_index3d(l,0,0,top_gmax);
+                getRectangleCenter(index, coords);
+            }while(sample_line[0]>=coords[0]);
+            --l;
+            index = d_index3d(l,0,0,top_gmax);
+            getRectangleCenter(index,coords);
+            x1 = coords[0];
+            index = d_index3d(l+1,0,0,top_gmax);
+            getRectangleCenter(index,coords);
+            x2 = coords[0];
+            lambda1 = (sample_line[0] - x1) / (x2 - sample_line[0]);
+        }
+
+        switch (sample_type[1])
+        {
+            case 'y':
+                if (m == -1)
+                {
+                    double y1,y2;
+                    do
                     {
-                        double y1,y2;
-                        do
-                        {
-                            ++m;
-                            index = d_index3d(0,m,0,top_gmax);
-                            getRectangleCenter(index,coords);
-                        }while(sample_line[1]>=coords[1]);
-                        --m;
+                        ++m;
                         index = d_index3d(0,m,0,top_gmax);
                         getRectangleCenter(index,coords);
-                        y1 = coords[1];
-                        index = d_index3d(0,m+1,0,top_gmax);
-                        getRectangleCenter(index,coords);
-                        y2 = coords[1];
-                        lambda2 = (sample_line[1] - y1)/(y2 - sample_line[1]);
-                    }
-                    i = l;
-                    j = m;
-                    sprintf(sname, "%s/x-%d-%d.xg",out_name,step,count);
-                    sfile = fopen(sname,"w");
-                    for (k = imin[2]; k <= imax[2]; ++k)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[0][index]/dens;
-                        index = d_index3d(i+1,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[0][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        index = d_index3d(i,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[0][index]/dens;
-                        index = d_index3d(i+1,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[0][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[2],velo);
-                    }
-                    fclose(sfile);
-
-                    sprintf(sname,"%s/y-%d-%d.xg",out_name,step,count);
-                    sfile = fopen(sname,"w");
-                    for (k = imin[2]; k <= imax[2]; ++k)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[1][index]/dens;
-                        index = d_index3d(i+1,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[1][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        index = d_index3d(i,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[1][index]/dens;
-                        index = d_index3d(i+1,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[1][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[2],velo);
-                    }
-                    fclose(sfile);
-
-                    sprintf(sname,"%s/z-%d-%d.xg",out_name,step,count++);
-                    sfile = fopen(sname,"w");
-                    for (k = imin[2]; k <= imax[2]; ++k)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[2][index]/dens;
-                        index = d_index3d(i+1,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[2][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        index = d_index3d(i,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[2][index]/dens;
-                        index = d_index3d(i+1,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[2][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[2],velo);
-                    }
-                    fclose(sfile);
-
-                    printf("sample line: x = %20.14f, y = %20.14f\n",coords[0],
-                        coords[1]);
-
-                    break;
-
-                case 'z':
-                    if (m == -1)
-                    {
-                        double z1,z2;
-                        do
-                        {
-                            ++m;
-                            index = d_index3d(0,0,m,top_gmax);
-                            getRectangleCenter(index,coords);
-                        }while(sample_line[1]>=coords[2]);
-                        --m;
-                        index = d_index3d(0,0,m,top_gmax);
-                        getRectangleCenter(index,coords);
-                        z1 = coords[2];
-                        index = d_index3d(0,0,m+1,top_gmax);
-                        getRectangleCenter(index,coords);
-                        z2 = coords[2];
-                        lambda2 = (sample_line[1] - z1)/(z2 - sample_line[1]);
-                    }
-                    i = l;
-                    k = m;
-                    sprintf(sname, "%s/x-%d-%d.xg",out_name,step,count);
-                    sfile = fopen(sname,"w");
-                    for (j = imin[1]; j <= imax[1]; ++j)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[0][index]/dens;
-                        index = d_index3d(i+1,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[0][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        index = d_index3d(i,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[0][index]/dens;
-                        index = d_index3d(i+1,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[0][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[1],velo);
-                    }
-                    fclose(sfile);
-
-                    sprintf(sname,"%s/y-%d-%d.xg",out_name,step,count);
-                    sfile = fopen(sname,"w");
-                    for (j = imin[1]; j <= imax[1]; ++j)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[1][index]/dens;
-                        index = d_index3d(i+1,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[1][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        index = d_index3d(i,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[1][index]/dens;
-                        index = d_index3d(i+1,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[1][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[1],velo);
-                    }
-                    fclose(sfile);
-
-                    sprintf(sname,"%s/z-%d-%d.xg",out_name,step,count++);
-                    sfile = fopen(sname,"w");
-                    for (j = imin[1]; j <= imax[1]; ++j)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[2][index]/dens;
-                        index = d_index3d(i+1,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[2][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        index = d_index3d(i,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[2][index]/dens;
-                        index = d_index3d(i+1,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[2][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
-
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[1],velo);
-                    }
-                    fclose(sfile);
-
-                    printf("sample line: x = %20.14f, z = %20.14f\n",coords[0],
-                        coords[2]);
-
-                    break;
-
-                    default:
-                        printf("Incorrect input for sample velocity!\n");
-                        break;
-
-            }
-            break;
-
-        case 'y':
-            if (l == -1)
-            {
-                double y1,y2;
-                do
+                    }while(sample_line[1]>=coords[1]);
+                    --m;
+                    index = d_index3d(0,m,0,top_gmax);
+                    getRectangleCenter(index,coords);
+                    y1 = coords[1];
+                    index = d_index3d(0,m+1,0,top_gmax);
+                    getRectangleCenter(index,coords);
+                    y2 = coords[1];
+                    lambda2 = (sample_line[1] - y1)/(y2 - sample_line[1]);
+                }
+                i = l;
+                j = m;
+                sprintf(sname, "%s/x-%d-%d.xg",out_name,step,count);
+                sfile = fopen(sname,"w");
+                for (k = imin[2]; k <= imax[2]; ++k)
                 {
-                    ++l;
-                    index = d_index3d(0,l,0,top_gmax);
-                    getRectangleCenter(index, coords);
-                }while(sample_line[0]>=coords[1]);
-                --l;
-                index = d_index3d(0,l,0,top_gmax);
-                getRectangleCenter(index,coords);
-                y1 = coords[1];
-                index = d_index3d(0,l+1,0,top_gmax);
-                getRectangleCenter(index,coords);
-                y2 = coords[1];
-                lambda1 = (sample_line[0] - y1)/(y2 - sample_line[0]);
-            }
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[0][index]/dens;
+                    index = d_index3d(i+1,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[0][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
 
-            switch (sample_type[1])
-            {
-                case 'z':
-                    if (m == -1)
+                    index = d_index3d(i,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[0][index]/dens;
+                    index = d_index3d(i+1,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[0][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[2],velo);
+                }
+                fclose(sfile);
+
+                sprintf(sname,"%s/y-%d-%d.xg",out_name,step,count);
+                sfile = fopen(sname,"w");
+                for (k = imin[2]; k <= imax[2]; ++k)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[1][index]/dens;
+                    index = d_index3d(i+1,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[1][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    index = d_index3d(i,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[1][index]/dens;
+                    index = d_index3d(i+1,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[1][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[2],velo);
+                }
+                fclose(sfile);
+
+                sprintf(sname,"%s/z-%d-%d.xg",out_name,step,count++);
+                sfile = fopen(sname,"w");
+                for (k = imin[2]; k <= imax[2]; ++k)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[2][index]/dens;
+                    index = d_index3d(i+1,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[2][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    index = d_index3d(i,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[2][index]/dens;
+                    index = d_index3d(i+1,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[2][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[2],velo);
+                }
+                fclose(sfile);
+
+                printf("sample line: x = %20.14f, y = %20.14f\n",coords[0],
+                    coords[1]);
+
+                break;
+
+            case 'z':
+                if (m == -1)
+                {
+                    double z1,z2;
+                    do
                     {
-                        double z1,z2;
-                        do
-                        {
-                            ++m;
-                            index = d_index3d(0,0,m,top_gmax);
-                            getRectangleCenter(index,coords);
-                        }while(sample_line[1]>=coords[2]);
-                        --m;
+                        ++m;
                         index = d_index3d(0,0,m,top_gmax);
                         getRectangleCenter(index,coords);
-                        z1 = coords[2];
-                        index = d_index3d(0,0,m+1,top_gmax);
-                        getRectangleCenter(index,coords);
-                        z2 = coords[2];
-                        lambda2 = (sample_line[1] - z1)/(z2 - sample_line[1]);
-                    }
-                    j = l;
-                    k = m;
-                    sprintf(sname, "%s/x-%d-%d.xg",out_name,step,count);
-                    sfile = fopen(sname,"w");
-                    for (i = imin[0]; i <= imax[0]; ++i)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[0][index]/dens;
-                        index = d_index3d(i,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[0][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+                    }while(sample_line[1]>=coords[2]);
+                    --m;
+                    index = d_index3d(0,0,m,top_gmax);
+                    getRectangleCenter(index,coords);
+                    z1 = coords[2];
+                    index = d_index3d(0,0,m+1,top_gmax);
+                    getRectangleCenter(index,coords);
+                    z2 = coords[2];
+                    lambda2 = (sample_line[1] - z1)/(z2 - sample_line[1]);
+                }
+                i = l;
+                k = m;
+                sprintf(sname, "%s/x-%d-%d.xg",out_name,step,count);
+                sfile = fopen(sname,"w");
+                for (j = imin[1]; j <= imax[1]; ++j)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[0][index]/dens;
+                    index = d_index3d(i+1,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[0][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
 
-                        index = d_index3d(i,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[0][index]/dens;
-                        index = d_index3d(i,j+1,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[0][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+                    index = d_index3d(i,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[0][index]/dens;
+                    index = d_index3d(i+1,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[0][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
 
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[0],velo);
-                    }
-                    fclose(sfile);
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[1],velo);
+                }
+                fclose(sfile);
 
-                    sprintf(sname, "%s/y-%d-%d.xg",out_name,step,count);
-                    sfile = fopen(sname,"w");
-                    for (i = imin[0]; i <= imax[0]; ++i)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[1][index]/dens;
-                        index = d_index3d(i,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[1][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+                sprintf(sname,"%s/y-%d-%d.xg",out_name,step,count);
+                sfile = fopen(sname,"w");
+                for (j = imin[1]; j <= imax[1]; ++j)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[1][index]/dens;
+                    index = d_index3d(i+1,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[1][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
 
-                        index = d_index3d(i,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[1][index]/dens;
-                        index = d_index3d(i,j+1,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[1][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+                    index = d_index3d(i,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[1][index]/dens;
+                    index = d_index3d(i+1,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[1][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
 
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[0],velo);
-                    }
-                    fclose(sfile);
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[1],velo);
+                }
+                fclose(sfile);
 
-                    sprintf(sname, "%s/z-%d-%d.xg",out_name,step,count++);
-                    sfile = fopen(sname,"w");
-                    for (i = imin[0]; i <= imax[0]; ++i)
-                    {
-                        index = d_index3d(i,j,k,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[2][index]/dens;
-                        index = d_index3d(i,j+1,k,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[2][index]/dens;
-                        velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+                sprintf(sname,"%s/z-%d-%d.xg",out_name,step,count++);
+                sfile = fopen(sname,"w");
+                for (j = imin[1]; j <= imax[1]; ++j)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[2][index]/dens;
+                    index = d_index3d(i+1,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[2][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
 
-                        index = d_index3d(i,j,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo1 = field.momn[2][index]/dens;
-                        index = d_index3d(i,j+1,k+1,top_gmax);
-                        dens = field.dens[index];
-                        velo2 = field.momn[2][index]/dens;
-                        velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+                    index = d_index3d(i,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[2][index]/dens;
+                    index = d_index3d(i+1,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[2][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
 
-                        velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
-                        getRectangleCenter(index,coords);
-                        fprintf(sfile,"%20.14f   %20.14f\n",coords[0],velo);
-                    }
-                    fclose(sfile);
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[1],velo);
+                }
+                fclose(sfile);
 
-                    printf("sample line: y = %20.14f, z = %20.14f\n",coords[1],
-                        coords[2]);
+                printf("sample line: x = %20.14f, z = %20.14f\n",coords[0],
+                    coords[2]);
 
-                    break;
+                break;
 
                 default:
                     printf("Incorrect input for sample velocity!\n");
                     break;
-            }
-        default:
-            printf("Incorrect input for sample velocity!\n");
-            break;
+
         }
+        break;
+
+    case 'y':
+        if (l == -1)
+        {
+            double y1,y2;
+            do
+            {
+                ++l;
+                index = d_index3d(0,l,0,top_gmax);
+                getRectangleCenter(index, coords);
+            }while(sample_line[0]>=coords[1]);
+            --l;
+            index = d_index3d(0,l,0,top_gmax);
+            getRectangleCenter(index,coords);
+            y1 = coords[1];
+            index = d_index3d(0,l+1,0,top_gmax);
+            getRectangleCenter(index,coords);
+            y2 = coords[1];
+            lambda1 = (sample_line[0] - y1)/(y2 - sample_line[0]);
+        }
+
+        switch (sample_type[1])
+        {
+            case 'z':
+                if (m == -1)
+                {
+                    double z1,z2;
+                    do
+                    {
+                        ++m;
+                        index = d_index3d(0,0,m,top_gmax);
+                        getRectangleCenter(index,coords);
+                    }while(sample_line[1]>=coords[2]);
+                    --m;
+                    index = d_index3d(0,0,m,top_gmax);
+                    getRectangleCenter(index,coords);
+                    z1 = coords[2];
+                    index = d_index3d(0,0,m+1,top_gmax);
+                    getRectangleCenter(index,coords);
+                    z2 = coords[2];
+                    lambda2 = (sample_line[1] - z1)/(z2 - sample_line[1]);
+                }
+                j = l;
+                k = m;
+                sprintf(sname, "%s/x-%d-%d.xg",out_name,step,count);
+                sfile = fopen(sname,"w");
+                for (i = imin[0]; i <= imax[0]; ++i)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[0][index]/dens;
+                    index = d_index3d(i,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[0][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    index = d_index3d(i,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[0][index]/dens;
+                    index = d_index3d(i,j+1,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[0][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[0],velo);
+                }
+                fclose(sfile);
+
+                sprintf(sname, "%s/y-%d-%d.xg",out_name,step,count);
+                sfile = fopen(sname,"w");
+                for (i = imin[0]; i <= imax[0]; ++i)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[1][index]/dens;
+                    index = d_index3d(i,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[1][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    index = d_index3d(i,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[1][index]/dens;
+                    index = d_index3d(i,j+1,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[1][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[0],velo);
+                }
+                fclose(sfile);
+
+                sprintf(sname, "%s/z-%d-%d.xg",out_name,step,count++);
+                sfile = fopen(sname,"w");
+                for (i = imin[0]; i <= imax[0]; ++i)
+                {
+                    index = d_index3d(i,j,k,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[2][index]/dens;
+                    index = d_index3d(i,j+1,k,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[2][index]/dens;
+                    velo_tmp1 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    index = d_index3d(i,j,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo1 = field.momn[2][index]/dens;
+                    index = d_index3d(i,j+1,k+1,top_gmax);
+                    dens = field.dens[index];
+                    velo2 = field.momn[2][index]/dens;
+                    velo_tmp2 = (velo1 + lambda1*velo2)/(1.0 + lambda1);
+
+                    velo = (velo_tmp1 + lambda2*velo_tmp2)/(1.0 + lambda2);
+                    getRectangleCenter(index,coords);
+                    fprintf(sfile,"%20.14f   %20.14f\n",coords[0],velo);
+                }
+                fclose(sfile);
+
+                printf("sample line: y = %20.14f, z = %20.14f\n",coords[1],
+                    coords[2]);
+
+                break;
+
+            default:
+                printf("Incorrect input for sample velocity!\n");
+                break;
+        }
+    default:
+        printf("Incorrect input for sample velocity!\n");
+        break;
+    }
 }	/* end sampleVelocity3d */
 
 void G_CARTESIAN::sampleVelocity2d()
@@ -5318,9 +5363,10 @@ void G_CARTESIAN::setDirichletStates(
 	}
 }
 
-void G_CARTESIAN::initSampleVelocity(char *in_name)
+//void G_CARTESIAN::initSampleVelocity(char *in_name)
+void initSampleVelocity(Front* front, char *in_name)
 {
-        FILE *infile;
+    FILE *infile;
 	static SAMPLE *sample;
 	char *sample_type;
 	double *sample_line;
@@ -5329,37 +5375,41 @@ void G_CARTESIAN::initSampleVelocity(char *in_name)
 	FT_ScalarMemoryAlloc((POINTER*)&sample,sizeof(SAMPLE));
 	sample_type = sample->sample_type;
 	sample_line = sample->sample_coords;
-	dim = front->rect_grid->dim;
+	int dim = front->rect_grid->dim;
+	//dim = front->rect_grid->dim;
 
 	if (dim == 2)
-	{
-            CursorAfterString(infile,"Enter the sample line type:");
-            fscanf(infile,"%s",sample_type);
-            (void) printf(" %s\n",sample_type);
-            CursorAfterString(infile,"Enter the sample line coordinate:");
-            fscanf(infile,"%lf",sample_line);
-            (void) printf(" %f\n",sample_line[0]);
-	}
+    {
+        CursorAfterString(infile,"Enter the sample line type:");
+        fscanf(infile,"%s",sample_type);
+        (void) printf(" %s\n",sample_type);
+        CursorAfterString(infile,"Enter the sample line coordinate:");
+        fscanf(infile,"%lf",sample_line);
+        (void) printf(" %f\n",sample_line[0]);
+    }
 	else if (dim == 3)
-        {
-            CursorAfterString(infile,"Enter the sample line type:");
-            fscanf(infile,"%s",sample_type);
-            (void) printf(" %s\n",sample_type);
-            CursorAfterString(infile,"Enter the sample line coordinate:");
-            fscanf(infile,"%lf %lf",sample_line,sample_line+1);
-            (void) printf(" %f %f\n",sample_line[0],sample_line[1]);
-        }
-        CursorAfterString(infile,"Enter the start step for sample: ");
-        fscanf(infile,"%d",&sample->start_step);
-        (void) printf("%d\n",sample->start_step);
-        CursorAfterString(infile,"Enter the end step for sample: ");
-        fscanf(infile,"%d",&sample->end_step);
-        (void) printf("%d\n",sample->end_step);
-        CursorAfterString(infile,"Enter the step interval for sample: ");
-        fscanf(infile,"%d",&sample->step_interval);
-        (void) printf("%d\n",sample->step_interval);
-	front->sample = sample;
-        fclose(infile);
+    {
+        CursorAfterString(infile,"Enter the sample line type:");
+        fscanf(infile,"%s",sample_type);
+        (void) printf(" %s\n",sample_type);
+        CursorAfterString(infile,"Enter the sample line coordinate:");
+        fscanf(infile,"%lf %lf",sample_line,sample_line+1);
+        (void) printf(" %f %f\n",sample_line[0],sample_line[1]);
+    }
+
+    CursorAfterString(infile,"Enter the start step for sample: ");
+    fscanf(infile,"%d",&sample->start_step);
+    (void) printf("%d\n",sample->start_step);
+    CursorAfterString(infile,"Enter the end step for sample: ");
+    fscanf(infile,"%d",&sample->end_step);
+    (void) printf("%d\n",sample->end_step);
+    CursorAfterString(infile,"Enter the step interval for sample: ");
+    fscanf(infile,"%d",&sample->step_interval);
+    (void) printf("%d\n",sample->step_interval);
+
+    front->sample = sample;
+    fclose(infile);
+
 }	/* end initSampleVelocity */
 
 void G_CARTESIAN::checkCorrectForTolerance(STATE *state)
@@ -5441,7 +5491,8 @@ void G_CARTESIAN::addFluxAlongGridLine(
 	COMPONENT comp;
 	int seg_min,seg_max;
 	static int icoords[MAXD];
-	EQN_PARAMS *eqn_params = (EQN_PARAMS*)(front->extra1);
+	
+    //EQN_PARAMS *eqn_params = (EQN_PARAMS*)(front->extra1);
 	
 	if (first)
         {
