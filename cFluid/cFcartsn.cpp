@@ -48,10 +48,10 @@ void L_RECTANGLE::setCoords(
 	double *coords,
 	int dim)
 {
-	int i;
-	for (i = 0; i < dim; ++i)
-	    m_coords[i] = coords[i];
+	for(int i = 0; i < dim; ++i)
+        m_coords[i] = coords[i];
 }
+
 //--------------------------------------------------------------------------
 // 		G_CARTESIAN
 //--------------------------------------------------------------------------
@@ -60,13 +60,7 @@ G_CARTESIAN::G_CARTESIAN(Front* frnt)
     : front{frnt}, dim{frnt->rect_grid->dim},
     eqn_params{(EQN_PARAMS*)front->extra1}
 {
-    //eqn_params = (EQN_PARAMS*)front->extra1;
-
-    //TODO: Handle resource allocation that is
-    //      currently being done inside methods
-    //      the first time the are called via a
-    //      static boolean flag variable, usually
-    //      called "first".
+    setProbParams();
 }
 
 /*
@@ -76,6 +70,7 @@ G_CARTESIAN::~G_CARTESIAN()
 }
 */
 
+
 //---------------------------------------------------------------
 //	initMesh
 // include the following parts
@@ -83,61 +78,62 @@ G_CARTESIAN::~G_CARTESIAN()
 //---------------------------------------------------------------
 void G_CARTESIAN::initMesh(void)
 {
-	int i,j,k, index;
+	int index;
 	double coords[2];
-	int num_cells;
 
 	// init cell_center
-	L_RECTANGLE       rectangle;
+	L_RECTANGLE rectangle;
 
 	if (debugging("trace"))
 	    (void) printf("Entering g_cartesian.initMesh()\n");
+
 	/*TMP*/
 	min_dens = 0.0001;
 	min_pres = 0.0001;
+
 	FT_MakeGridIntfc(front);
-	setDomain();
-	num_cells = 1;
-	for (i = 0; i < dim; ++i)
+    allocEqnVariables();
+	
+    int num_cells = 1;
+	for (int i = 0; i < dim; ++i)
 	{
 	    num_cells *= (top_gmax[i] + 1);
 	}
 	cell_center.insert(cell_center.end(),num_cells,rectangle);
 	
-	// setup vertices
-	// left to right, down to up
+	// setup vertices left to right, bottom to top
 	switch (dim)
 	{
 	case 1:
-	    for (i = 0; i <= top_gmax[0]; i++)
+	    for (int i = 0; i <= top_gmax[0]; i++)
 	    {
 	    	coords[0] = top_L[0] + top_h[0]*i;
-		index = d_index1d(i,top_gmax);
+            index = d_index1d(i,top_gmax);
 	    	cell_center[index].setCoords(coords,dim);
 	    	cell_center[index].icoords[0] = i;
 	    }
 	    break;
 	case 2:
-	    for (j = 0; j <= top_gmax[1]; j++)
-	    for (i = 0; i <= top_gmax[0]; i++)
+	    for (int j = 0; j <= top_gmax[1]; j++)
+	    for (int i = 0; i <= top_gmax[0]; i++)
 	    {
 	    	coords[0] = top_L[0] + top_h[0]*i;
 	    	coords[1] = top_L[1] + top_h[1]*j;
-		index = d_index2d(i,j,top_gmax);
+            index = d_index2d(i,j,top_gmax);
 	    	cell_center[index].setCoords(coords,dim);
 	    	cell_center[index].icoords[0] = i;
 	    	cell_center[index].icoords[1] = j;
 	    }
 	    break;
 	case 3:
-	    for (k = 0; k <= top_gmax[2]; k++)
-	    for (j = 0; j <= top_gmax[1]; j++)
-	    for (i = 0; i <= top_gmax[0]; i++)
+	    for (int k = 0; k <= top_gmax[2]; k++)
+	    for (int j = 0; j <= top_gmax[1]; j++)
+	    for (int i = 0; i <= top_gmax[0]; i++)
 	    {
 	    	coords[0] = top_L[0] + top_h[0]*i;
 	    	coords[1] = top_L[1] + top_h[1]*j;
 	    	coords[2] = top_L[2] + top_h[2]*k;
-		index = d_index3d(i,j,k,top_gmax);
+            index = d_index3d(i,j,k,top_gmax);
 	    	cell_center[index].setCoords(coords,dim);
 	    	cell_center[index].icoords[0] = i;
 	    	cell_center[index].icoords[1] = j;
@@ -147,9 +143,81 @@ void G_CARTESIAN::initMesh(void)
 	
 	setComponent();
 	FT_FreeGridIntfc(front);
+
 	if (debugging("trace"))
 	    (void) printf("Leaving g_cartesian.initMesh()\n");
 }
+
+void G_CARTESIAN::allocEqnVariables()
+{
+	setDomain();
+
+    for (int i = 0; i < 3; ++i)
+        top_gmax[i] = 0;
+
+    size = 1;
+    hmin = HUGE;
+
+    for (int i = 0; i < dim; ++i)
+    {
+        lbuf[i] = front->rect_grid->lbuf[i];
+        ubuf[i] = front->rect_grid->ubuf[i];
+        top_gmax[i] = top_grid->gmax[i];
+        top_L[i] = top_grid->L[i];
+        top_U[i] = top_grid->U[i];
+        top_h[i] = top_grid->h[i];
+
+        if (hmin > top_h[i])
+            hmin = top_h[i];
+
+        size *= (top_gmax[i]+1);
+        
+        imin[i] = (lbuf[i] == 0) ? 1 : lbuf[i];
+        imax[i] = (ubuf[i] == 0) ?
+            top_gmax[i] - 1 : top_gmax[i] - ubuf[i];
+    }
+
+    FT_VectorMemoryAlloc((POINTER*)&eqn_params->dens,size,
+                sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&eqn_params->pres,size,
+                sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&eqn_params->engy,size,
+                sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->vel,dim,size,
+                sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->mom,dim,size,
+                sizeof(double));
+
+    if (dim == 2)
+    {
+        FT_VectorMemoryAlloc((POINTER*)&eqn_params->vort,
+                size,sizeof(double));
+    }
+
+    //Scatter
+    FT_VectorMemoryAlloc((POINTER*)&array,size,sizeof(double));
+
+    //GFM
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->gnor,dim,size,
+                sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gdens,2,size,
+                sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gpres,2,size,
+                sizeof(double));
+    FT_TriArrayMemoryAlloc((POINTER*)&eqn_params->Gvel,2,dim,size,
+                sizeof(double));
+
+
+    field.dens = eqn_params->dens;
+    field.engy = eqn_params->engy;
+    field.pres = eqn_params->pres;
+    field.momn = eqn_params->mom;
+    field.vel = eqn_params->vel;
+
+    setGFMStatesToZero();
+
+}
+
 
 void G_CARTESIAN::setComponent(void)
 {
@@ -217,13 +285,15 @@ void G_CARTESIAN::setComponent(void)
 	}
 }	/* end setComponent() */
 
-void G_CARTESIAN::setInitialIntfc(
-	LEVEL_FUNC_PACK *level_func_pack,
-	char *inname)
-{
-	dim = front->rect_grid->dim;
-	//eqn_params = (EQN_PARAMS*)front->extra1;
 
+void G_CARTESIAN::setInitialIntfc(
+        LEVEL_FUNC_PACK* level_func_pack)
+{
+    char* inname = InName(front);
+    //TODO: Make these init*() functions monadic
+    //      the way setInitialIntfc() was made monadic.
+    //      i.e. Use InName(front) as above.
+    
 	switch (eqn_params->prob_type)
 	{
 	case TWO_FLUID_RT:
@@ -253,8 +323,8 @@ void G_CARTESIAN::setInitialIntfc(
 	    initTrianglePlaneIntfc(level_func_pack,inname);
 	    break;
 	case FLUID_SOLID_CYLINDER:
-             initCylinderPlaneIntfc(level_func_pack,inname);
-             break;
+        initCylinderPlaneIntfc(level_func_pack,inname);
+        break;
 	case RIEMANN_PROB:
 	case ONED_BLAST:
 	case ONED_SSINE:
@@ -270,11 +340,10 @@ void G_CARTESIAN::setInitialIntfc(
 	}
 }	/* end setInitialIntfc */
 
-void G_CARTESIAN::setProbParams(char *inname)
-{
-	dim = front->rect_grid->dim;
-	//eqn_params = (EQN_PARAMS*)front->extra1;
 
+void G_CARTESIAN::setProbParams()
+{
+    char* inname = InName(front);
 	switch (eqn_params->prob_type)
 	{
 	case TWO_FLUID_RT:
@@ -398,7 +467,6 @@ void G_CARTESIAN::solveRungeKutta(int order)
 	static SWEEP *st_field,st_tmp;
 	static FSWEEP *st_flux;
 	static double **a,*b;
-	double delta_t;
 	int i,j;
 
 	/* Allocate memory for Runge-Kutta of order */
@@ -439,7 +507,9 @@ void G_CARTESIAN::solveRungeKutta(int order)
 	    	clean_up(ERROR);
 	    }
 	}
-	delta_t = m_dt;
+
+	double delta_t = front->dt;
+	//delta_t = m_dt;
 
 	/* Compute flux and advance field */
 
@@ -773,11 +843,10 @@ void G_CARTESIAN::addSourceTerm(
 // for the source term of the momentum equation: 	
 // 		computeSourceTerm();
 
-//void G_CARTESIAN::solve(double dt)
+
 void G_CARTESIAN::solve()
 {
-	m_dt = front->dt;
-	//m_dt = dt;
+	//m_dt = front->dt;
 	max_speed = 0.0;
 
 	if (debugging("trace"))
@@ -786,6 +855,8 @@ void G_CARTESIAN::solve()
     start_clock("solve");
 	
     setDomain();
+    setGFMStatesToZero();
+
 	appendOpenEndStates(); /* open boundary test */
 	scatMeshStates();
 
@@ -964,99 +1035,17 @@ void G_CARTESIAN::save(char *filename)
 
 void G_CARTESIAN::setDomain()
 {
-	INTERFACE *grid_intfc;
-	Table *T;
-	int i,j,k;
-
+	INTERFACE* grid_intfc;
 	grid_intfc = front->grid_intfc;
 	top_grid = &topological_grid(grid_intfc);
+	
+    Table *T;
 	T = table_of_interface(grid_intfc);
 	top_comp = T->components;
-	
-    //eqn_params = (EQN_PARAMS*)front->extra1;
 
-    //TODO: Put this whole if block inside
-    //      the constructor for G_CARTESIANi,
-    //      and delete static boolean "first".
-    //      Make int "size" a private variable.
-	static int size;
-	static boolean first = YES;
-	if (first)
-	{
-	    first = NO;
-	    dim = grid_intfc->dim;
-
-	    hmin = HUGE;
-	    size = 1;
-
-        for (i = 0; i < 3; ++i)
-            top_gmax[i] = 0;
-
-        for (i = 0; i < dim; ++i)
-	    {
-	    	lbuf[i] = front->rect_grid->lbuf[i];
-	    	ubuf[i] = front->rect_grid->ubuf[i];
-	    	top_gmax[i] = top_grid->gmax[i];
-	    	top_L[i] = top_grid->L[i];
-	    	top_U[i] = top_grid->U[i];
-	    	top_h[i] = top_grid->h[i];
-
-            if (hmin > top_h[i])
-                hmin = top_h[i];
-
-	        size *= (top_gmax[i]+1);
-	    	
-            imin[i] = (lbuf[i] == 0) ? 1 : lbuf[i];
-	    	imax[i] = (ubuf[i] == 0) ?
-                top_gmax[i] - 1 : top_gmax[i] - ubuf[i];
-	    }
-
-	    FT_VectorMemoryAlloc((POINTER*)&eqn_params->dens,size,
-					sizeof(double));
-	    FT_VectorMemoryAlloc((POINTER*)&eqn_params->pres,size,
-					sizeof(double));
-	    FT_VectorMemoryAlloc((POINTER*)&eqn_params->engy,size,
-					sizeof(double));
-	    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->vel,dim,size,
-					sizeof(double));
-	    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->mom,dim,size,
-					sizeof(double));
-	    //GFM
-	    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->gnor,dim,size,
-					sizeof(double));
-	    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gdens,2,size,
-					sizeof(double));
-	    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gpres,2,size,
-					sizeof(double));
-	    FT_TriArrayMemoryAlloc((POINTER*)&eqn_params->Gvel,2,dim,size,
-					sizeof(double));
-
-	    FT_VectorMemoryAlloc((POINTER*)&array,size,sizeof(double));
-	    if (dim == 2)
-	    	FT_VectorMemoryAlloc((POINTER*)&eqn_params->vort,size,
-					sizeof(double));
-	    field.dens = eqn_params->dens;
-	    field.engy = eqn_params->engy;
-	    field.pres = eqn_params->pres;
-	    field.momn = eqn_params->mom;
-	    field.vel = eqn_params->vel;
-	}
-
-    //This is the only thing setDomain() should have.
-    //Note: size needs to be a private member variable
-	for (i = 0; i < size; ++i)
-    {
-        for (j = 0; j < 2; ++j)
-        {
-	    eqn_params->Gdens[j][i] = 0.0;
-	    eqn_params->Gpres[j][i] = 0.0;
-	    
-        for (k = 0; k < dim; ++k)
-            eqn_params->Gvel[j][k][i] = 0.0;
-	
-        }
-    }
-
+    /*NOTE: Resetting the GFM variables to
+     *      zero is now handled by the function
+     *      setGFMStatesToZero().      */
 }
 
 void G_CARTESIAN::allocMeshVst(
@@ -1224,6 +1213,7 @@ void G_CARTESIAN::readInteriorStates(char *restart_name)
 	double **momn = field.momn;
 
 	setDomain();
+
 	m_dens[0] = eqn_params->rho1;		
 	m_dens[1] = eqn_params->rho2;		
 	m_mu[0] = eqn_params->mu1;		
@@ -1792,6 +1782,8 @@ void G_CARTESIAN::copyMeshStates()
 	}
 }	/* end copyMeshStates */
 
+
+//Is this an Initialization routine?
 void G_CARTESIAN::compSGS(void)
 {
         int i,j,k,index,index0,index1,index2,index3,index4,size;  
@@ -2009,6 +2001,7 @@ void G_CARTESIAN::compSGS(void)
                               s*((s22[index0]/2.0)-(s11[index0]/2.0));
         }
 
+        double m_dt = front->dt;
         for (j = imin[1]; j <= imax[1]; j++)
         for (i = imin[0]; i <= imax[0]; i++)
         {
@@ -3736,14 +3729,16 @@ void G_CARTESIAN::appendGhostBuffer(
 		    boolean status;
 		    /* check neighbor in ldir[idir] */
 		    for (k = 0; k < dim; ++k)
-			ic_next[k] = ic[k];
-		    ic_next[idir]++;
+                ic_next[k] = ic[k];
+
+            ic_next[idir]++;
 		    status = FT_StateStructAtGridCrossing(front,grid_intfc,
-				ic_next,ldir[idir],comp,(POINTER*)&state,
-				&hs,crx_coords);
-		    if (!status) /* extreme cases */
-		    {
-			double coords[MAXD], wtol[MAXD], tol[MAXD];
+				ic_next,ldir[idir],comp,(POINTER*)&state,&hs,crx_coords);
+		    
+            //extrem cases
+            if (!status)
+            {
+            double coords[MAXD], wtol[MAXD], tol[MAXD];
 			int ic_tmp[MAXD];
 			for (k = 0; k < dim; ++k)
                             tol[k] = 2.0 * IG_TOL * top_h[k];
@@ -3796,19 +3791,23 @@ void G_CARTESIAN::appendGhostBuffer(
 			    /* check if crossing is close enough */
 			    boolean close_enough = YES;
 			    for (k = 0; k < dim; ++k)
-                            {
-                                coords[k] = top_L[k] + ic[k] * top_h[k];
-                                wtol[k] = crx_coords[k] - coords[k];
-                                if (fabs(wtol[k]) > tol[k])
-                                    close_enough = NO;
-                            }
-                            if (!close_enough)
-                            {
-                                (void) printf("ERROR: Not close enough!\n");
-                                clean_up(ERROR);
+                {
+                    coords[k] = top_L[k] + ic[k] * top_h[k];
+                    wtol[k] = crx_coords[k] - coords[k];
+                    if (fabs(wtol[k]) > tol[k])
+                        close_enough = NO;
+                }
+                
+                if (!close_enough)
+                {
+                    (void) printf("ERROR: Not close enough!\n");
+                    clean_up(ERROR);
 			    }
-                        }
-		    }
+
+            }
+
+            }
+
 		    switch (wave_type(hs))
 		    {
 		    case NEUMANN_BOUNDARY:
@@ -4007,7 +4006,6 @@ void G_CARTESIAN::appendGhostBuffer(
 }	/* end appendGhostBuffer */
 
 //ghost fluid method.
-
 void G_CARTESIAN::solve_exp_value()
 {
 	int		i, j, k, n;
@@ -5363,15 +5361,14 @@ void G_CARTESIAN::setDirichletStates(
 	}
 }
 
-//void G_CARTESIAN::initSampleVelocity(char *in_name)
-void initSampleVelocity(Front* front, char *in_name)
+void initSampleVelocity(Front* front, char *infile_name)
 {
     FILE *infile;
 	static SAMPLE *sample;
 	char *sample_type;
 	double *sample_line;
 
-	infile = fopen(in_name,"r");
+	infile = fopen(infile_name,"r");
 	FT_ScalarMemoryAlloc((POINTER*)&sample,sizeof(SAMPLE));
 	sample_type = sample->sample_type;
 	sample_line = sample->sample_coords;
@@ -5624,87 +5621,102 @@ void G_CARTESIAN::errFunction()
 	}
 }	/* end errFunction, check the accuracy in AccuracySineWave case */
 
+void G_CARTESIAN::setGFMStatesToZero()
+{
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            eqn_params->Gdens[j][i] = 0.0;
+	        eqn_params->Gpres[j][i] = 0.0;
+	   
+            for (int k = 0; k < dim; ++k)
+                eqn_params->Gvel[j][k][i] = 0.0;	
+        }
+    }
+}
 
 void G_CARTESIAN::adjustGFMStates()
 {
-        if(eqn_params->tracked)
-        {
-           double ***Gvel = eqn_params->Gvel;
-           double **Gdens = eqn_params->Gdens;
-           double **Gpres = eqn_params->Gpres;
-           int i,j,k,ii,jj,kk,index,index1,ind;
-           int icoords[3];
+    if(eqn_params->tracked)
+    {
+       double ***Gvel = eqn_params->Gvel;
+       double **Gdens = eqn_params->Gdens;
+       double **Gpres = eqn_params->Gpres;
+       int i,j,k,ii,jj,kk,index,index1,ind;
+       int icoords[3];
 
-           for (i = 0; i <= top_gmax[0]; i++)
-           for (j = 0; j <= top_gmax[1]; j++)
-           for (k = 0; k <= top_gmax[2]; k++)
-           {
-                icoords[0] = i;
-                icoords[1] = j;
-                icoords[2] = k;
-                index = d_index(icoords,top_gmax,dim);
+       for (i = 0; i <= top_gmax[0]; i++)
+       for (j = 0; j <= top_gmax[1]; j++)
+       for (k = 0; k <= top_gmax[2]; k++)
+       {
+            icoords[0] = i;
+            icoords[1] = j;
+            icoords[2] = k;
+            index = d_index(icoords,top_gmax,dim);
 
-                if (cell_center[index].comp != top_comp[index])
+            if (cell_center[index].comp != top_comp[index])
+            {
+                if (top_comp[index] == GAS_COMP1)
+                    ind = 0;
+                else
+                    ind = 1;
+
+                for (jj = 0; (j+jj) <= top_gmax[1]; jj++)
                 {
-                    if (top_comp[index] == GAS_COMP1)
-                        ind = 0;
-                    else
-                        ind = 1;
+                     icoords[1] = j+jj;
+                     index1 = d_index(icoords,top_gmax,dim);
+                     Gdens[ind][index] = Gdens[ind][index1];
+         for (kk = 0; kk < dim; ++kk)
+                         Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+                     Gpres[ind][index] = Gpres[ind][index1];
 
-                    for (jj = 0; (j+jj) <= top_gmax[1]; jj++)
-                    {
-                         icoords[1] = j+jj;
-                         index1 = d_index(icoords,top_gmax,dim);
-                         Gdens[ind][index] = Gdens[ind][index1];
-			 for (kk = 0; kk < dim; ++kk)
-                             Gvel[ind][kk][index] = Gvel[ind][kk][index1];
-                         Gpres[ind][index] = Gpres[ind][index1];
-
-                         if (Gdens[ind][index] != 0)
-                             break;
-                    }
-
-                    for (jj = 0; (j+jj) >= 0; jj--)
-                    {
-                         icoords[1] = j+jj;
-                         index1 = d_index(icoords,top_gmax,dim);
-                         Gdens[ind][index] = Gdens[ind][index1];
-			 for (kk = 0; kk < dim; ++kk)
-                             Gvel[ind][kk][index] = Gvel[ind][kk][index1];
-                         Gpres[ind][index] = Gpres[ind][index1];
-
-                         if (Gdens[ind][index] != 0)
-                             break;
-                    }
-
-                    for (ii = 0; (i+ii) >= 0; ii--)
-                    {
-                         icoords[0] = i+ii;
-                         index1 = d_index(icoords,top_gmax,dim);
-                         Gdens[ind][index] = Gdens[ind][index1];
-			 for (kk = 0; kk < dim; ++kk)
-                             Gvel[ind][kk][index] = Gvel[ind][kk][index1];
-                         Gpres[ind][index] = Gpres[ind][index1];
-
-                         if (Gdens[ind][index] != 0)
-                             break;
-                    }
-
-                    for (ii = 0; (i+ii) <= top_gmax[0]; ii++)
-                    {
-                         icoords[0] = i+ii;
-                         index1 = d_index(icoords,top_gmax,dim);
-                         Gdens[ind][index] = Gdens[ind][index1];
-			 for (kk = 0; kk < dim; ++kk)
-                             Gvel[ind][kk][index] = Gvel[ind][kk][index1];
-                         Gpres[ind][index] = Gpres[ind][index1];
-
-                         if (Gdens[ind][index] != 0)
-                             break;
-                    }
+                     if (Gdens[ind][index] != 0)
+                         break;
                 }
-           }
-        }
+
+                for (jj = 0; (j+jj) >= 0; jj--)
+                {
+                     icoords[1] = j+jj;
+                     index1 = d_index(icoords,top_gmax,dim);
+                     Gdens[ind][index] = Gdens[ind][index1];
+         for (kk = 0; kk < dim; ++kk)
+                         Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+                     Gpres[ind][index] = Gpres[ind][index1];
+
+                     if (Gdens[ind][index] != 0)
+                         break;
+                }
+
+                for (ii = 0; (i+ii) >= 0; ii--)
+                {
+                     icoords[0] = i+ii;
+                     index1 = d_index(icoords,top_gmax,dim);
+                     Gdens[ind][index] = Gdens[ind][index1];
+         for (kk = 0; kk < dim; ++kk)
+                         Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+                     Gpres[ind][index] = Gpres[ind][index1];
+
+                     if (Gdens[ind][index] != 0)
+                         break;
+                }
+
+                for (ii = 0; (i+ii) <= top_gmax[0]; ii++)
+                {
+                     icoords[0] = i+ii;
+                     index1 = d_index(icoords,top_gmax,dim);
+                     Gdens[ind][index] = Gdens[ind][index1];
+         for (kk = 0; kk < dim; ++kk)
+                         Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+                     Gpres[ind][index] = Gpres[ind][index1];
+
+                     if (Gdens[ind][index] != 0)
+                         break;
+                }
+            }
+       }
+    }
+
 }	/* end adjustGFMState */
 
 void G_CARTESIAN::appendOpenEndStates()

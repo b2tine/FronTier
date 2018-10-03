@@ -493,6 +493,7 @@ typedef struct _INTERFACE INTERFACE;
 #define interface_reconstructed(intfc) ((intfc)->_interface_reconstructed)
 #define static_mesh(intfc) ((intfc)->_static_mesh)
 #define Dimension(intfc) ((intfc)->dim)
+
 /*#bjet2 */
 #define prev_interface(intfc)    ((intfc)->prev_interf)
 

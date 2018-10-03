@@ -50,10 +50,8 @@ int main(int argc, char **argv)
 	static VELO_FUNC_PACK velo_func_pack;
 	static EQN_PARAMS eqn_params;
 	static RG_PARAMS rgb_params;
-    
     char test_name[100];
 
-	//G_CARTESIAN	g_cartesian(&front);
 
 	FT_Init(argc,argv,&f_basic);
 	f_basic.size_of_intfc_state = sizeof(STATE);
@@ -84,12 +82,10 @@ int main(int argc, char **argv)
 
 
 	if (debugging("sample_velocity"))
-    {
         initSampleVelocity(&front,in_name);
-        //g_cartesian.initSampleVelocity(in_name);
-    }
 
-	if (debugging("trace")) printf("Passed FT_StartUp()\n");
+	if (debugging("trace"))
+        printf("Passed FT_StartUp()\n");
 
 	eqn_params.dim = f_basic.dim;
 	read_cFluid_params(in_name,&eqn_params);
@@ -102,37 +98,45 @@ int main(int argc, char **argv)
 
 	front.extra1 = (POINTER)&eqn_params;
 
-	if (debugging("trace")) printf("Passed read_cFluid_params()\n");
+	if (debugging("trace"))
+        printf("Passed read_cFluid_params()\n");
 
-    //TODO: construct g_cartesian here
 
 	G_CARTESIAN	g_cartesian(&front);
-	g_cartesian.setProbParams(in_name);
+
 
 	/* Initialize interface through level function */
 
-
 	if (!RestartRun)
 	{
-	    g_cartesian.setInitialIntfc(&level_func_pack,in_name);
-	    if (f_basic.dim == 3) level_func_pack.set_3d_bdry = YES;
-	    FT_InitIntfc(&front,&level_func_pack);
+	    g_cartesian.setInitialIntfc(&level_func_pack);
+	    
+        if (f_basic.dim == 3)
+            level_func_pack.set_3d_bdry = YES;
+	    
+        FT_InitIntfc(&front,&level_func_pack);
 	    insert_objects(&front);
 	    rgb_init(&front,rgb_params);
 	    FT_PromptSetMixedTypeBoundary2d(in_name,&front);
+
 	    if (debugging("trace"))
 	    	printf("Passed g_cartesian.setProbParams()\n");
-	    read_dirichlet_bdry_data(in_name,&front);
+	    
+        read_dirichlet_bdry_data(in_name,&front);
 	    read_open_end_bdry_data(in_name,&front);
-	    if (f_basic.dim < 3)
+	    
+        if (f_basic.dim < 3)
 	    	FT_ClipIntfcToSubdomain(&front);
-	    FT_RedistMesh(&front);
-	    if (debugging("trace"))
+	    
+        FT_RedistMesh(&front);
+	    
+        if (debugging("trace"))
                 (void) printf("Passed FT_InitIntfc()\n");
-	    if (debugging("init_intfc"))
-	    {
-                switch (f_basic.dim)
-                {
+	    
+        if (debugging("init_intfc"))
+        {
+            switch (f_basic.dim)
+            {
                 case 2:
                     sprintf(test_name,"init_intfc-%d.xg",pp_mynode());
                     xgraph_2d_intfc(test_name,front.interf);
@@ -140,11 +144,14 @@ int main(int argc, char **argv)
                 case 3:
                     gview_plot_interface("gv-init",front.interf);
                     break;
-                }
-	    }
+            }
+        }
 	}
 	else
+    {
 	    restart_set_dirichlet_bdry_function(&front);
+    }
+
 
 	/* Initialize velocity field function */
 
@@ -153,6 +160,7 @@ int main(int argc, char **argv)
 	velo_func_pack.func = g_cartesian_vel;
 	velo_func_pack.point_propagate = cFluid_point_propagate;
 	FT_InitFrontVeloFunc(&front,&velo_func_pack);
+
 	if (debugging("trace"))
 	    printf("Passed FT_InitFrontVeloFunc()\n");
 
@@ -172,11 +180,11 @@ int main(int argc, char **argv)
 	if (debugging("trace"))
 	    printf("Passed state initialization()\n");
 
+
 	/* Propagate the front */
 
 	gas_driver(&front, g_cartesian);
 
-	//PetscFinalize();
 	clean_up(0);
 }
 
@@ -198,27 +206,28 @@ static void gas_driver(Front *front,
 	    FrontPreAdvance(front);
 	    FT_Propagate(front);
 
-        //TODO: Make callable as g_cartesian.solve(),
-        //      since front is a member of G_CARTESIAN
-	    
         g_cartesian.solve();
-	    //g_cartesian.solve(front->dt);
 
 	    FT_Save(front);
-            g_cartesian.printFrontInteriorStates(out_name);
-            if (compare_with_base_data(front))
-            {
-                g_cartesian.compareWithBaseData(out_name);
-                g_cartesian.freeBaseFront();
-            }
-            FT_Draw(front);
+        g_cartesian.printFrontInteriorStates(out_name);
+        
+        if (compare_with_base_data(front))
+        {
+            g_cartesian.compareWithBaseData(out_name);
+            g_cartesian.freeBaseFront();
+        }
+
+        FT_Draw(front);
 
 	    FT_SetTimeStep(front);
 	    front->dt = std::min(front->dt,CFL*g_cartesian.max_dt);
 	    FT_SetOutputCounter(front);
-        }
-        else
-	    FT_SetOutputCounter(front);
+        
+    }
+    else
+    {
+        FT_SetOutputCounter(front);
+    }
 
 	FT_TimeControlFilter(front);
 	FT_PrintTimeStamp(front);
@@ -227,86 +236,92 @@ static void gas_driver(Front *front,
 	{
 	    printf("CFL = %f\n",CFL);
 	    printf("Frequency_of_redistribution(front,GENERAL_WAVE) = %d\n",
-			Frequency_of_redistribution(front,GENERAL_WAVE));
+                Frequency_of_redistribution(front,GENERAL_WAVE));
 	}
 
-	if (debugging("trace")) printf("Before time loop\n");
-        for (;;)
+    /* Propagating interface for time step dt */
+	if (debugging("trace"))
+        printf("Entering time loop\n");
+
+    for (;;)
+    {
+
+        start_clock("time_loop");
+        print_storage("Storage at start of time step","trace");
+        
+        if (debugging("trace"))
+            printf("Begin a time step\n");
+        
+        FrontPreAdvance(front);
+        FT_Propagate(front);
+
+        g_cartesian.solve();
+        
+        if (debugging("trace")) 
+            print_storage("Storage after time step","trace");
+        
+        FT_AddTimeStepToCounter(front);
+        FT_SetTimeStep(front);
+
+        if (debugging("step_size"))
         {
-            /* Propagating interface for time step dt */
+            (void) printf("Step size from front:    %20.14f\n",front->dt);
+            (void) printf("Step size from interior: %20.14f\n",
+                    CFL*g_cartesian.max_dt);
+        }
 
-	    start_clock("time_loop");
-	    print_storage("Storage at start of time step","trace");
-	    if (debugging("trace")) printf("Begin a time step\n");
-	    FrontPreAdvance(front);
-	    FT_Propagate(front);
+        front->dt = std::min(front->dt,CFL*g_cartesian.max_dt);
 
-	    g_cartesian.solve();
-	    //g_cartesian.solve(front->dt);
-	    if (debugging("trace")) 
-	    {
-		print_storage("Storage after time step","trace");
-	    }
-
-	    FT_AddTimeStepToCounter(front);
-				
-            //Next time step determined by maximum speed of previous
-            //step, assuming the propagation is hyperbolic and
-            //is not dependent on second order derivatives of
-            //the interface such as curvature, and etc.
-
-	    FT_SetTimeStep(front);
-	    if (debugging("step_size"))
-	    {
-		(void) printf("Step size from front:    %20.14f\n",front->dt);
-		(void) printf("Step size from interior: %20.14f\n",
-					CFL*g_cartesian.max_dt);
-	    }
-            front->dt = std::min(front->dt,CFL*g_cartesian.max_dt);
-	
             /* Output section */
 
-	    start_clock("output");
-            if (FT_IsSaveTime(front))
-	    {
-            	FT_Save(front);
-		g_cartesian.printFrontInteriorStates(out_name);
-		if (compare_with_base_data(front))
-		{
-		    g_cartesian.compareWithBaseData(out_name);
-		    g_cartesian.freeBaseFront();
-		}
-	    }
-            if (FT_IsDrawTime(front))
-	    {
-            	FT_Draw(front);
-	    }
-	    stop_clock("output");
-
-            if (FT_TimeLimitReached(front))
-	    {
-	    	start_clock("exit-output");
-		if (!FT_IsSaveTime(front))
-		{
-            	    FT_Save(front);
-		    g_cartesian.printFrontInteriorStates(out_name);
-		}
-		if (!FT_IsDrawTime(front))
-		{
-                    FT_Draw(front);
-		}
-		FT_PrintTimeStamp(front);
-	    	stop_clock("exit-output");
-	    	stop_clock("time_loop");
-                break;
-	    }
-	    FT_TimeControlFilter(front);
-	    FT_PrintTimeStamp(front);
-	    stop_clock("time_loop");
+        start_clock("output");
+        if (FT_IsSaveTime(front))
+        {
+            FT_Save(front);
+            g_cartesian.printFrontInteriorStates(out_name);
+        
+            if (compare_with_base_data(front))
+            {
+                g_cartesian.compareWithBaseData(out_name);
+                g_cartesian.freeBaseFront();
+            }
         }
+        
+        if (FT_IsDrawTime(front))
+            FT_Draw(front);
+
+        stop_clock("output");
+
+        if (FT_TimeLimitReached(front))
+        {
+            start_clock("exit-output");
+            if (!FT_IsSaveTime(front))
+            {
+                FT_Save(front);
+                g_cartesian.printFrontInteriorStates(out_name);
+            }
+    
+            if (!FT_IsDrawTime(front))
+                FT_Draw(front);
+
+            FT_PrintTimeStamp(front);
+            stop_clock("exit-output");
+            stop_clock("time_loop");
+            break;
+        }
+
+        FT_TimeControlFilter(front);
+        FT_PrintTimeStamp(front);
+        stop_clock("time_loop");
+
+    }
+
 	if (FT_Dimension() == 1)
-	    g_cartesian.errFunction();
-	if (debugging("trace")) printf("After time loop\n");
+        g_cartesian.errFunction();
+
+	if (debugging("trace"))
+        printf("After time loop\n");
+
 }       /* end gas_driver */
 
 static int g_cartesian_vel(

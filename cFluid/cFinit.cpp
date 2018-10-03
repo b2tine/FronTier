@@ -42,15 +42,16 @@ void G_CARTESIAN::initSinePertIntfc(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
 {
-	static FOURIER_POLY *level_func_params;
 	FILE *infile = fopen(inname,"r");
 	int i,j,num_modes;
 	char mesg[100];
 	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+	
 	static double	L[3], U[3];
+    static FOURIER_POLY *level_func_params;
 
 	FT_ScalarMemoryAlloc((POINTER*)&level_func_params,sizeof(FOURIER_POLY));
-	dim = level_func_params->dim = front->rect_grid->dim;
+	level_func_params->dim = this->dim;
 	
 	ft_assign(L, front->rect_grid->L, 3*DOUBLE);
 	ft_assign(U, front->rect_grid->U, 3*DOUBLE);
@@ -60,34 +61,41 @@ void G_CARTESIAN::initSinePertIntfc(
 
 	level_func_pack->neg_component = GAS_COMP1;
 	level_func_pack->pos_component = GAS_COMP2;
+
 	CursorAfterString(infile,"Enter mean position of fluid interface:");
 	fscanf(infile,"%lf",&level_func_params->z0);
 	(void) printf("%f\n",level_func_params->z0);
+
 	CursorAfterString(infile,"Enter number of sine modes:");
 	fscanf(infile,"%d",&num_modes);
 	(void) printf("%d\n",num_modes);
-	level_func_params->num_modes = num_modes;
-	FT_MatrixMemoryAlloc((POINTER*)&level_func_params->nu,num_modes,
+	
+    level_func_params->num_modes = num_modes;
+	
+    FT_MatrixMemoryAlloc((POINTER*)&level_func_params->nu,num_modes,
 				dim-1,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&level_func_params->phase,num_modes,
 				sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&level_func_params->A,num_modes,
 				sizeof(double));
-	for (i = 0; i < num_modes; ++i)
+	
+    for (i = 0; i < num_modes; ++i)
 	{
 	    sprintf(mesg,"Enter frequency of mode %d:",i+1);
 	    CursorAfterString(infile,mesg);
 	    for (j = 0; j < dim-1; ++j)
 	    {
 	    	fscanf(infile,"%lf",&level_func_params->nu[i][j]);
-		(void) printf("%f ",level_func_params->nu[i][j]);
+    		(void) printf("%f ",level_func_params->nu[i][j]);
 	    }
 	    (void) printf("\n");
+
 	    sprintf(mesg,"Enter amplitude of mode %d:",i+1);
 	    CursorAfterString(infile,mesg);
 	    fscanf(infile,"%lf",&level_func_params->A[i]);
 	    (void) printf("%f\n",level_func_params->A[i]);
-	    sprintf(mesg,"Enter phase of mode %d:",i+1);
+	    
+        sprintf(mesg,"Enter phase of mode %d:",i+1);
 	    CursorAfterString(infile,mesg);
 	    fscanf(infile,"%lf",&level_func_params->phase[i]);
 	    (void) printf("%f\n",level_func_params->phase[i]);
@@ -97,8 +105,10 @@ void G_CARTESIAN::initSinePertIntfc(
 	level_func_pack->func_params = (POINTER)level_func_params;
 	level_func_pack->func = level_wave_func;
 	level_func_pack->wave_type = FIRST_PHYSICS_WAVE_TYPE;
-	fclose(infile);
-}	/* end initRayleiTaylor */
+	
+    fclose(infile);
+
+}	/* end initSinePertIntfc */
 
 static double intfcPertHeight(
 	FOURIER_POLY *wave_params,
@@ -133,7 +143,7 @@ void G_CARTESIAN::setRayleiTaylorParams(char *inname)
 	int i;
 	FILE *infile = fopen(inname,"r");
 	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
-	double		pinf,einf,gamma;
+	double pinf,einf,gamma;
 	char s[100], str[256];
 
 	sprintf(str, "Enter gamma, pinf, einf of the fluid with comp %d:", 
@@ -141,6 +151,7 @@ void G_CARTESIAN::setRayleiTaylorParams(char *inname)
 	CursorAfterString(infile,str);
 	fscanf(infile,"%lf %lf %lf",&gamma,&pinf,&einf);
 	(void) printf("%f %f %f\n",gamma,pinf,einf);
+
 	(eqn_params->eos[GAS_COMP1]).gamma = gamma;
 	(eqn_params->eos[GAS_COMP1]).pinf = pinf;
 	(eqn_params->eos[GAS_COMP1]).einf = einf;
@@ -150,34 +161,42 @@ void G_CARTESIAN::setRayleiTaylorParams(char *inname)
 	CursorAfterString(infile,str);
 	fscanf(infile,"%lf %lf %lf",&gamma,&pinf,&einf);
 	(void) printf("%f %f %f\n",gamma,pinf,einf);
-	(eqn_params->eos[GAS_COMP2]).gamma = gamma;
+	
+    (eqn_params->eos[GAS_COMP2]).gamma = gamma;
 	(eqn_params->eos[GAS_COMP2]).pinf = pinf;
 	(eqn_params->eos[GAS_COMP2]).einf = einf;
 
 	CursorAfterString(infile,"Enter density of top fluid:");
 	fscanf(infile,"%lf",&eqn_params->rho2);
 	(void) printf("%f\n",eqn_params->rho2);
-	CursorAfterString(infile,"Enter density of bottom fluid:");
+	
+    CursorAfterString(infile,"Enter density of bottom fluid:");
 	fscanf(infile,"%lf",&eqn_params->rho1);
 	(void) printf("%f\n",eqn_params->rho1);
-	CursorAfterString(infile,"Enter gravity:");
+	
+    CursorAfterString(infile,"Enter gravity:");
 	for (i = 0; i < dim; ++i)
 	{
 	    fscanf(infile,"%lf",&eqn_params->gravity[i]);
 	    (void) printf("%f ",eqn_params->gravity[i]);
 	}
 	(void) printf("\n");
-	CursorAfterString(infile,"Enter pressure at interface:");
+	
+    CursorAfterString(infile,"Enter pressure at interface:");
 	fscanf(infile,"%lf",&eqn_params->p0);
 	(void) printf("%f\n",eqn_params->p0);
-	CursorAfterString(infile,"Type yes to track the interface:");
+	
+    CursorAfterString(infile,"Type yes to track the interface:");
 	fscanf(infile,"%s",s);
 	(void) printf("%s\n",s);
-	if (s[0] == 'y' || s[0] == 'Y')
+	
+    if (s[0] == 'y' || s[0] == 'Y')
 	    eqn_params->tracked = YES;
 	else
 	    eqn_params->tracked = NO;
-	fclose(infile);
+	
+    fclose(infile);
+
 }	/* end initRayleiTaylorParams */
 
 void G_CARTESIAN::initRayleiTaylorStates()
@@ -187,22 +206,25 @@ void G_CARTESIAN::initRayleiTaylorStates()
 	double coords[MAXD];
 	COMPONENT comp;
 	STATE *sl,*sr,state;
-        POINT *p;
-        HYPER_SURF *hs;
-        HYPER_SURF_ELEMENT *hse;
+    POINT *p;
+    HYPER_SURF *hs;
+    HYPER_SURF_ELEMENT *hse;
 	INTERFACE *intfc = front->interf;
+
 	double *dens = field.dens;
 	double *engy = field.engy;
 	double *pres = field.pres;
 	double **momn = field.momn;
 
-        next_point(intfc,NULL,NULL,NULL);
-        while (next_point(intfc,&p,&hse,&hs))
-        {
+    next_point(intfc,NULL,NULL,NULL);
+
+    while (next_point(intfc,&p,&hse,&hs))
+    {
 	    FT_GetStatesAtPoint(p,hse,hs,(POINTER*)&sl,(POINTER*)&sr);
 	    getRTState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getRTState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -215,7 +237,7 @@ void G_CARTESIAN::initRayleiTaylorStates()
 		index = d_index2d(i,j,top_gmax);
 		comp = top_comp[index];
 		getRectangleCenter(index,coords);
-	    	getRTState(&state,eqn_params,coords,comp);
+        getRTState(&state,eqn_params,coords,comp);
 		dens[index] = state.dens;
 		pres[index] = state.pres;
 		engy[index] = state.engy;
@@ -231,7 +253,7 @@ void G_CARTESIAN::initRayleiTaylorStates()
 		index = d_index3d(i,j,k,top_gmax);
 		comp = top_comp[index];
 		getRectangleCenter(index,coords);
-	    	getRTState(&state,eqn_params,coords,comp);
+        getRTState(&state,eqn_params,coords,comp);
 		dens[index] = state.dens;
 		pres[index] = state.pres;
 		engy[index] = state.engy;
@@ -360,6 +382,7 @@ void G_CARTESIAN::initRichtmyerMeshkovStates()
 	    getRMState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getRMState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -442,6 +465,7 @@ static void getRTState(
 	/* Constant density */
 	for (i = 0; i < dim; ++i)
 	    state->momn[i] = 0.0;
+
 	switch (comp)
 	{
 	case GAS_COMP1:
@@ -693,6 +717,7 @@ void G_CARTESIAN::initBubbleStates()
 	    getBubbleState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getBubbleState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -1250,6 +1275,7 @@ void G_CARTESIAN::initImplosionStates()
 	    getAmbientState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getAmbientState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -1313,6 +1339,7 @@ void G_CARTESIAN::initMTFusionStates()
 	    getAmbientState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getAmbientState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -1469,6 +1496,7 @@ void G_CARTESIAN::initProjectileStates()
 	    getAmbientState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getAmbientState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -1697,6 +1725,7 @@ void G_CARTESIAN::initRiemProbStates()
 	    getAmbientState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getAmbientState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -1805,6 +1834,7 @@ void G_CARTESIAN::initBlastWaveStates()
 	    getBlastState(sl,eqn_params,Coords(p),negative_component(hs));
 	    getBlastState(sr,eqn_params,Coords(p),positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -1858,6 +1888,7 @@ void G_CARTESIAN::initShockSineWaveStates()
 	    getShockSineWaveState(sr,eqn_params,Coords(p),
 				positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -1912,6 +1943,7 @@ void G_CARTESIAN::initAccuracySineWaveStates()
 	    getAccuracySineWaveState(sr,eqn_params,Coords(p),
 				positive_component(hs));
 	}
+
 	FT_MakeGridIntfc(front);
 	setDomain();
 
@@ -2810,12 +2842,14 @@ extern void insert_objects(
 	Front *front)
 {
 	int dim = front->rect_grid->dim;
-        EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
+    EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	switch (eqn_params->prob_type)
-        {
-	case PROJECTILE:
-	    init_gun_and_bullet(front);
+    {
+    	case PROJECTILE:
+            init_gun_and_bullet(front);
+            break;
 	}
+
 }	/* end insert_objects */
 
 static void init_gun_and_bullet(

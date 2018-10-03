@@ -220,7 +220,7 @@ typedef struct _SAMPLE SAMPLE;
 
 struct _F_BASIC_DATA {
 	/* Need to assign before calling FT_Init() */
-        int dim;
+    int dim;
 
 	/* The following will get from FT_Init() */
 	char 	in_name[200];
@@ -583,13 +583,7 @@ struct _Front {
 	POINTER extra1;		/* pointer to extra data structure */
 	POINTER extra2;		/* pointer to extra data structure */
 	POINTER extra3;		/* pointer to extra data structure */
-	char *out_name;		/* Directory name of output files */
-	SAMPLE *sample;
-	COMPONENT *hdf_comps[MAXD];	/* Saved for hdf plotting */
-	HDF_MOVIE_VAR *hdf_movie_var;	/* variables for hdf movies */
-	boolean hdf_cut_frame;
-	double cut_L[MAXD],cut_U[MAXD];
-	VTK_MOVIE_VAR *vtk_movie_var;	/* variables for vtk movies */
+
 	int  (*init_topology_of_new_interface)(struct _Front*,struct _Front*);
 	struct _F_WAVE_CAPTURE *_f_wave_capture;
 	void (*_init_propagate)(struct _Front*);
@@ -719,6 +713,14 @@ struct _Front {
 	INTERFACE *emb_grid_intfc;	/* Grid Interface for embedded bdry */
 	INTERFACE *old_grid_intfc;      /* Grid Interface of previous step*/
 	boolean extrapolation_permitted;
+
+	char *out_name;		/* Directory name of output files */
+	SAMPLE *sample;
+	COMPONENT *hdf_comps[MAXD];	/* Saved for hdf plotting */
+	HDF_MOVIE_VAR *hdf_movie_var;	/* variables for hdf movies */
+	boolean hdf_cut_frame;
+	double cut_L[MAXD],cut_U[MAXD];
+	VTK_MOVIE_VAR *vtk_movie_var;	/* variables for vtk movies */
 
 };
 typedef struct _Front Front;
