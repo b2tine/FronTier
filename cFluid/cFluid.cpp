@@ -84,8 +84,6 @@ int main(int argc, char **argv)
         printf("Passed FT_StartUp()\n");
 
 	
-	//level_func_pack.dim = f_basic.dim;
-	
     eqn_params.dim = f_basic.dim;
 	read_cFluid_params(in_name,&eqn_params);
 	
@@ -101,21 +99,12 @@ int main(int argc, char **argv)
 	front.extra1 = (POINTER)&eqn_params;
     cFluid_setProbParams(&front);
 
-    //TODO: delay construction by making
-    //      setInitialIntfc() a non member function.
-	//G_CARTESIAN	g_cartesian(&front);
-
 
 	/* Initialize interface through level function */
 
 	if (!RestartRun)
 	{
-        //TODO: make setInitialIntfc() a non member
-        //      function, since the only thing it affects
-        //      is the LEVEL_FUNC_PACK* that is passed to it.
-	    
         cFluid_InitIntfc(&front,&level_func_pack);
-        //g_cartesian.setInitialIntfc(&level_func_pack);
 	    
         if (f_basic.dim == 3)
             level_func_pack.set_3d_bdry = YES;
@@ -158,15 +147,7 @@ int main(int argc, char **argv)
 	    restart_set_dirichlet_bdry_function(&front);
     }
 
-    //TODO: execute the previous two TODO items,
-    //      and invoke the constructor here, which
-    //      will allow all the resource allocation
-    //      performed in initMesh() to be done inside
-    //      the class constructor.
-	
     G_CARTESIAN	g_cartesian(&front);
-	//g_cartesian.initMesh();
-    //g_cartesian.initMovieVariables();
 
 
 	/* Initialize velocity field function */

@@ -461,36 +461,6 @@ private:
 	// 		initialization functions
 	// -------------------------------------------------------
 
-    //void setProbParams();
-	/*
-    void initSinePertIntfc(LEVEL_FUNC_PACK*,char*);
-	void initRandPertIntfc(LEVEL_FUNC_PACK*,char*);
-    void initCirclePlaneIntfc(LEVEL_FUNC_PACK*,char*);
-	void initImplosionIntfc(LEVEL_FUNC_PACK*,char*);
-	void initMTFusionIntfc(LEVEL_FUNC_PACK*,char*);
-	void initProjectileIntfc(LEVEL_FUNC_PACK*,char*);
-	void initProjectileIntfc2d(LEVEL_FUNC_PACK*,char*);
-	void initRectPlaneIntfc(LEVEL_FUNC_PACK*,char*);
-	void initTrianglePlaneIntfc(LEVEL_FUNC_PACK*,char*);
-	void initCylinderPlaneIntfc(LEVEL_FUNC_PACK*,char*);
-	void initRiemannProb(LEVEL_FUNC_PACK*,char*);
-	void initObliqueIntfc(LEVEL_FUNC_PACK*,char*);
-    */
-	
-    /*
-    void setRayleighTaylorParams(char*);
-	void setRichtmyerMeshkovParams(char*);
-	void setBubbleParams(char*);
-	void setImplosionParams(char*);
-	void setMTFusionParams(char*);
-	void setProjectileParams(char*);
-	void setRiemProbParams(char*);
-	void setRiemProbParams1d(char*);
-	void setRiemProbParams2d(char*);
-	void setOnedParams(char*);
-	void setObliqueParams(char*);
-    */
-	
 	void initRayleighTaylorStates();
 	void initRichtmyerMeshkovStates();
 	void initBubbleStates();
