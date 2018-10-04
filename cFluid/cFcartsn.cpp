@@ -143,7 +143,7 @@ void G_CARTESIAN::initMesh()
 	    (void) printf("Entering g_cartesian.initMesh()\n");
 
 	FT_MakeGridIntfc(front);
-    allocEqnVariables();
+    allocEqnVst();
 	
     int num_cells = 1;
 	for (int i = 0; i < dim; ++i)
@@ -151,7 +151,6 @@ void G_CARTESIAN::initMesh()
 	
     cell_center.insert(cell_center.end(),num_cells,rectangle);
 	
-	// setup vertices left to right, bottom to top
 	switch (dim)
 	{
 	case 1:
@@ -198,8 +197,7 @@ void G_CARTESIAN::initMesh()
 	    (void) printf("Leaving g_cartesian.initMesh()\n");
 }
 
-//TODO: Rename this and split up into multiple
-//      functions similar to allocRungeKuttaVstFlux().
+//TODO: break up into multiple functions
 void G_CARTESIAN::allocEqnVst()
 {
 	setDomain();
@@ -214,10 +212,12 @@ void G_CARTESIAN::allocEqnVst()
     {
         lbuf[i] = front->rect_grid->lbuf[i];
         ubuf[i] = front->rect_grid->ubuf[i];
-        top_gmax[i] = top_grid->gmax[i];
+
         top_L[i] = top_grid->L[i];
         top_U[i] = top_grid->U[i];
         top_h[i] = top_grid->h[i];
+
+        top_gmax[i] = top_grid->gmax[i];
 
         if (hmin > top_h[i])
             hmin = top_h[i];
@@ -271,12 +271,18 @@ void G_CARTESIAN::allocEqnVst()
     FT_TriArrayMemoryAlloc((POINTER*)&eqn_params->Gvel,
             2,dim,sizeEqnVst,sizeof(double));
 
-    setGFMStatesToZero();
+    setGhostFluidStatesToZero();
     //}
 
     allocRungeKuttaVstFlux();
     
 }
+
+/*
+void G_CARTESIAN::allocGhostFluidVst()
+{
+
+}*/
 
 void G_CARTESIAN::allocRungeKuttaVstFlux()
 {
@@ -367,17 +373,12 @@ void G_CARTESIAN::setComponent()
 }	/* end setComponent() */
 
 
+//TODO: This needs to be a non member function.
+//      The only affect
 void G_CARTESIAN::setInitialIntfc(
         LEVEL_FUNC_PACK* level_func_pack)
 {
     char* inname = InName(front);
-    
-    //TODO: Make these init*() functions monadic
-    //      the way setInitialIntfc() was made monadic.
-    //      i.e. Use InName(front) as above.
-    //
-    //      Also, these should probably be non member,
-    //      non friend functions
     
 	switch (eqn_params->prob_type)
 	{
@@ -885,7 +886,7 @@ void G_CARTESIAN::solve()
 	appendOpenEndStates(); /* open boundary test */
 	scatMeshStates(); //MPI; static variables inside
 
-	adjustGFMStates();
+	adjustGhostFluidStates();
 	setComponent();
 	
 	if (debugging("trace"))
@@ -923,7 +924,7 @@ void G_CARTESIAN::setupSolver()
 {
 	max_speed = 0.0;
     setDomain();
-    setGFMStatesToZero();
+    setGhostFluidStatesToZero();
 }
 
 // check http://en.wikipedia.org/wiki/Bilinear_interpolation
@@ -1080,9 +1081,6 @@ void G_CARTESIAN::setDomain()
 void G_CARTESIAN::allocMeshVst(
 	SWEEP *vst)
 {
-    //TODO: is size always going to be the same as
-    //      sizeEqnVst that gets set inside
-    //      allocEqnVariables()?
 	int size = 1;
     for (int i = 0; i < dim; ++i)
         size *= (top_gmax[i]+1);
@@ -1091,7 +1089,7 @@ void G_CARTESIAN::allocMeshVst(
 	FT_VectorMemoryAlloc((POINTER*)&vst->engy,size,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&vst->pres,size,sizeof(double));
 	FT_MatrixMemoryAlloc((POINTER*)&vst->momn,MAXD,size,sizeof(double));
-}	/* end allocMeshVstFlux */
+}
 
 void G_CARTESIAN::allocMeshFlux(
 	FSWEEP *flux)
@@ -1103,7 +1101,7 @@ void G_CARTESIAN::allocMeshFlux(
 	FT_VectorMemoryAlloc((POINTER*)&flux->dens_flux,size,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&flux->engy_flux,size,sizeof(double));
 	FT_MatrixMemoryAlloc((POINTER*)&flux->momn_flux,MAXD,size,sizeof(double));
-}	/* end allocMeshVstFlux */
+}
 
 void G_CARTESIAN::allocDirVstFlux(
         SWEEP *vst,
@@ -5649,7 +5647,7 @@ void G_CARTESIAN::errFunction()
 	}
 }
 
-void G_CARTESIAN::setGFMStatesToZero()
+void G_CARTESIAN::setGhostFluidStatesToZero()
 {
     for (int i = 0; i < sizeEqnVst; ++i)
     {
@@ -5664,7 +5662,7 @@ void G_CARTESIAN::setGFMStatesToZero()
     }
 }
 
-void G_CARTESIAN::adjustGFMStates()
+void G_CARTESIAN::adjustGhostFluidStates()
 {
     if(eqn_params->tracked)
     {
@@ -5753,7 +5751,7 @@ void G_CARTESIAN::adjustGFMStates()
        }
     }
 
-}	/* end adjustGFMState */
+}
 
 void G_CARTESIAN::appendOpenEndStates()
 {

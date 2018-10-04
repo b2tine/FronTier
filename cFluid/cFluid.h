@@ -417,6 +417,7 @@ private:
 	/* Mesh memory management */
     int sizeEqnVst;
     void allocEqnVst();
+
 	void allocMeshVst(SWEEP*);
 	void allocMeshFlux(FSWEEP*);
 	void allocDirVstFlux(SWEEP*,FSWEEP*);
@@ -553,8 +554,8 @@ private:
 	void scatMeshGhost();
 	void GFMGhostState(int*,int,STATE*);
 	void checkCorrectForTolerance(STATE*);
-	void adjustGFMStates();
-    void setGFMStatesToZero();
+	void adjustGhostFluidStates();
+    void setGhostFluidStatesToZero();
     void setupSolver();
 
 };

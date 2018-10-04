@@ -101,6 +101,9 @@ int main(int argc, char **argv)
 
 
 	front.extra1 = (POINTER)&eqn_params;
+
+    //TODO: delay construction by making
+    //      setInitialIntgc() a non member function.
 	G_CARTESIAN	g_cartesian(&front);
 
 
@@ -108,6 +111,9 @@ int main(int argc, char **argv)
 
 	if (!RestartRun)
 	{
+        //TODO: make setInitialIntfc() a non member
+        //      function, since the only thing it affects
+        //      is the LEVEL_FUNC_PACK* that is passed to it.
 	    g_cartesian.setInitialIntfc(&level_func_pack);
 	    
         if (f_basic.dim == 3)
@@ -151,6 +157,11 @@ int main(int argc, char **argv)
 	    restart_set_dirichlet_bdry_function(&front);
     }
 
+    //TODO: execute the previous two TODO items,
+    //      and invoke the constructor here, which
+    //      will allow all the resource allocation
+    //      performed in initMesh() to be done inside
+    //      the class constructor.
 	g_cartesian.initMesh();
     g_cartesian.initMovieVariables();
 
