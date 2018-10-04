@@ -461,31 +461,24 @@ private:
 	// 		initialization functions
 	// -------------------------------------------------------
 
-    void setProbParams();
-	void initSinePertIntfc(LEVEL_FUNC_PACK*,char*);
+    //void setProbParams();
+	/*
+    void initSinePertIntfc(LEVEL_FUNC_PACK*,char*);
 	void initRandPertIntfc(LEVEL_FUNC_PACK*,char*);
-	void initCirclePlaneIntfc(LEVEL_FUNC_PACK*,char*);
+    void initCirclePlaneIntfc(LEVEL_FUNC_PACK*,char*);
 	void initImplosionIntfc(LEVEL_FUNC_PACK*,char*);
+	void initMTFusionIntfc(LEVEL_FUNC_PACK*,char*);
 	void initProjectileIntfc(LEVEL_FUNC_PACK*,char*);
 	void initProjectileIntfc2d(LEVEL_FUNC_PACK*,char*);
-	void initMTFusionIntfc(LEVEL_FUNC_PACK*,char*);
-	void initRiemannProb(LEVEL_FUNC_PACK*,char*);
-	void initRayleiTaylorStates();
-	void initRichtmyerMeshkovStates();
-	void initBubbleStates();
-	void initImplosionStates();
-	void initMTFusionStates();
-	void initProjectileStates();
-	void initRiemProbStates();
-	void initBlastWaveStates();
-	void initShockSineWaveStates();
-	void initAccuracySineWaveStates();
 	void initRectPlaneIntfc(LEVEL_FUNC_PACK*,char*);
 	void initTrianglePlaneIntfc(LEVEL_FUNC_PACK*,char*);
 	void initCylinderPlaneIntfc(LEVEL_FUNC_PACK*,char*);
+	void initRiemannProb(LEVEL_FUNC_PACK*,char*);
 	void initObliqueIntfc(LEVEL_FUNC_PACK*,char*);
-	void initObliqueStates();
-	void setRayleiTaylorParams(char*);
+    */
+	
+    /*
+    void setRayleighTaylorParams(char*);
 	void setRichtmyerMeshkovParams(char*);
 	void setBubbleParams(char*);
 	void setImplosionParams(char*);
@@ -496,7 +489,21 @@ private:
 	void setRiemProbParams2d(char*);
 	void setOnedParams(char*);
 	void setObliqueParams(char*);
-	void readBaseFront(int i);
+    */
+	
+	void initRayleighTaylorStates();
+	void initRichtmyerMeshkovStates();
+	void initBubbleStates();
+	void initImplosionStates();
+	void initMTFusionStates();
+	void initProjectileStates();
+	void initRiemProbStates();
+	void initBlastWaveStates();
+	void initShockSineWaveStates();
+	void initAccuracySineWaveStates();
+	void initObliqueStates();
+
+    void readBaseFront(int i);
 	void readBaseStates(char *restart_name);
 	void readFrontInteriorStates(char *restart_state_name);
 
@@ -613,6 +620,8 @@ extern void   findGhostState(STATE,STATE,STATE*);
 extern void prompt_for_rigid_body_params(int,char*,RG_PARAMS*);
 extern void set_rgbody_params(RG_PARAMS,HYPER_SURF*);
 extern void insert_objects(Front*);
+extern void cFluid_setProbParams(Front*);
+extern void cFluid_InitIntfc(Front*,LEVEL_FUNC_PACK*);
 
 //cFriem.cpp
 extern boolean RiemannSolution(RIEMANN_INPUT,RIEMANN_SOLN*);

@@ -60,8 +60,9 @@ G_CARTESIAN::G_CARTESIAN(Front* frnt)
     coeffsRK(4,std::vector<double>(4,0.0)),
     weightsRK(4,0.0)
 {
-    setProbParams();
     initRungeKutta();
+    initMesh();
+    initMovieVariables();
 }
 
 /*
@@ -372,9 +373,8 @@ void G_CARTESIAN::setComponent()
 
 }	/* end setComponent() */
 
-
-//TODO: This needs to be a non member function.
-//      The only affect
+/*
+//INPROGRESS: This needs to be a non member function.
 void G_CARTESIAN::setInitialIntfc(
         LEVEL_FUNC_PACK* level_func_pack)
 {
@@ -424,9 +424,10 @@ void G_CARTESIAN::setInitialIntfc(
 	    (void) printf("Problem type not implemented, code needed!\n");
 	    clean_up(ERROR);
 	}
-}	/* end setInitialIntfc */
+}
+*/
 
-
+/*
 void G_CARTESIAN::setProbParams()
 {
     char* inname = InName(front);
@@ -470,14 +471,14 @@ void G_CARTESIAN::setProbParams()
 	    printf("In setProbParams(), unknown problem type!\n");
 	    clean_up(ERROR);
 	}
-}	/* end setProbParams */
+}*/	/* end setProbParams */
 
 void G_CARTESIAN::setInitialStates()
 {
 	switch (eqn_params->prob_type)
 	{
 	case TWO_FLUID_RT:
-	    initRayleiTaylorStates();
+	    initRayleighTaylorStates();
 	    break;
 	case TWO_FLUID_RM:
 	case TWO_FLUID_RM_RAND:

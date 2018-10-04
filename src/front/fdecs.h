@@ -1393,8 +1393,6 @@ struct _LEVEL_FUNC_PACK
 	
 	boolean set_3d_bdry;
 	boolean attach_string;
-    
-    int dim;
 
 };
 typedef struct _LEVEL_FUNC_PACK LEVEL_FUNC_PACK;

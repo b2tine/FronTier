@@ -38,15 +38,130 @@ static void init_gun_and_bullet(Front*);
 static double intfcPertHeight(FOURIER_POLY*,double*);
 static double getStationaryVelocity(EQN_PARAMS*);
 
-void G_CARTESIAN::initSinePertIntfc(
-	LEVEL_FUNC_PACK *level_func_pack,
-	char *inname)
+static void setRayleighTaylorParams(EQN_PARAMS*,char*);
+
+static void initSinePertIntfc(Front*,LEVEL_FUNC_PACK*);
+
+
+void cFluid_setProbParams(Front* front)
 {
+    char* inname = InName(front);
+	EQN_PARAMS* eqn_params = (EQN_PARAMS*)front->extra1;
+
+	switch (eqn_params->prob_type)
+	{
+	case TWO_FLUID_RT:
+	    setRayleighTaylorParams(eqn_params,inname);
+	    break;
+    /*    
+	case TWO_FLUID_RM:
+	case TWO_FLUID_RM_RAND:
+	    setRichtmyerMeshkovParams(inname);
+	    break;
+	case TWO_FLUID_BUBBLE:
+	    setBubbleParams(inname);
+	    break;
+	case IMPLOSION:
+	    setImplosionParams(inname);
+	    break;
+	case MT_FUSION:
+	    setMTFusionParams(inname);
+	    break;
+	case PROJECTILE:
+	case FLUID_SOLID_CIRCLE:
+	case FLUID_SOLID_RECT:
+	case FLUID_SOLID_TRIANGLE:
+	case FLUID_SOLID_CYLINDER:
+	    setProjectileParams(inname);
+	    break;
+	case RIEMANN_PROB:
+	    setRiemProbParams(inname);
+	    break;
+	case ONED_BLAST:
+	case ONED_SSINE:
+	case ONED_ASINE:
+	    setOnedParams(inname);
+	    break;
+	case OBLIQUE_SHOCK_REFLECT:
+	    setRichtmyerMeshkovParams(inname);
+	    break;
+	*/
+    default:
+	    printf("In setProbParams(), unknown problem type!\n");
+	    clean_up(ERROR);
+	}
+}
+
+void cFluid_InitIntfc(Front* front,
+        LEVEL_FUNC_PACK* level_func_pack)
+{
+    //char* inname = InName(front);
+	//EQN_PARAMS* eqn_params = (EQN_PARAMS*)front->extra1;
+    PROB_TYPE prob_type =
+        (PROB_TYPE)((EQN_PARAMS*)front->extra1)->prob_type;
+
+	//switch (eqn_params->prob_type)
+	switch( prob_type )
+	{
+	case TWO_FLUID_RT:
+	case TWO_FLUID_RM:
+	    initSinePertIntfc(front,level_func_pack);
+	    //initSinePertIntfc(level_func_pack,inname);
+	    break;
+	/*case TWO_FLUID_RM_RAND:
+	    initRandPertIntfc(level_func_pack,inname);
+	    break;
+	case TWO_FLUID_BUBBLE:
+	case FLUID_SOLID_CIRCLE:
+	    initCirclePlaneIntfc(level_func_pack,inname);
+	    break;
+	case IMPLOSION:
+	    initImplosionIntfc(level_func_pack,inname);
+	    break;
+	case MT_FUSION:
+	    initMTFusionIntfc(level_func_pack,inname);
+	    break;
+	case PROJECTILE:
+	    initProjectileIntfc(level_func_pack,inname);
+	    break;
+	case FLUID_SOLID_RECT:
+	    initRectPlaneIntfc(level_func_pack,inname);
+	    break;
+	case FLUID_SOLID_TRIANGLE:
+	    initTrianglePlaneIntfc(level_func_pack,inname);
+	    break;
+	case FLUID_SOLID_CYLINDER:
+        initCylinderPlaneIntfc(level_func_pack,inname);
+        break;
+	case RIEMANN_PROB:
+	case ONED_BLAST:
+	case ONED_SSINE:
+	case ONED_ASINE:
+	    initRiemannProb(level_func_pack,inname);
+	    break;
+	case OBLIQUE_SHOCK_REFLECT:
+	    initObliqueIntfc(level_func_pack,inname);
+	    break;
+    */
+	default:
+	    (void) printf("Problem type not implemented, code needed!\n");
+	    clean_up(ERROR);
+	}
+
+}
+
+/*void G_CARTESIAN::initSinePertIntfc(
+	LEVEL_FUNC_PACK *level_func_pack,
+	char *inname)*/
+/*void initSinePertIntfc(
+        LEVEL_FUNC_PACK *level_func_pack, char *inname)*/
+void initSinePertIntfc(Front* front,
+        LEVEL_FUNC_PACK* level_func_pack)
+{
+    char* inname = InName(front);
 	FILE *infile = fopen(inname,"r");
 	char mesg[100];
 
-	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
-	
 	level_func_pack->func = level_wave_func;
 	level_func_pack->wave_type = FIRST_PHYSICS_WAVE_TYPE;
 	level_func_pack->neg_component = GAS_COMP1;
@@ -58,10 +173,12 @@ void G_CARTESIAN::initSinePertIntfc(
 
     static FOURIER_POLY *level_func_params;
 	FT_ScalarMemoryAlloc((POINTER*)&level_func_params,sizeof(FOURIER_POLY));
-	
+
+    int dim = front->rect_grid->dim;    
+    level_func_params->dim = dim;
+
 	level_func_params->L = L;
 	level_func_params->U = U;
-    level_func_params->dim = level_func_pack->dim;
 
 	CursorAfterString(infile,"Enter mean position of fluid interface:");
 	fscanf(infile,"%lf",&level_func_params->z0);
@@ -104,13 +221,16 @@ void G_CARTESIAN::initSinePertIntfc(
 	}
 
 	level_func_pack->func_params = (POINTER)level_func_params;
-
+	
+    EQN_PARAMS* eqn_params = (EQN_PARAMS*)front->extra1;
 	eqn_params->level_func_params = (POINTER)level_func_params;
-
 	
     fclose(infile);
 
 }	/* end initSinePertIntfc */
+
+
+
 
 static double intfcPertHeight(
 	FOURIER_POLY *wave_params,
@@ -140,11 +260,13 @@ static double intfcPertHeight(
 	return z;
 }	/* end intfcPertHeight */
 
-void G_CARTESIAN::setRayleiTaylorParams(char *inname)
+
+//void G_CARTESIAN::setRayleiTaylorParams(char *inname)
+void setRayleighTaylorParams(
+        EQN_PARAMS* eqn_params, char *inname)
 {
 	int i;
 	FILE *infile = fopen(inname,"r");
-	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	double pinf,einf,gamma;
 	char s[100], str[256];
 
@@ -176,6 +298,7 @@ void G_CARTESIAN::setRayleiTaylorParams(char *inname)
 	fscanf(infile,"%lf",&eqn_params->rho1);
 	(void) printf("%f\n",eqn_params->rho1);
 	
+    int dim = eqn_params->dim;    
     CursorAfterString(infile,"Enter gravity:");
 	for (i = 0; i < dim; ++i)
 	{
@@ -198,10 +321,9 @@ void G_CARTESIAN::setRayleiTaylorParams(char *inname)
 	    eqn_params->tracked = NO;
 	
     fclose(infile);
+}
 
-}	/* end initRayleiTaylorParams */
-
-void G_CARTESIAN::initRayleiTaylorStates()
+void G_CARTESIAN::initRayleighTaylorStates()
 {
 	int i,j,k,l,index;
 	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
@@ -267,6 +389,7 @@ void G_CARTESIAN::initRayleiTaylorStates()
 	scatMeshStates();
 }	/* end initRayleiTaylorStates */
 
+/*
 void G_CARTESIAN::setRichtmyerMeshkovParams(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
@@ -300,7 +423,7 @@ void G_CARTESIAN::setRichtmyerMeshkovParams(char *inname)
 	fscanf(infile,"%lf",&eqn_params->rho1);
 	(void) printf("%f\n",eqn_params->rho1);
 	for (int i = 0; i < dim; ++i)
-	    eqn_params->v2[i] = 0.0; /* default initial velocity */
+	    eqn_params->v2[i] = 0.0; //default initial velocity
 	if (CursorAfterStringOpt(infile,"Enter velocity of top fluid:"))
 	{
 	    for (i = 0; i < dim; ++i)
@@ -310,7 +433,7 @@ void G_CARTESIAN::setRichtmyerMeshkovParams(char *inname)
 	    }
 	    (void) printf("\n");
 	}
-	for (int i = 0; i < dim; ++i) /* default initial velocity */
+	for (int i = 0; i < dim; ++i) //default initial velocity
 	    eqn_params->v1[i] = 0.0;
 	if(CursorAfterStringOpt(infile,"Enter velocity of bottom fluid:"))
 	{
@@ -327,7 +450,7 @@ void G_CARTESIAN::setRichtmyerMeshkovParams(char *inname)
 	CursorAfterString(infile,"Enter Mach number of shock:");
 	fscanf(infile,"%lf",&eqn_params->Mach_number);
 	(void) printf("%f\n",eqn_params->Mach_number);
-	eqn_params->idir = dim - 1;	/* default idir */
+	eqn_params->idir = dim - 1;	//default idir
 	if (CursorAfterStringOpt(infile,"Enter idir of shock:"))
 	{
 	    fscanf(infile,"%d",&eqn_params->idir);
@@ -359,7 +482,7 @@ void G_CARTESIAN::setRichtmyerMeshkovParams(char *inname)
                 eqn_params->contact_stationary = NO;
         }
 	fclose(infile);
-}	/* end setRayleiTaylorParams */
+}*/
 
 void G_CARTESIAN::initRichtmyerMeshkovStates()
 {
@@ -638,7 +761,7 @@ static void behind_state(
 	behind_state->momn[idir] = r1*u1*shock_side;
 }		/*end behind_state */
 
-
+/*
 void G_CARTESIAN::initCirclePlaneIntfc(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
@@ -693,8 +816,8 @@ void G_CARTESIAN::initCirclePlaneIntfc(
 	    clean_up(ERROR);
 	}
 	fclose(infile);	
-}	/* end initCirclePlaneIntfc */
-
+}
+*/
 
 void G_CARTESIAN::initBubbleStates()
 {
@@ -818,6 +941,7 @@ static void getBubbleState(
 	}
 }	/* end getBubbleState */
 
+/*
 void G_CARTESIAN::setBubbleParams(char *inname)
 {
 	int i;
@@ -865,8 +989,9 @@ void G_CARTESIAN::setBubbleParams(char *inname)
 	else
 	    eqn_params->tracked = NO;
 	fclose(infile);
-}	/* end setBubbleParams */
+}*/
 
+/*
 void G_CARTESIAN::setImplosionParams(char *inname)
 {
 	int i;
@@ -917,8 +1042,9 @@ void G_CARTESIAN::setImplosionParams(char *inname)
 	else
 	    eqn_params->tracked = NO;
 	fclose(infile);
-}	/* end setBubbleParams */
+}*/
 
+/*
 void G_CARTESIAN::setMTFusionParams(char *inname)
 {
 	int i;
@@ -966,8 +1092,9 @@ void G_CARTESIAN::setMTFusionParams(char *inname)
 	else
 	    eqn_params->tracked = NO;
 	fclose(infile);
-}	/* end setMTFusionParams */
+}*/
 
+/*
 void G_CARTESIAN::initImplosionIntfc(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
@@ -1048,8 +1175,9 @@ void G_CARTESIAN::initImplosionIntfc(
 	level_func_pack->point_array = NULL;
 
 	fclose(infile);	
-}	/* end initImplosionIntfc */
+}*/	/* end initImplosionIntfc */
 
+/*
 void G_CARTESIAN::initMTFusionIntfc(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
@@ -1140,8 +1268,9 @@ void G_CARTESIAN::initMTFusionIntfc(
 	}
 
 	fclose(infile);	
-}	/* end initMTFusionIntfc */
+}*/	/* end initMTFusionIntfc */
 
+/*
 void G_CARTESIAN::initProjectileIntfc(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
@@ -1158,8 +1287,9 @@ void G_CARTESIAN::initProjectileIntfc(
 	    level_func_pack->neg_component = SOLID_COMP;
 	    return;
 	}
-}	/* end initProjectileIntfc */
+}*/	/* end initProjectileIntfc */
 
+/*
 void G_CARTESIAN::initProjectileIntfc2d(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
@@ -1252,7 +1382,8 @@ void G_CARTESIAN::initProjectileIntfc2d(
 	level_func_pack->point_array = NULL;
 
 	fclose(infile);	
-}	/* end initProjectileIntfc2d */
+}*/	/* end initProjectileIntfc2d */
+
 
 void G_CARTESIAN::initImplosionStates()
 {
@@ -1446,6 +1577,7 @@ static void getAmbientState(
 			comp,state->dens,state->pres,state->engy);
 }	/* end getAmbientState */
 
+/*
 void G_CARTESIAN::setProjectileParams(char *inname)
 {
 	int i;
@@ -1473,7 +1605,7 @@ void G_CARTESIAN::setProjectileParams(char *inname)
 	}
 	(void) printf("\n");
 	fclose(infile);
-}	/* end setProjectileParams */
+}*/
 
 void G_CARTESIAN::initProjectileStates()
 {
@@ -1539,6 +1671,7 @@ void G_CARTESIAN::initProjectileStates()
 	scatMeshStates();
 }	/* end initProjectileStates */
 
+/*
 void G_CARTESIAN::initRiemannProb(
 	LEVEL_FUNC_PACK *level_func_pack,
 	char *inname)
@@ -1587,8 +1720,9 @@ void G_CARTESIAN::initRiemannProb(
         else
             eqn_params->tracked = NO;
 	fclose(infile);
-}	/* end initRiemannProb */
+}*/	/* end initRiemannProb */
 
+/*
 void G_CARTESIAN::setRiemProbParams(char *inname)
 {
 	switch (dim)
@@ -1600,8 +1734,9 @@ void G_CARTESIAN::setRiemProbParams(char *inname)
 	    setRiemProbParams2d(inname);
 	    return;
 	}
-}	/* end setRiemProbParams */
+}*/
 
+/*
 void G_CARTESIAN::setRiemProbParams2d(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
@@ -1652,8 +1787,9 @@ void G_CARTESIAN::setRiemProbParams2d(char *inname)
 			eqn_params->v0[1],eqn_params->v1[1],
 			eqn_params->v2[1],eqn_params->v3[1]);
 	fclose(infile);
-}	/* end setRiemProbParams2d */
+}*/
 
+/*
 void G_CARTESIAN::setRiemProbParams1d(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
@@ -1682,8 +1818,9 @@ void G_CARTESIAN::setRiemProbParams1d(char *inname)
 	fscanf(infile,"%lf %lf",&eqn_params->v1[0],&eqn_params->v2[0]);
 	(void) printf("%f %f\n",eqn_params->v1[0],eqn_params->v2[0]);
 	fclose(infile);
-}	/* end setRiemProbParams1d */
+}*/
 
+/*
 void G_CARTESIAN::setOnedParams(char *inname)
 {
 	FILE *infile = fopen(inname,"r");
@@ -1701,7 +1838,7 @@ void G_CARTESIAN::setOnedParams(char *inname)
         (eqn_params->eos[GAS_COMP2]).gamma = gamma;
         (eqn_params->eos[GAS_COMP2]).pinf = pinf;
         (eqn_params->eos[GAS_COMP2]).einf = einf;
-}	/* end setOnedProbParams */
+}*/
 
 void G_CARTESIAN::initRiemProbStates()
 {
@@ -2050,6 +2187,7 @@ static void getAccuracySineWaveState(
 	state->engy = EosEnergy(state);
 }	/* end getAccuracySineWaveState */
 
+/*
 void G_CARTESIAN::initRectPlaneIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
@@ -2092,8 +2230,9 @@ void G_CARTESIAN::initRectPlaneIntfc(
             clean_up(ERROR);
         }
         fclose(infile);
-}       /* end initRectPlaneIntfc */
+}*/       /* end initRectPlaneIntfc */
 
+/*
 void G_CARTESIAN::initTrianglePlaneIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
@@ -2133,8 +2272,9 @@ void G_CARTESIAN::initTrianglePlaneIntfc(
             clean_up(ERROR);
         }
         fclose(infile);
-}       /* end initTrianglePlaneIntfc */
+}*/       /* end initTrianglePlaneIntfc */
 
+/*
 void G_CARTESIAN::initCylinderPlaneIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
@@ -2176,7 +2316,7 @@ void G_CARTESIAN::initCylinderPlaneIntfc(
             clean_up(ERROR);
         }
         fclose(infile);
-}       /* end initCylinderPlaneIntfc */
+}*/       /* end initCylinderPlaneIntfc */
 
 extern  void prompt_for_rigid_body_params(
         int dim,
@@ -2517,7 +2657,10 @@ static double getStationaryVelocity(
 	return contact_speed;
 }	/* end getStationaryVelocity */
 
-void G_CARTESIAN::initRandPertIntfc(
+/*void G_CARTESIAN::initRandPertIntfc(
+        LEVEL_FUNC_PACK *level_func_pack,
+        char *inname)*/
+/*void initRandPertIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
 {
@@ -2525,7 +2668,6 @@ void G_CARTESIAN::initRandPertIntfc(
         FILE *infile = fopen(inname,"r");
         int i,j,num_modes;
         char mesg[100], s[10];
-        //EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
         static double   L[3], U[3];
 
         FT_ScalarMemoryAlloc((POINTER*)&level_func_params,
@@ -2584,7 +2726,7 @@ void G_CARTESIAN::initRandPertIntfc(
         level_func_pack->func = level_cwave_func;
         level_func_pack->wave_type = FIRST_PHYSICS_WAVE_TYPE;
         fclose(infile);
-}        /* end initPertIntfc */
+}*/
 
 static void assign_seeds(
 
@@ -2803,6 +2945,7 @@ static void pertCoeff(
         }
 }       /* end pertCoeff */
 
+/*
 void G_CARTESIAN::initObliqueIntfc(
         LEVEL_FUNC_PACK *level_func_pack,
         char *inname)
@@ -2838,7 +2981,7 @@ void G_CARTESIAN::initObliqueIntfc(
 	oblique = FT_MakeNodeArrayCurve(front,num_nodes,node_coords,neg_comp,
 				pos_comp,NO,0.75,NEUMANN_BOUNDARY);
         fclose(infile);
-}
+}*/
 
 extern void insert_objects(
 	Front *front)

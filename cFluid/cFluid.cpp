@@ -84,7 +84,7 @@ int main(int argc, char **argv)
         printf("Passed FT_StartUp()\n");
 
 	
-	level_func_pack.dim = f_basic.dim;
+	//level_func_pack.dim = f_basic.dim;
 	
     eqn_params.dim = f_basic.dim;
 	read_cFluid_params(in_name,&eqn_params);
@@ -92,19 +92,18 @@ int main(int argc, char **argv)
     if (debugging("trace"))
         printf("Passed read_cFluid_params()\n");
 
-
 	if (eqn_params.use_base_soln == YES)
 	{
         for(int i = 0; i < f_basic.dim; ++i)
             eqn_params.f_basic->subdomains[i] = f_basic.subdomains[i];
 	}
 
-
 	front.extra1 = (POINTER)&eqn_params;
+    cFluid_setProbParams(&front);
 
     //TODO: delay construction by making
-    //      setInitialIntgc() a non member function.
-	G_CARTESIAN	g_cartesian(&front);
+    //      setInitialIntfc() a non member function.
+	//G_CARTESIAN	g_cartesian(&front);
 
 
 	/* Initialize interface through level function */
@@ -114,7 +113,9 @@ int main(int argc, char **argv)
         //TODO: make setInitialIntfc() a non member
         //      function, since the only thing it affects
         //      is the LEVEL_FUNC_PACK* that is passed to it.
-	    g_cartesian.setInitialIntfc(&level_func_pack);
+	    
+        cFluid_InitIntfc(&front,&level_func_pack);
+        //g_cartesian.setInitialIntfc(&level_func_pack);
 	    
         if (f_basic.dim == 3)
             level_func_pack.set_3d_bdry = YES;
@@ -162,8 +163,10 @@ int main(int argc, char **argv)
     //      will allow all the resource allocation
     //      performed in initMesh() to be done inside
     //      the class constructor.
-	g_cartesian.initMesh();
-    g_cartesian.initMovieVariables();
+	
+    G_CARTESIAN	g_cartesian(&front);
+	//g_cartesian.initMesh();
+    //g_cartesian.initMovieVariables();
 
 
 	/* Initialize velocity field function */
@@ -178,7 +181,6 @@ int main(int argc, char **argv)
 
     if (debugging("sample_velocity"))
         initSampleVelocity(&front,in_name);
-
 
     if (RestartRun)
 	{
