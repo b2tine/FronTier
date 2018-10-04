@@ -430,18 +430,19 @@ EXPORT void scatter_top_grid_float_array(
 	INTERFACE *intfc;
 	PP_GRID	*pp_grid = front->pp_grid;
 	int dim = FT_Dimension();
-	static byte *storage;
 	int i,j,k,dir,side,len;
 	int bmin[3],bmax[3];
 	int myid,dst_id,*G;
 	int me[3],him[3];
 	RECT_GRID *comp_grid,*top_grid;
 	int lbuf[MAXD],ubuf[MAXD],*gmax;
+	int size;
+	int array_symmetry;
+
+	static byte *storage;
 	static int max_buf = 0;
 	static int storage_size = 0;
 	static int min_gmax;
-	int size;
-	int array_symmetry;
 
 	myid = pp_mynode();
 	G = pp_grid->gmax;

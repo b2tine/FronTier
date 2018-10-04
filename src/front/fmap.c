@@ -2697,7 +2697,7 @@ LOCAL void FrontPreAdvance2d(
 		{
 		    for (i = 0; i < dim; ++i)
 		    	center_of_mass_velo(*c)[i] = 0.0;
-		    angular_velo(*c) += dt*torque[index]/mom_inertial(*c);
+		    angular_velo(*c) += dt*torque[index]/mom_inertia(*c);
 		}
 		else if (motion_type(*c) == COM_MOTION)
 		{
@@ -2713,7 +2713,7 @@ LOCAL void FrontPreAdvance2d(
 		    	center_of_mass_velo(*c)[i] +=
                         	dt*force[index][i]/total_mass(*c);
                     }
-                    angular_velo(*c) += dt*torque[index]/mom_inertial(*c);
+                    angular_velo(*c) += dt*torque[index]/mom_inertia(*c);
                 }
                 for (i = 0; i < dim; ++i)
                     center_of_mass(*c)[i] += dt*(center_of_mass_velo(*c)[i] + 
@@ -2722,7 +2722,7 @@ LOCAL void FrontPreAdvance2d(
                 {
                     printf("Body index: %d\n",index);
                     printf("total mass = %16.15f\n",total_mass(*c));
-                    printf("moment of inertial = %f\n",mom_inertial(*c));
+                    printf("moment of inertia = %f\n",mom_inertia(*c));
                     printf("torque = %f\n",torque[index]);
                     printf("force = %f %f\n",force[index][0],force[index][1]);
                     printf("angular_velo = %f\n",angular_velo(*c));
@@ -2917,57 +2917,57 @@ LOCAL void FrontPreAdvance3d(
 		    /* update the principle angular velocity by solving
 		       euler's equation with 4th order RK method */
 		    /* torque has been added in the equations */
-                    coef[0] = (p_mom_inertial(*s)[2]-p_mom_inertial(*s)[1]) /
-                                        p_mom_inertial(*s)[0];
-                    coef[1] = (p_mom_inertial(*s)[0]-p_mom_inertial(*s)[2]) /
-                                        p_mom_inertial(*s)[1];
-                    coef[2] = (p_mom_inertial(*s)[1]-p_mom_inertial(*s)[0]) /
-                                        p_mom_inertial(*s)[2];
+                    coef[0] = (p_mom_inertia(*s)[2]-p_mom_inertia(*s)[1]) /
+                                        p_mom_inertia(*s)[0];
+                    coef[1] = (p_mom_inertia(*s)[0]-p_mom_inertia(*s)[2]) /
+                                        p_mom_inertia(*s)[1];
+                    coef[2] = (p_mom_inertia(*s)[1]-p_mom_inertia(*s)[0]) /
+                                        p_mom_inertia(*s)[2];
                     temp[0][0] = - coef[0] * p_angular_velo(*s)[1]
                                 * p_angular_velo(*s)[2]
-				+ torque[index][0] / p_mom_inertial(*s)[0];
+				+ torque[index][0] / p_mom_inertia(*s)[0];
                     temp[0][1] = - coef[1] * p_angular_velo(*s)[2]
                                 * p_angular_velo(*s)[0]
-				+ torque[index][1] / p_mom_inertial(*s)[1];
+				+ torque[index][1] / p_mom_inertia(*s)[1];
                     temp[0][2] = - coef[2] * p_angular_velo(*s)[0]
                                 * p_angular_velo(*s)[1]
-				+ torque[index][2] / p_mom_inertial(*s)[2];
+				+ torque[index][2] / p_mom_inertia(*s)[2];
                     temp[1][0] = - coef[0]
                          * (p_angular_velo(*s)[1] + 0.5 * temp[0][1] * dt)
                          * (p_angular_velo(*s)[2] + 0.5 * temp[0][2] * dt)
-			 + torque[index][0] / p_mom_inertial(*s)[0];
+			 + torque[index][0] / p_mom_inertia(*s)[0];
                     temp[1][1] = - coef[1]
                          * (p_angular_velo(*s)[2] + 0.5 * temp[0][2] * dt)
                          * (p_angular_velo(*s)[0] + 0.5 * temp[0][0] * dt)
-			 + torque[index][1] / p_mom_inertial(*s)[1];
+			 + torque[index][1] / p_mom_inertia(*s)[1];
                     temp[1][2] = - coef[2]
                          * (p_angular_velo(*s)[0] + 0.5 * temp[0][0] * dt)
                          * (p_angular_velo(*s)[1] + 0.5 * temp[0][1] * dt)
-			 + torque[index][2] / p_mom_inertial(*s)[2];
+			 + torque[index][2] / p_mom_inertia(*s)[2];
                     temp[2][0] = - coef[0]
                          * (p_angular_velo(*s)[1] + 0.5 * temp[1][1] * dt)
                          * (p_angular_velo(*s)[2] + 0.5 * temp[1][2] * dt)
-			 + torque[index][0] / p_mom_inertial(*s)[0];
+			 + torque[index][0] / p_mom_inertia(*s)[0];
                     temp[2][1] = - coef[1]
                          * (p_angular_velo(*s)[2] + 0.5 * temp[1][2] * dt)
                          * (p_angular_velo(*s)[0] + 0.5 * temp[1][0] * dt)
-			 + torque[index][1] / p_mom_inertial(*s)[1];
+			 + torque[index][1] / p_mom_inertia(*s)[1];
                     temp[2][2] = - coef[2]
                          * (p_angular_velo(*s)[0] + 0.5 * temp[1][0] * dt)
                          * (p_angular_velo(*s)[1] + 0.5 * temp[1][1] * dt)
-			 + torque[index][2] / p_mom_inertial(*s)[2];
+			 + torque[index][2] / p_mom_inertia(*s)[2];
                     temp[3][0] = - coef[0]
                          * (p_angular_velo(*s)[1] +  temp[2][1] * dt)
                          * (p_angular_velo(*s)[2] +  temp[2][2] * dt)
-			 + torque[index][0] / p_mom_inertial(*s)[0];
+			 + torque[index][0] / p_mom_inertia(*s)[0];
                     temp[3][1] = - coef[1]
                          * (p_angular_velo(*s)[2] +  temp[2][2] * dt)
                          * (p_angular_velo(*s)[0] +  temp[2][0] * dt)
-			 + torque[index][1] / p_mom_inertial(*s)[1];
+			 + torque[index][1] / p_mom_inertia(*s)[1];
                     temp[3][2] = - coef[2]
                          * (p_angular_velo(*s)[0] +  temp[2][0] * dt)
                          * (p_angular_velo(*s)[1] +  temp[2][1] * dt)
-			 + torque[index][2] / p_mom_inertial(*s)[2];
+			 + torque[index][2] / p_mom_inertia(*s)[2];
                     for (i = 0; i < dim; ++i)
                         p_angular_velo(*s)[i] += dt/6.0 * (temp[0][i] +
                                 2*temp[1][i] + 2*temp[2][i] + temp[3][i]);

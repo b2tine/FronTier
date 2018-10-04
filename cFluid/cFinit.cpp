@@ -43,47 +43,49 @@ void G_CARTESIAN::initSinePertIntfc(
 	char *inname)
 {
 	FILE *infile = fopen(inname,"r");
-	int i,j,num_modes;
 	char mesg[100];
+
 	//EQN_PARAMS *eqn_params = (EQN_PARAMS*)front->extra1;
 	
-	static double	L[3], U[3];
-    static FOURIER_POLY *level_func_params;
+	level_func_pack->func = level_wave_func;
+	level_func_pack->wave_type = FIRST_PHYSICS_WAVE_TYPE;
+	level_func_pack->neg_component = GAS_COMP1;
+	level_func_pack->pos_component = GAS_COMP2;
 
-	FT_ScalarMemoryAlloc((POINTER*)&level_func_params,sizeof(FOURIER_POLY));
-	level_func_params->dim = this->dim;
-	
+	static double L[3], U[3];
 	ft_assign(L, front->rect_grid->L, 3*DOUBLE);
 	ft_assign(U, front->rect_grid->U, 3*DOUBLE);
+
+    static FOURIER_POLY *level_func_params;
+	FT_ScalarMemoryAlloc((POINTER*)&level_func_params,sizeof(FOURIER_POLY));
 	
 	level_func_params->L = L;
 	level_func_params->U = U;
-
-	level_func_pack->neg_component = GAS_COMP1;
-	level_func_pack->pos_component = GAS_COMP2;
+    level_func_params->dim = level_func_pack->dim;
 
 	CursorAfterString(infile,"Enter mean position of fluid interface:");
 	fscanf(infile,"%lf",&level_func_params->z0);
 	(void) printf("%f\n",level_func_params->z0);
 
+	int num_modes;
 	CursorAfterString(infile,"Enter number of sine modes:");
 	fscanf(infile,"%d",&num_modes);
 	(void) printf("%d\n",num_modes);
 	
     level_func_params->num_modes = num_modes;
 	
-    FT_MatrixMemoryAlloc((POINTER*)&level_func_params->nu,num_modes,
-				dim-1,sizeof(double));
-	FT_VectorMemoryAlloc((POINTER*)&level_func_params->phase,num_modes,
-				sizeof(double));
-	FT_VectorMemoryAlloc((POINTER*)&level_func_params->A,num_modes,
-				sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&level_func_params->nu,
+            num_modes,	dim-1, sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&level_func_params->phase,
+            num_modes, sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&level_func_params->A,
+            num_modes, sizeof(double));
 	
-    for (i = 0; i < num_modes; ++i)
+    for (int i = 0; i < num_modes; ++i)
 	{
 	    sprintf(mesg,"Enter frequency of mode %d:",i+1);
 	    CursorAfterString(infile,mesg);
-	    for (j = 0; j < dim-1; ++j)
+	    for (int j = 0; j < dim-1; ++j)
 	    {
 	    	fscanf(infile,"%lf",&level_func_params->nu[i][j]);
     		(void) printf("%f ",level_func_params->nu[i][j]);
@@ -101,10 +103,10 @@ void G_CARTESIAN::initSinePertIntfc(
 	    (void) printf("%f\n",level_func_params->phase[i]);
 	}
 
-	eqn_params->level_func_params = (POINTER)level_func_params;
 	level_func_pack->func_params = (POINTER)level_func_params;
-	level_func_pack->func = level_wave_func;
-	level_func_pack->wave_type = FIRST_PHYSICS_WAVE_TYPE;
+
+	eqn_params->level_func_params = (POINTER)level_func_params;
+
 	
     fclose(infile);
 
@@ -2389,18 +2391,18 @@ extern  void prompt_for_rigid_body_params(
         if (rgb_params->motion_type == FREE_MOTION ||
             rgb_params->motion_type == ROTATION)
         {
-            CursorAfterString(infile,"Enter the moment of inertial: ");
+            CursorAfterString(infile,"Enter the moment of inertia: ");
             if (dim == 2)
             {
-                fscanf(infile,"%lf",&rgb_params->moment_of_inertial);
-                (void) printf("%f\n",rgb_params->moment_of_inertial);
+                fscanf(infile,"%lf",&rgb_params->moment_of_inertia);
+                (void) printf("%f\n",rgb_params->moment_of_inertia);
             }
             else if (dim == 3)
             {
                 for (i = 0; i < dim; ++i)
                 {
-                    fscanf(infile,"%lf",&rgb_params->p_moment_of_inertial[i]);
-                    (void) printf("%f ",rgb_params->p_moment_of_inertial[i]);
+                    fscanf(infile,"%lf",&rgb_params->p_moment_of_inertia[i]);
+                    (void) printf("%f ",rgb_params->p_moment_of_inertia[i]);
                 }
                 (void) printf("\n");
             }
@@ -2435,7 +2437,7 @@ extern void set_rgbody_params(
 {
         int i,dim = rg_params.dim;
         total_mass(hs) = rg_params.total_mass;
-        mom_inertial(hs) = rg_params.moment_of_inertial;
+        mom_inertia(hs) = rg_params.moment_of_inertia;
         angular_velo(hs) = rg_params.angular_velo;
         motion_type(hs) = rg_params.motion_type;
         surface_tension(hs) = 0.0;
@@ -2450,7 +2452,7 @@ extern void set_rgbody_params(
             if (dim == 3)
             {
                 rotation_direction(hs)[i] = rg_params.rotation_dir[i];
-                p_mom_inertial(hs)[i] = rg_params.p_moment_of_inertial[i];
+                p_mom_inertia(hs)[i] = rg_params.p_moment_of_inertia[i];
                 p_angular_velo(hs)[i] = rg_params.p_angular_velo[i];
             }
         }

@@ -100,9 +100,8 @@ EXPORT	boolean	nearest_intfc_state(
 {
 	if (intfc == NULL)
 	    return NO;
-	return (*f_user_interface(intfc)._nearest_intfc_state)(coords,comp,
-							       intfc,state,
-							       coords_on,hs_on);
+	return (*f_user_interface(intfc)._nearest_intfc_state)(
+            coords,comp,intfc,state, coords_on,hs_on);
 }		/*end nearest_intfc_state*/
 
 EXPORT	void	bi_interpolate_intfc_states(

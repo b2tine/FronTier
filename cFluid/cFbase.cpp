@@ -21,9 +21,6 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ****************************************************************/
 
-/*******************************************************************
- * 		G_CARTESIAN.c
- *******************************************************************/
 #include "cFluid.h"
 
 static double (*getStateMom[MAXD])(Locstate) =
@@ -31,31 +28,31 @@ static double (*getStateMom[MAXD])(Locstate) =
 
 void G_CARTESIAN::readBaseFront(int i)
 {
-        char *dir_name = eqn_params->base_dir_name;
-        int RestartStep = eqn_params->steps[i];
-        F_BASIC_DATA *f_basic = eqn_params->f_basic;
-        char restart_state_name[200];
+    char *dir_name = eqn_params->base_dir_name;
+    int RestartStep = eqn_params->steps[i];
+    F_BASIC_DATA *f_basic = eqn_params->f_basic;
+    char restart_state_name[200];
 
-        FT_ScalarMemoryAlloc((POINTER*)&base_front,sizeof(Front));
-        f_basic->RestartRun = YES;
-        f_basic->size_of_intfc_state = sizeof(STATE);
+    FT_ScalarMemoryAlloc((POINTER*)&base_front,sizeof(Front));
+    f_basic->RestartRun = YES;
+    f_basic->size_of_intfc_state = sizeof(STATE);
 
-        sprintf(f_basic->restart_name,"%s/intfc-ts%s",dir_name,
-                        right_flush(RestartStep,7));
-        sprintf(restart_state_name,"%s/state.ts%s",dir_name,
-                        right_flush(RestartStep,7));
-	if (debugging("base_files"))
-	{
-	    (void) printf("Currently only handle one processor:\n");
-	    (void) printf("Open base file names:\n");
-            (void) printf("base intfc name = %s\n",f_basic->restart_name);
-            (void) printf("base state name = %s\n",restart_state_name);
-	}
+    sprintf(f_basic->restart_name,"%s/intfc-ts%s",dir_name,
+                    right_flush(RestartStep,7));
+    sprintf(restart_state_name,"%s/state.ts%s",dir_name,
+                    right_flush(RestartStep,7));
 
-        FT_StartUp(base_front,f_basic);
+    if (debugging("base_files"))
+    {
+        (void) printf("Currently only handle one processor:\n");
+        (void) printf("Open base file names:\n");
+        (void) printf("base intfc name = %s\n",f_basic->restart_name);
+        (void) printf("base state name = %s\n",restart_state_name);
+    }
 
-        readBaseStates(restart_state_name);
-}       /* end readBaseFront */
+    FT_StartUp(base_front,f_basic);
+    readBaseStates(restart_state_name);
+}
 
 void G_CARTESIAN::readBaseStates(
         char *restart_name)
@@ -211,8 +208,10 @@ void G_CARTESIAN::compareWithBaseData(
 	FILE *dfile,*efile,*mfile,*lfile;
 	char fname[200];
 
-	if (ip >= eqn_params->num_step) return;
-	readBaseFront(ip);
+	if (ip >= eqn_params->num_step)
+        return;
+	
+    readBaseFront(ip);
 
 	for (i = 0; i < 6; ++i)
 	    L1[i] = L2[i] = LI[i] = 0.0;
@@ -357,4 +356,6 @@ void G_CARTESIAN::freeBaseFront()
 	int i = front->ip - 2;
 	if (i >= eqn_params->num_step) return;
 	FT_FreeFront(base_front);
-}	/* end freeBaseFront */
+}
+
+

@@ -53,7 +53,7 @@ Enter rotation center: 1.0 2.0
 Enter preset angular velocity: 6.28
 Enter the total mass for rigid body: 1.0
 Enter the center of mass for rigid body: 1.0 2.0
-Enter the moment of inertial about the axis: 4.0
+Enter the moment of inertia about the axis: 4.0
 
 For lower boundary in 1-th dimension
 Enter type of Dirichlet boundary: FLOW_THROUGH

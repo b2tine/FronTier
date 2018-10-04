@@ -40,7 +40,7 @@ Enter density and viscosity of the fluid: 1.2 0.004
 Enter yes to use porosity: yes 
 Enter porosity of canopy: 0.0
 Enter viscous parameter: 150.0
-Enter inertial parameter: 0.0
+Enter inertia parameter: 0.0
 Enter area density of canopy: 5 
 Enter yes to use eddy viscosity: no
 Available tuebulence models are:

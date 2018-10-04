@@ -1355,7 +1355,8 @@ typedef struct _F_INIT_DATA F_INIT_DATA;
 #define enforce_flow_specified_states(init)				\
     (f_init_data(init)->_EnforceFlowSpecifedStates)
 
-struct _LEVEL_FUNC_PACK {
+struct _LEVEL_FUNC_PACK
+{
 	/* Not needed for restart initialization */
     COMPONENT neg_component;
     COMPONENT pos_component;
@@ -1392,6 +1393,9 @@ struct _LEVEL_FUNC_PACK {
 	
 	boolean set_3d_bdry;
 	boolean attach_string;
+    
+    int dim;
+
 };
 typedef struct _LEVEL_FUNC_PACK LEVEL_FUNC_PACK;
 

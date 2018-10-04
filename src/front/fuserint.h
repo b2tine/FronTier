@@ -388,7 +388,7 @@ struct _F_HYPER_SURF {
 	int	body_index;		/* To identify different body */
 	int	num_clips;		/* number of partitions of the rg */
         double  mass;			/* Total mass */
-        double  moment_of_inertial;	/* Moment of inertial about the axis */
+        double  moment_of_inertia;	/* Moment of inertia about the axis */
         double  center_of_mass[MAXD];	/* Center of mass */
 	double	translation_dir[MAXD];	/* Direction of translation */
 	double	rotation_dir[MAXD];	/* Direction of rotation */
@@ -396,7 +396,7 @@ struct _F_HYPER_SURF {
         double  cm_velo[MAXD];		/* Center of mass velocity */
         double  angular_velo;		/* Angular velocity of rotation */
 	double	radius;			/* For sphereical body */
-	double  p_moment_of_inertial[MAXD];
+	double  p_moment_of_inertia[MAXD];
 	double  p_angular_velo[MAXD];
 	double  euler_params[4];
         double  old_euler_params[4];
@@ -419,7 +419,7 @@ typedef struct _F_HYPER_SURF F_HYPER_SURF;
 #define body_index(hs)          (f_hyper_surf(hs)->body_index)
 #define num_clips(hs)           (f_hyper_surf(hs)->num_clips)
 #define total_mass(hs)          (f_hyper_surf(hs)->mass)
-#define mom_inertial(hs)        (f_hyper_surf(hs)->moment_of_inertial)
+#define mom_inertia(hs)        (f_hyper_surf(hs)->moment_of_inertia)
 #define center_of_mass(hs)      (f_hyper_surf(hs)->center_of_mass)
 #define angular_velo(hs)        (f_hyper_surf(hs)->angular_velo)
 #define center_of_mass_velo(hs) (f_hyper_surf(hs)->cm_velo)
@@ -428,7 +428,7 @@ typedef struct _F_HYPER_SURF F_HYPER_SURF;
 #define rotation_center(hs)  	(f_hyper_surf(hs)->rotation_cen)
 #define motion_type(hs)         (f_hyper_surf(hs)->motion_type)
 #define spherical_radius(hs)    (f_hyper_surf(hs)->radius)
-#define p_mom_inertial(hs)      (f_hyper_surf(hs)->p_moment_of_inertial)
+#define p_mom_inertia(hs)      (f_hyper_surf(hs)->p_moment_of_inertia)
 #define p_angular_velo(hs)      (f_hyper_surf(hs)->p_angular_velo)
 #define euler_params(hs)        (f_hyper_surf(hs)->euler_params)
 #define old_euler_params(hs)    (f_hyper_surf(hs)->old_euler_params)

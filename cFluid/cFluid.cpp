@@ -80,15 +80,18 @@ int main(int argc, char **argv)
 	FT_StartUp(&front,&f_basic);
 	FT_InitDebug(in_name);
 
-
-	if (debugging("sample_velocity"))
-        initSampleVelocity(&front,in_name);
-
 	if (debugging("trace"))
         printf("Passed FT_StartUp()\n");
 
-	eqn_params.dim = f_basic.dim;
+	
+	level_func_pack.dim = f_basic.dim;
+	
+    eqn_params.dim = f_basic.dim;
 	read_cFluid_params(in_name,&eqn_params);
+	
+    if (debugging("trace"))
+        printf("Passed read_cFluid_params()\n");
+
 
 	if (eqn_params.use_base_soln == YES)
 	{
@@ -96,12 +99,8 @@ int main(int argc, char **argv)
             eqn_params.f_basic->subdomains[i] = f_basic.subdomains[i];
 	}
 
+
 	front.extra1 = (POINTER)&eqn_params;
-
-	if (debugging("trace"))
-        printf("Passed read_cFluid_params()\n");
-
-
 	G_CARTESIAN	g_cartesian(&front);
 
 
@@ -152,9 +151,11 @@ int main(int argc, char **argv)
 	    restart_set_dirichlet_bdry_function(&front);
     }
 
+	g_cartesian.initMesh();
+    g_cartesian.initMovieVariables();
+
 
 	/* Initialize velocity field function */
-
 	front._compute_force_and_torque = cfluid_compute_force_and_torque;
 	velo_func_pack.func_params = (POINTER)&g_cartesian;
 	velo_func_pack.func = g_cartesian_vel;
@@ -164,8 +165,9 @@ int main(int argc, char **argv)
 	if (debugging("trace"))
 	    printf("Passed FT_InitFrontVeloFunc()\n");
 
-	g_cartesian.initMesh();
-    g_cartesian.initMovieVariables();
+    if (debugging("sample_velocity"))
+        initSampleVelocity(&front,in_name);
+
 
     if (RestartRun)
 	{
@@ -281,6 +283,8 @@ void gas_driver(Front *front,
         
             if (compare_with_base_data(front))
             {
+                //TODO: remedy static bool memory allocation
+                //      in compareWithBaseData()
                 g_cartesian->compareWithBaseData(out_name);
                 g_cartesian->freeBaseFront();
             }

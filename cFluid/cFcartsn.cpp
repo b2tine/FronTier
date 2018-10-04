@@ -21,32 +21,30 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ****************************************************************/
 
-/*******************************************************************
- * 		G_CARTESIAN.c
- *******************************************************************/
 #include "cFluid.h"
 
-class ToFill{
-public:
-int icoords[3];
+class ToFill
+{
+    public:
+
+        int icoords[3];
 };
 
-EXPORT  void    tecplot_interface_states(const char*, INTERFACE	*);
+EXPORT void tecplot_interface_states(
+        const char*, INTERFACE*);
 
-static double (*getStateMom[MAXD])(Locstate) =
-               {getStateXmom,getStateYmom,getStateZmom};
+static double (*getStateMom[MAXD])(Locstate) 
+    = {getStateXmom, getStateYmom, getStateZmom};
 
 //----------------------------------------------------------------
 //		L_RECTANGLE
 //----------------------------------------------------------------
 
-L_RECTANGLE::L_RECTANGLE(): m_index(-1), comp(-1)
-{
-}
+L_RECTANGLE::L_RECTANGLE()
+    : m_index{-1}, comp{-1}
+{}
 
-void L_RECTANGLE::setCoords(
-	double *coords,
-	int dim)
+void L_RECTANGLE::setCoords(double *coords, int dim)
 {
 	for(int i = 0; i < dim; ++i)
         m_coords[i] = coords[i];
@@ -58,9 +56,12 @@ void L_RECTANGLE::setCoords(
 
 G_CARTESIAN::G_CARTESIAN(Front* frnt)
     : front{frnt}, dim{frnt->rect_grid->dim},
-    eqn_params{(EQN_PARAMS*)front->extra1}
+    eqn_params{(EQN_PARAMS*)front->extra1},
+    coeffsRK(4,std::vector<double>(4,0.0)),
+    weightsRK(4,0.0)
 {
     setProbParams();
+    initRungeKutta();
 }
 
 /*
@@ -71,41 +72,90 @@ G_CARTESIAN::~G_CARTESIAN()
 */
 
 
-//---------------------------------------------------------------
-//	initMesh
-// include the following parts
-// 1) setup cell_center
-//---------------------------------------------------------------
-void G_CARTESIAN::initMesh(void)
+void G_CARTESIAN::initRungeKutta()
+{
+    //TODO: Need a more descrptive name for nrad,
+    //      and why is it always equal to 3?
+    //      Also could do a better job of handling
+    //      invalid input.
+	switch(eqn_params->num_scheme)
+    {
+        case TVD_FIRST_ORDER:
+        case WENO_FIRST_ORDER:
+            setFirstOrderRK();
+            break;
+        case TVD_SECOND_ORDER:
+        case WENO_SECOND_ORDER:
+            setSecondOrderRK();
+            break;
+        case TVD_FOURTH_ORDER:
+        case WENO_FOURTH_ORDER:
+            setFourthOrderRK();
+            break;
+        default:
+            (void)printf("ERROR: Numerical scheme not recognized\n");
+            clean_up(ERROR);
+    }
+}
+
+//TODO: Does nrad actually reflect the
+//      schemes implemented or is it just
+//      a placeholder value?
+void G_CARTESIAN::setFirstOrderRK()
+{
+    nrad = 3;
+    orderRK = 1;
+
+    weightsRK[0] = 1.0;
+}
+
+void G_CARTESIAN::setSecondOrderRK()
+{
+    nrad = 3;
+    orderRK = 2;
+    
+    coeffsRK[0][0] = 1.0;
+    weightsRK[0] = 0.5; weightsRK[1] = 0.5;
+}
+
+void G_CARTESIAN::setFourthOrderRK()
+{
+    nrad = 3;
+    orderRK = 4;
+    
+    coeffsRK[0][0] = 0.5;
+    coeffsRK[1][0] = 0.0;   coeffsRK[1][1] = 0.5;
+    coeffsRK[2][0] = 0.0;   coeffsRK[2][1] = 0.0;   coeffsRK[2][2] = 1.0;
+
+    weightsRK[0] = 1.0/6.0;  weightsRK[1] = 1.0/3.0;
+    weightsRK[2] = 1.0/3.0;  weightsRK[3] = 1.0/6.0;
+}
+
+
+void G_CARTESIAN::initMesh()
 {
 	int index;
 	double coords[2];
 
-	// init cell_center
 	L_RECTANGLE rectangle;
 
 	if (debugging("trace"))
 	    (void) printf("Entering g_cartesian.initMesh()\n");
-
-	/*TMP*/
-	min_dens = 0.0001;
-	min_pres = 0.0001;
 
 	FT_MakeGridIntfc(front);
     allocEqnVariables();
 	
     int num_cells = 1;
 	for (int i = 0; i < dim; ++i)
-	{
-	    num_cells *= (top_gmax[i] + 1);
-	}
-	cell_center.insert(cell_center.end(),num_cells,rectangle);
+        num_cells *= (top_gmax[i] + 1);
+	
+    cell_center.insert(cell_center.end(),num_cells,rectangle);
 	
 	// setup vertices left to right, bottom to top
 	switch (dim)
 	{
 	case 1:
-	    for (int i = 0; i <= top_gmax[0]; i++)
+	    for (int i = 0; i <= top_gmax[0]; ++i)
 	    {
 	    	coords[0] = top_L[0] + top_h[0]*i;
             index = d_index1d(i,top_gmax);
@@ -114,8 +164,8 @@ void G_CARTESIAN::initMesh(void)
 	    }
 	    break;
 	case 2:
-	    for (int j = 0; j <= top_gmax[1]; j++)
-	    for (int i = 0; i <= top_gmax[0]; i++)
+	    for (int j = 0; j <= top_gmax[1]; ++j)
+	    for (int i = 0; i <= top_gmax[0]; ++i)
 	    {
 	    	coords[0] = top_L[0] + top_h[0]*i;
 	    	coords[1] = top_L[1] + top_h[1]*j;
@@ -148,14 +198,16 @@ void G_CARTESIAN::initMesh(void)
 	    (void) printf("Leaving g_cartesian.initMesh()\n");
 }
 
-void G_CARTESIAN::allocEqnVariables()
+//TODO: Rename this and split up into multiple
+//      functions similar to allocRungeKuttaVstFlux().
+void G_CARTESIAN::allocEqnVst()
 {
 	setDomain();
-
+    
     for (int i = 0; i < 3; ++i)
         top_gmax[i] = 0;
 
-    size = 1;
+    sizeEqnVst = 1;
     hmin = HUGE;
 
     for (int i = 0; i < dim; ++i)
@@ -170,84 +222,102 @@ void G_CARTESIAN::allocEqnVariables()
         if (hmin > top_h[i])
             hmin = top_h[i];
 
-        size *= (top_gmax[i]+1);
+        sizeEqnVst *= (top_gmax[i]+1);
         
         imin[i] = (lbuf[i] == 0) ? 1 : lbuf[i];
         imax[i] = (ubuf[i] == 0) ?
             top_gmax[i] - 1 : top_gmax[i] - ubuf[i];
     }
 
-    FT_VectorMemoryAlloc((POINTER*)&eqn_params->dens,size,
-                sizeof(double));
-    FT_VectorMemoryAlloc((POINTER*)&eqn_params->pres,size,
-                sizeof(double));
-    FT_VectorMemoryAlloc((POINTER*)&eqn_params->engy,size,
-                sizeof(double));
-    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->vel,dim,size,
-                sizeof(double));
-    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->mom,dim,size,
-                sizeof(double));
+
+    //allocEqn
+    //{
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->vel,
+            dim,sizeEqnVst,sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->mom,
+            dim,sizeEqnVst,sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&eqn_params->engy,
+            sizeEqnVst,sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&eqn_params->pres,
+            sizeEqnVst,sizeof(double));
+    FT_VectorMemoryAlloc((POINTER*)&eqn_params->dens,
+            sizeEqnVst,sizeof(double));
 
     if (dim == 2)
     {
         FT_VectorMemoryAlloc((POINTER*)&eqn_params->vort,
-                size,sizeof(double));
+                sizeEqnVst,sizeof(double));
     }
 
-    //Scatter
-    FT_VectorMemoryAlloc((POINTER*)&array,size,sizeof(double));
-
-    //GFM
-    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->gnor,dim,size,
-                sizeof(double));
-    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gdens,2,size,
-                sizeof(double));
-    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gpres,2,size,
-                sizeof(double));
-    FT_TriArrayMemoryAlloc((POINTER*)&eqn_params->Gvel,2,dim,size,
-                sizeof(double));
-
-
-    field.dens = eqn_params->dens;
+    field.vel = eqn_params->vel;
+    field.momn = eqn_params->mom;
     field.engy = eqn_params->engy;
     field.pres = eqn_params->pres;
-    field.momn = eqn_params->mom;
-    field.vel = eqn_params->vel;
+    field.dens = eqn_params->dens;
+    //}
+
+    //Scatter
+    FT_VectorMemoryAlloc((POINTER*)&array,
+            sizeEqnVst,sizeof(double));
+
+    //allocGFM()
+    //{
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->gnor,
+            dim,sizeEqnVst,sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gdens,
+            2,sizeEqnVst,sizeof(double));
+    FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gpres,
+            2,sizeEqnVst,sizeof(double));
+    FT_TriArrayMemoryAlloc((POINTER*)&eqn_params->Gvel,
+            2,dim,sizeEqnVst,sizeof(double));
 
     setGFMStatesToZero();
+    //}
 
+    allocRungeKuttaVstFlux();
+    
+}
+
+void G_CARTESIAN::allocRungeKuttaVstFlux()
+{
+    FT_VectorMemoryAlloc((POINTER*)&st_field,orderRK,sizeof(SWEEP));
+    FT_VectorMemoryAlloc((POINTER*)&st_flux,orderRK,sizeof(FSWEEP));
+    for (int i = 0; i < orderRK; ++i)
+    {
+        allocMeshVst(&st_field[i]);
+        allocMeshFlux(&st_flux[i]);
+    }
 }
 
 
-void G_CARTESIAN::setComponent(void)
+void G_CARTESIAN::setComponent()
 {
-	int		i,j, ind;
 	double 		*coords;
 	int 		*icoords;
-	COMPONENT 	old_comp,new_comp;
 	double		***Gvel = eqn_params->Gvel;
 	double		**Gdens = eqn_params->Gdens;
 	double		**Gpres = eqn_params->Gpres;
-	static STATE 	*state = NULL;
 	double		*dens = field.dens;
 	double		*engy = field.engy;
 	double		*pres = field.pres;
 	double		**momn = field.momn;
-	int		size = (int)cell_center.size();
-	
-	// cell center components
-	if(state == NULL)
-	    FT_ScalarMemoryAlloc((POINTER*)&state,sizeof(STATE));
+	int		size = (int) cell_center.size();
+	COMPONENT 	old_comp,new_comp;
 
-	for (i = 0; i < size; i++)
+    STATE* state;
+    FT_ScalarMemoryAlloc((POINTER*)&state,sizeof(STATE));
+
+	for (int i = 0; i < size; ++i)
 	{
 	    icoords = cell_center[i].icoords;
 	    coords = cell_center[i].m_coords;
 	    old_comp = cell_center[i].comp;
 	    new_comp = top_comp[i];
-	    if (eqn_params->tracked && cell_center[i].comp != -1 &&
+	    
+        if (eqn_params->tracked && cell_center[i].comp != -1 &&
 		cell_center[i].comp != top_comp[i] && gas_comp(new_comp))
 	    {
+
 		if (!FrontNearestIntfcState(front,coords,new_comp,
 				(POINTER)state))
 		{
@@ -255,34 +325,45 @@ void G_CARTESIAN::setComponent(void)
 		    (void) printf("FrontNearestIntfcState() failed\n");
 		    (void) printf("old_comp = %d new_comp = %d\n",
 					old_comp,new_comp);
-		    clean_up(ERROR);
+
+            clean_up(ERROR);
 		}
 
 		//GFM
-		state->dim = dim;
+        state->dim = dim;
 		state->eos = &eqn_params->eos[new_comp];
-		if (gas_comp(old_comp) && gas_comp(new_comp))
+	
+	    int ind;
+        if (gas_comp(old_comp) && gas_comp(new_comp))
 		{
 		    if(new_comp == GAS_COMP1)
-			ind = 0;
+                ind = 0;
 		    else
-			ind = 1;
+                ind = 1;
 
 		    state->dens = Gdens[ind][i];
 		    state->pres = Gpres[ind][i];
-		    for(j = 0; j < dim; ++j)
-			state->momn[j] = Gvel[ind][j][i]*Gdens[ind][i];
-		    state->engy = EosEnergy(state);
+	
+            for(int j = 0; j < dim; ++j)
+                state->momn[j] = Gvel[ind][j][i]*Gdens[ind][i];
+	
+            state->engy = EosEnergy(state);
 		}
 
 		dens[i] = state->dens;
 		pres[i] = state->pres;
 		engy[i] = state->engy;
-		for (j = 0; j < dim; ++j)
-		    momn[j][i] = state->momn[j];
-	    }
+
+		for (int j = 0; j < dim; ++j)
+            momn[j][i] = state->momn[j];
+	    
+        }
+
 	    cell_center[i].comp = top_comp[i];
 	}
+
+    FT_FreeThese(1,state);
+
 }	/* end setComponent() */
 
 
@@ -290,9 +371,13 @@ void G_CARTESIAN::setInitialIntfc(
         LEVEL_FUNC_PACK* level_func_pack)
 {
     char* inname = InName(front);
+    
     //TODO: Make these init*() functions monadic
     //      the way setInitialIntfc() was made monadic.
     //      i.e. Use InName(front) as above.
+    //
+    //      Also, these should probably be non member,
+    //      non friend functions
     
 	switch (eqn_params->prob_type)
 	{
@@ -432,113 +517,57 @@ void G_CARTESIAN::setInitialStates()
 	    (void) printf("In setInitialStates(), case not implemented!\n");
 	    clean_up(ERROR);
 	}
-	copyMeshStates();
+
+    copyMeshStates();
+
 }	/* end setInitialStates */
 
-void G_CARTESIAN::computeAdvection(void)
+
+void G_CARTESIAN::computeAdvection()
 {
-	int order;
-	switch (eqn_params->num_scheme)
-	{
-	case TVD_FIRST_ORDER:
-	case WENO_FIRST_ORDER:
-	    nrad = 3;
-	    order = 1;
-	    break;
-	case TVD_SECOND_ORDER:
-	case WENO_SECOND_ORDER:
-	    nrad = 3;
-	    order = 2;
-	    break;
-	case TVD_FOURTH_ORDER:
-	case WENO_FOURTH_ORDER:
-	    nrad = 3;
-	    order = 4;
-	    break;
-	default:
-	    order = -1;
-	}
-	solveRungeKutta(order);
-}	/* end computeAdvection */
+    //potential to modify the method adaptively here
+    solveRungeKutta();
+}
 
-
-void G_CARTESIAN::solveRungeKutta(int order)
+void G_CARTESIAN::solveRungeKutta()
 {
-	static SWEEP *st_field,st_tmp;
-	static FSWEEP *st_flux;
-	static double **a,*b;
-	int i,j;
-
-	/* Allocate memory for Runge-Kutta of order */
-	start_clock("solveRungeKutta");
-	if (st_flux == NULL)
-	{
-	    FT_VectorMemoryAlloc((POINTER*)&b,order,sizeof(double));
-	    FT_MatrixMemoryAlloc((POINTER*)&a,order,order,sizeof(double));
-
-	    FT_VectorMemoryAlloc((POINTER*)&st_field,order,sizeof(SWEEP));
-	    FT_VectorMemoryAlloc((POINTER*)&st_flux,order,sizeof(FSWEEP));
-	    for (i = 0; i < order; ++i)
-	    {
-	    	allocMeshVst(&st_tmp);
-	    	allocMeshVst(&st_field[i]);
-	    	allocMeshFlux(&st_flux[i]);
-	    }
-	    /* Set coefficient a, b, c for different order of RK method */
-	    switch (order)
-	    {
-	    case 1:
-		b[0] = 1.0;
-	    	break;
-	    case 2:
-	    	a[0][0] = 1.0;
-	    	b[0] = 0.5;  b[1] = 0.5;
-	    	break;
-	    case 4:
-	    	a[0][0] = 0.5;
-	    	a[1][0] = 0.0;  a[1][1] = 0.5;
-	    	a[2][0] = 0.0;  a[2][1] = 0.0;  a[2][2] = 1.0;
-	    	b[0] = 1.0/6.0;  b[1] = 1.0/3.0;
-	    	b[2] = 1.0/3.0;  b[3] = 1.0/6.0;
-	    	break;
-	    default:
-	    	(void)printf("ERROR: %d-th order RK method not implemented\n",
-					order);
-	    	clean_up(ERROR);
-	    }
-	}
-
 	double delta_t = front->dt;
-	//delta_t = m_dt;
+	start_clock("solveRungeKutta");
 
 	/* Compute flux and advance field */
 
 	copyToMeshVst(&st_field[0]);
+
+    //TODO: clean out computeMeshFlux()
 	computeMeshFlux(st_field[0],&st_flux[0],delta_t);
 	
-	for (i = 0; i < order-1; ++i)
+	for (int i = 0; i < orderRK-1; ++i)
 	{
 	    copyMeshVst(st_field[0],&st_field[i+1]);
-	    for (j = 0; j <= i; ++j)
+        for (int j = 0; j <= i; ++j)
 	    {
-		if (a[i][j] != 0.0)
-		    addMeshFluxToVst(&st_field[i+1],st_flux[j],a[i][j]);
+            if (coeffsRK[i][j] != 0.0)
+                addMeshFluxToVst(&st_field[i+1],st_flux[j],coeffsRK[i][j]);
 	    }
-	    computeMeshFlux(st_field[i+1],&st_flux[i+1],delta_t);
+
+        computeMeshFlux(st_field[i+1],&st_flux[i+1],delta_t);
 	}
-	for (i = 0; i < order; ++i)
+	
+    for (int i = 0; i < orderRK; ++i)
 	{
-	    if (b[i] != 0.0)
-		addMeshFluxToVst(&st_field[0],st_flux[i],b[i]);
+	    if (weightsRK[i] != 0.0)
+            addMeshFluxToVst(&st_field[0],st_flux[i],weightsRK[i]);
 	}
+
 	copyFromMeshVst(st_field[0]);
 	stop_clock("solveRungeKutta");
-}	/* end solveRungeKutta */
+
+}
+
 
 void G_CARTESIAN::computeMeshFlux(
-	SWEEP m_vst,
-	FSWEEP *m_flux,
-	double delta_t)
+        SWEEP m_vst, FSWEEP *m_flux,
+        double delta_t)
 {
 	int dir;
 
@@ -549,7 +578,8 @@ void G_CARTESIAN::computeMeshFlux(
 	    get_ghost_state(m_vst, 3, 1);
 	    scatMeshGhost();
 	    stop_clock("get_ghost_state");
-	    start_clock("solve_exp_value");
+	    
+        start_clock("solve_exp_value");
 	    solve_exp_value();
 	    stop_clock("solve_exp_value");
 	}
@@ -588,7 +618,7 @@ void G_CARTESIAN::addFluxInDirection(
 	    addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
 	    break;
 	case 2:
-        #pragma omp parallel for num_threads(1)
+        //#pragma omp parallel for num_threads(1)
 	    for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
 	    {
 	    	icoords[(dir+1)%dim] = i;
@@ -596,7 +626,7 @@ void G_CARTESIAN::addFluxInDirection(
 	    }
 	    break;
 	case 3:
-        #pragma omp parallel for collapse(2) num_threads(1)
+        //#pragma omp parallel for collapse(2) num_threads(1)
 	    for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
 	    for (int j = imin[(dir+2)%dim]; j <= imax[(dir+2)%dim]; ++j)
 	    {
@@ -846,19 +876,14 @@ void G_CARTESIAN::addSourceTerm(
 
 void G_CARTESIAN::solve()
 {
-	//m_dt = front->dt;
-	max_speed = 0.0;
-
 	if (debugging("trace"))
-	    printf("Entering solve()\n");
+        printf("Entering solve()\n");
 	
+    setupSolver();
     start_clock("solve");
-	
-    setDomain();
-    setGFMStatesToZero();
 
 	appendOpenEndStates(); /* open boundary test */
-	scatMeshStates();
+	scatMeshStates(); //MPI; static variables inside
 
 	adjustGFMStates();
 	setComponent();
@@ -868,20 +893,22 @@ void G_CARTESIAN::solve()
 
 	// 1) solve for intermediate velocity
 	start_clock("computeAdvection");
-	computeAdvection();
+	computeAdvection();//TODO: continue elminating static variables
+                        // deeper in the chain of function calls 
 
 	if (debugging("trace"))
 	    printf("max_speed after computeAdvection(): %20.14f\n",max_speed);
 	
     stop_clock("computeAdvection");
 	
+    //can turn this off if needed for time being.
 	if (debugging("sample_velocity"))
 	{
-	    sampleVelocity();
+	    sampleVelocity(); //TODO: static variables inside
 	}
 
 	start_clock("copyMeshStates");
-	copyMeshStates();
+	copyMeshStates(); //MPI; static variables inside
 	stop_clock("copyMeshStates");
 
 	setAdvectionDt();
@@ -892,20 +919,26 @@ void G_CARTESIAN::solve()
 
 }	/* end solve */
 
+void G_CARTESIAN::setupSolver()
+{
+	max_speed = 0.0;
+    setDomain();
+    setGFMStatesToZero();
+}
 
 // check http://en.wikipedia.org/wiki/Bilinear_interpolation
 void G_CARTESIAN::getVelocity(double *p, double *U)
 {
-        double **vel = eqn_params->vel;
+    double **vel = eqn_params->vel;
 
-        FT_IntrpStateVarAtCoords(front,NO_COMP,p,vel[0],getStateXvel,&U[0],
-					NULL);
-        if (dim > 1)
-            FT_IntrpStateVarAtCoords(front,NO_COMP,p,vel[1],getStateYvel,&U[1],
-					NULL);
-        if (dim > 2)
-            FT_IntrpStateVarAtCoords(front,NO_COMP,p,vel[2],getStateZvel,&U[2],
-					NULL);
+    FT_IntrpStateVarAtCoords(front,NO_COMP,p,vel[0],getStateXvel,&U[0],
+                NULL);
+    if (dim > 1)
+        FT_IntrpStateVarAtCoords(front,NO_COMP,p,vel[1],getStateYvel,&U[1],
+                NULL);
+    if (dim > 2)
+        FT_IntrpStateVarAtCoords(front,NO_COMP,p,vel[2],getStateZvel,&U[2],
+                NULL);
 }
 
 void G_CARTESIAN::getRectangleIndex(int index, int &i, int &j)
@@ -1042,20 +1075,17 @@ void G_CARTESIAN::setDomain()
     Table *T;
 	T = table_of_interface(grid_intfc);
 	top_comp = T->components;
-
-    /*NOTE: Resetting the GFM variables to
-     *      zero is now handled by the function
-     *      setGFMStatesToZero().      */
 }
 
 void G_CARTESIAN::allocMeshVst(
 	SWEEP *vst)
 {
-	int i,size;
-
-	size = 1;
-        for (i = 0; i < dim; ++i)
-	    size *= (top_gmax[i]+1);
+    //TODO: is size always going to be the same as
+    //      sizeEqnVst that gets set inside
+    //      allocEqnVariables()?
+	int size = 1;
+    for (int i = 0; i < dim; ++i)
+        size *= (top_gmax[i]+1);
 
 	FT_VectorMemoryAlloc((POINTER*)&vst->dens,size,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&vst->engy,size,sizeof(double));
@@ -1066,11 +1096,9 @@ void G_CARTESIAN::allocMeshVst(
 void G_CARTESIAN::allocMeshFlux(
 	FSWEEP *flux)
 {
-	int i,size;
-
-	size = 1;
-        for (i = 0; i < dim; ++i)
-	    size *= (top_gmax[i]+1);
+    int size = 1;
+    for (int i = 0; i < dim; ++i)
+        size *= (top_gmax[i]+1);
 
 	FT_VectorMemoryAlloc((POINTER*)&flux->dens_flux,size,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&flux->engy_flux,size,sizeof(double));
@@ -1081,12 +1109,13 @@ void G_CARTESIAN::allocDirVstFlux(
         SWEEP *vst,
         FSWEEP *flux)
 {
-	int i,size;
+	int size = 1;
+    for (int i = 0; i < dim; ++i)
+    {
+        if (size < top_gmax[i]+7)
+            size = top_gmax[i]+7;
+    }
 
-	size = 1;
-        for (i = 0; i < dim; ++i)
-	    if (size < top_gmax[i]+7) 
-		size = top_gmax[i]+7;
 	FT_VectorMemoryAlloc((POINTER*)&vst->dens,size,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&vst->engy,size,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&vst->pres,size,sizeof(double));
@@ -1105,9 +1134,9 @@ void G_CARTESIAN::checkVst(SWEEP *vst)
 	{	
 	    index  = d_index2d(i,j,top_gmax);
 	    if (isnan(vst->dens[index]))
-		printf("At %d %d: dens is nan\n",i,j);
-	    if (vst->dens[index] < 0.0)
-		printf("At %d %d: dens is negative\n",i,j);
+            printf("At %d %d: dens is nan\n",i,j);
+        if (vst->dens[index] < 0.0)
+            printf("At %d %d: dens is negative\n",i,j);
 	}
 }
 
@@ -2704,6 +2733,7 @@ void G_CARTESIAN::scatMeshVst(SWEEP *m_vst)
 {
 	int i,j,k,l,index;
 
+    //NOTE: these contain static variables
 	FT_ParallelExchGridArrayBuffer(m_vst->dens,front,NULL);
 	FT_ParallelExchGridArrayBuffer(m_vst->engy,front,NULL);
 	FT_ParallelExchGridArrayBuffer(m_vst->pres,front,NULL);
@@ -2939,6 +2969,7 @@ void G_CARTESIAN::copyToMeshVst(
 	double *engy = field.engy;
 	double *pres = field.pres;
 	double **momn = field.momn;
+
 	switch (dim)
 	{
 	case 1:
@@ -3521,16 +3552,16 @@ void G_CARTESIAN::scatMeshStates()
 	SWEEP vst;
 	allocMeshVst(&vst);
 	copyToMeshVst(&vst);
-	scatMeshVst(&vst);
+	scatMeshVst(&vst); //has static variables in called function
 	copyFromMeshVst(vst);
 	freeVst(&vst);
-}	/* end scatMeshStates */
+}
 
 void G_CARTESIAN::freeVst(
 	SWEEP *vst)
 {
 	FT_FreeThese(4,vst->dens,vst->engy,vst->pres,vst->momn);
-}	/* end freeVstFlux */
+}
 
 void G_CARTESIAN::freeFlux(
 	FSWEEP *flux)
@@ -4898,9 +4929,7 @@ boolean G_CARTESIAN::get_ave_state(
 }
 
 void G_CARTESIAN::get_ghost_state(
-	SWEEP 		m_vst,
-	int		comp,
-	int		ind)
+        SWEEP m_vst, int comp, int ind)
 {
 	int			i,j,k;
 	int			ic[3],index;
@@ -4916,7 +4945,6 @@ void G_CARTESIAN::get_ghost_state(
 	static 	int 		loop_count = 0;
 	std::list<ToFill> resetThese;
 	std::list<ToFill> fillThese;
-
 
 	if (norset == NULL)
 	{
@@ -5373,7 +5401,6 @@ void initSampleVelocity(Front* front, char *infile_name)
 	sample_type = sample->sample_type;
 	sample_line = sample->sample_coords;
 	int dim = front->rect_grid->dim;
-	//dim = front->rect_grid->dim;
 
 	if (dim == 2)
     {
@@ -5482,15 +5509,16 @@ void G_CARTESIAN::addFluxAlongGridLine(
 	int i,l,n,index;
 	SCHEME_PARAMS scheme_params;
 	EOS_PARAMS	*eos;
-	static SWEEP vst;
-	static FSWEEP vflux;
-	static boolean first = YES;
 	COMPONENT comp;
 	int seg_min,seg_max;
-	static int icoords[MAXD];
 	
     //EQN_PARAMS *eqn_params = (EQN_PARAMS*)(front->extra1);
 	
+	static boolean first = YES;
+	static int icoords[MAXD];
+	static SWEEP vst;
+	static FSWEEP vflux;
+
 	if (first)
         {
             first = NO;
@@ -5577,7 +5605,7 @@ void G_CARTESIAN::addFluxAlongGridLine(
 	    }
 	    seg_min = seg_max + 1;
 	}
-}	/* end addFluxAlongGridLine */
+}
 
 void G_CARTESIAN::errFunction()
 {
@@ -5619,11 +5647,11 @@ void G_CARTESIAN::errFunction()
 		(void) printf("\n %e \t %e \t %e \n",err[0],err[1],err[2]);
 	    }
 	}
-}	/* end errFunction, check the accuracy in AccuracySineWave case */
+}
 
 void G_CARTESIAN::setGFMStatesToZero()
 {
-    for (int i = 0; i < size; ++i)
+    for (int i = 0; i < sizeEqnVst; ++i)
     {
         for (int j = 0; j < 2; ++j)
         {
@@ -5667,8 +5695,10 @@ void G_CARTESIAN::adjustGFMStates()
                      icoords[1] = j+jj;
                      index1 = d_index(icoords,top_gmax,dim);
                      Gdens[ind][index] = Gdens[ind][index1];
-         for (kk = 0; kk < dim; ++kk)
+            
+                     for (kk = 0; kk < dim; ++kk)
                          Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+            
                      Gpres[ind][index] = Gpres[ind][index1];
 
                      if (Gdens[ind][index] != 0)
@@ -5680,8 +5710,10 @@ void G_CARTESIAN::adjustGFMStates()
                      icoords[1] = j+jj;
                      index1 = d_index(icoords,top_gmax,dim);
                      Gdens[ind][index] = Gdens[ind][index1];
-         for (kk = 0; kk < dim; ++kk)
+            
+                     for (kk = 0; kk < dim; ++kk)
                          Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+
                      Gpres[ind][index] = Gpres[ind][index1];
 
                      if (Gdens[ind][index] != 0)
@@ -5693,8 +5725,10 @@ void G_CARTESIAN::adjustGFMStates()
                      icoords[0] = i+ii;
                      index1 = d_index(icoords,top_gmax,dim);
                      Gdens[ind][index] = Gdens[ind][index1];
-         for (kk = 0; kk < dim; ++kk)
+            
+                     for (kk = 0; kk < dim; ++kk)
                          Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+
                      Gpres[ind][index] = Gpres[ind][index1];
 
                      if (Gdens[ind][index] != 0)
@@ -5706,8 +5740,10 @@ void G_CARTESIAN::adjustGFMStates()
                      icoords[0] = i+ii;
                      index1 = d_index(icoords,top_gmax,dim);
                      Gdens[ind][index] = Gdens[ind][index1];
-         for (kk = 0; kk < dim; ++kk)
+            
+                     for (kk = 0; kk < dim; ++kk)
                          Gvel[ind][kk][index] = Gvel[ind][kk][index1];
+
                      Gpres[ind][index] = Gpres[ind][index1];
 
                      if (Gdens[ind][index] != 0)
@@ -5765,3 +5801,6 @@ void G_CARTESIAN::appendOpenEndStates()
 	    printf("Leaving appendOpenEndStates() \n");
         return;
 }	/* end appendOpenEndStates */
+
+
+

@@ -31,8 +31,9 @@ extern void read_cFluid_params(
 	FILE *infile = fopen(inname,"r");
 	int dim = eqn_params->dim;
 
+	eqn_params->tracked = YES;  // Default
 	eqn_params->prob_type = ERROR_TYPE;
-	eqn_params->tracked = YES;		// Default
+
 	CursorAfterString(infile,"Enter problem type:");
 	fscanf(infile,"%s",string);
 	(void) printf("%s\n",string);

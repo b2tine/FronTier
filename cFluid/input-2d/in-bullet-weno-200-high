@@ -42,7 +42,7 @@ Enter the direction of motion: 1.0 0.0
 Enter the total mass for rigid body: 0.5
 Enter the initial center of mass for rigid body: 0.5 4.0
 Enter the initial center of mass velocity: 0.0 0.0
-Enter the moment of inertial about center of mass: 0.5
+Enter the moment of inertia about center of mass: 0.5
 
 Direction 0 side 0 is MIXED_TYPE_BOUNDARY
 Total number of nodes 6

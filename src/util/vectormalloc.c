@@ -257,6 +257,7 @@ EXPORT POINTER array_T(
 	size_t          naligns;
 	ALLOC_HEADER	*h;
 
+    /*
 #if defined(_SGI_SOURCE) && !defined(__GNUC__) && !defined(SPEEDSHOP)
 	{
 	    static boolean first = YES;
@@ -267,7 +268,8 @@ EXPORT POINTER array_T(
 	    	mallopt(M_FREEHD,1);
 	    }
 	}
-#endif /* defined(_SGI_SOURCE) && !defined(__GNUC__) && !defined(SPEEDSHOP) */
+#endif // defined(_SGI_SOURCE) && !defined(__GNUC__) && !defined(SPEEDSHOP)
+    */
 
 	if (vmalloc_debug_on)
 	{

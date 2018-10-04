@@ -46,7 +46,7 @@ Enter surface tension: 0.0
 Enter yes to use porosity: yes 
 Enter porosity of canopy: 0.0
 Enter viscous parameter: 15.0
-Enter inertial parameter: 0.0
+Enter inertia parameter: 0.0
 Enter area density of canopy: 5.0 
 Enter yes to use eddy viscosity: no
 Available tuebulence models are:

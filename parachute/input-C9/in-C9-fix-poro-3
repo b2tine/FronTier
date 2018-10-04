@@ -48,7 +48,7 @@ Enter yes to use GPU solver: no
 Entering yes to turn off fluid solver: no
 Enter yes to use porosity: yes
 Enter viscous parameter: 30.0
-Enter inertial parameter: 0.0
+Enter inertia parameter: 0.0
 Enter factor of smoothing radius: 1.0
 
 Enter payload: 100

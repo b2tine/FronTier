@@ -45,7 +45,7 @@ Enter the center of mass for rigid body: 1.0 1.0 1.166667
 Type yes if rigid body will rotate about an point: yes
 Type yes if rigid body will rotate about an axis: no
 Enter rotation center: 1.0 1.0 0.5
-Enter the moment of inertial: 0.6375 0.6375 0.0750
+Enter the moment of inertia: 0.6375 0.6375 0.0750
 Enter initial angular velocity: 1.0 0.0 1.0
 
 ************Movie output parameters*************

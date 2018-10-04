@@ -260,7 +260,7 @@ extern void setMotionParams(
                     CursorAfterString(infile,"Enter viscous parameter:");
                     fscanf(infile,"%lf",&af_params->porous_coeff[0]);
                     (void) printf("%f\n",af_params->porous_coeff[0]);
-                    CursorAfterString(infile,"Enter inertial parameter:");
+                    CursorAfterString(infile,"Enter inertia parameter:");
                     fscanf(infile,"%lf",&af_params->porous_coeff[1]);
                     (void) printf("%f\n",af_params->porous_coeff[1]);
                     iFparams->porous_coeff[0] = af_params->porous_coeff[0];

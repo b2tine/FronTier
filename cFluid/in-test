@@ -53,7 +53,7 @@ Enter the direction of motion: 1.0 0.0 0.0
 Enter the total mass for rigid body: 1.0
 Enter the initial center of mass for rigid body: 0.5 2.0 2.0
 Enter the initial center of mass velocity: 0.0 0.0 0.0
-Enter the moment of inertial about center of mass: 1.0
+Enter the moment of inertia about center of mass: 1.0
 
 For lower boundary in 0-th dimension
 Enter type of Dirichlet boundary: FLOW_THROUGH
