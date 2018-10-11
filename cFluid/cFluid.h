@@ -376,8 +376,7 @@ private:
 	double m_t; //time
 	double max_speed;//for stability of convection
 
-    //TODO: What is the significance of 1.0e-04?
-	// minimum physical variables
+	//minimum physical variables
 	const double min_dens {0.0001};
     const double min_pres {0.0001};
 
@@ -421,8 +420,11 @@ private:
 	void allocMeshVst(SWEEP*);
 	void allocMeshFlux(FSWEEP*);
 	void allocDirVstFlux(SWEEP*,FSWEEP*);
-	void freeVst(SWEEP*);
+	
+    void freeVst(SWEEP*);
 	void freeFlux(FSWEEP*);
+	void freeDirVstFlux(SWEEP*,FSWEEP*);
+
 	bool withinStencilLen(int*,int);
 
     /* Runge Kutta */ 

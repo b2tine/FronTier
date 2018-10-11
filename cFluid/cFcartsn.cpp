@@ -533,15 +533,12 @@ void G_CARTESIAN::computeAdvection()
 
 void G_CARTESIAN::solveRungeKutta()
 {
+    start_clock("solveRungeKutta");
+
+    copyToMeshVst(&st_field[0]);
+
 	double delta_t = front->dt;
-	start_clock("solveRungeKutta");
-
-	/* Compute flux and advance field */
-
-	copyToMeshVst(&st_field[0]);
-
-    //TODO: clean out computeMeshFlux()
-	computeMeshFlux(st_field[0],&st_flux[0],delta_t);
+    computeMeshFlux(st_field[0],&st_flux[0],delta_t);
 	
 	for (int i = 0; i < orderRK-1; ++i)
 	{
@@ -562,8 +559,8 @@ void G_CARTESIAN::solveRungeKutta()
 	}
 
 	copyFromMeshVst(st_field[0]);
-	stop_clock("solveRungeKutta");
-
+	
+    stop_clock("solveRungeKutta");
 }
 
 
@@ -571,8 +568,6 @@ void G_CARTESIAN::computeMeshFlux(
         SWEEP m_vst, FSWEEP *m_flux,
         double delta_t)
 {
-	int dir;
-
 	if(eqn_params->tracked)
 	{
 	    start_clock("get_ghost_state");
@@ -587,7 +582,7 @@ void G_CARTESIAN::computeMeshFlux(
 	}
 
 	resetFlux(m_flux);
-	for (dir = 0; dir < dim; ++dir)
+	for (int dir = 0; dir < dim; ++dir)
 	{
 	    addFluxInDirection(dir,&m_vst,m_flux,delta_t);
 	}
@@ -895,9 +890,8 @@ void G_CARTESIAN::solve()
 
 	// 1) solve for intermediate velocity
 	start_clock("computeAdvection");
-	computeAdvection();//TODO: continue elminating static variables
-                        // deeper in the chain of function calls 
 
+    computeAdvection();
 	if (debugging("trace"))
 	    printf("max_speed after computeAdvection(): %20.14f\n",max_speed);
 	
@@ -906,7 +900,7 @@ void G_CARTESIAN::solve()
     //can turn this off if needed for time being.
 	if (debugging("sample_velocity"))
 	{
-	    sampleVelocity(); //TODO: static variables inside
+	    sampleVelocity();
 	}
 
 	start_clock("copyMeshStates");
@@ -1123,6 +1117,14 @@ void G_CARTESIAN::allocDirVstFlux(
 	FT_VectorMemoryAlloc((POINTER*)&flux->dens_flux,size,sizeof(double));
 	FT_VectorMemoryAlloc((POINTER*)&flux->engy_flux,size,sizeof(double));
 	FT_MatrixMemoryAlloc((POINTER*)&flux->momn_flux,MAXD,size,sizeof(double));
+}	/* end allocDirMeshVstFlux */
+
+void G_CARTESIAN::freeDirVstFlux(
+        SWEEP* vst,
+        FSWEEP* flux)
+{
+        FT_FreeThese(4,vst->dens,vst->engy,vst->pres,vst->momn);
+        FT_FreeThese(3,flux->dens_flux,flux->engy_flux,flux->momn_flux);
 }	/* end allocDirMeshVstFlux */
 
 void G_CARTESIAN::checkVst(SWEEP *vst)
@@ -3765,7 +3767,7 @@ void G_CARTESIAN::appendGhostBuffer(
 		    status = FT_StateStructAtGridCrossing(front,grid_intfc,
 				ic_next,ldir[idir],comp,(POINTER*)&state,&hs,crx_coords);
 		    
-            //extrem cases
+            //extreme cases
             if (!status)
             {
             double coords[MAXD], wtol[MAXD], tol[MAXD];
@@ -3888,6 +3890,7 @@ void G_CARTESIAN::appendGhostBuffer(
 	    {
 		ic[idir] = icoords[idir] + i;
 		index = d_index(ic,top_gmax,dim);
+
 		if (!needBufferFromIntfc(comp,cell_center[index].comp))
 		{
 		    vst->dens[n+nrad+i-1] = m_vst->dens[index];
@@ -5503,107 +5506,130 @@ void G_CARTESIAN::addFluxAlongGridLine(
 	int *grid_icoords,
 	double dt,
 	SWEEP *m_vst,
-        FSWEEP *m_flux)
+    FSWEEP *m_flux)
 {
-	int i,l,n,index;
 	SCHEME_PARAMS scheme_params;
 	EOS_PARAMS	*eos;
-	COMPONENT comp;
 	int seg_min,seg_max;
 	
     //EQN_PARAMS *eqn_params = (EQN_PARAMS*)(front->extra1);
 	
-	static boolean first = YES;
-	static int icoords[MAXD];
-	static SWEEP vst;
-	static FSWEEP vflux;
+	SWEEP vst;
+	FSWEEP vflux;
+    allocDirVstFlux(&vst,&vflux);
 
-	if (first)
-        {
-            first = NO;
-            allocDirVstFlux(&vst,&vflux);
-        }
-	scheme_params.lambda = dt/top_h[idir];
-        scheme_params.beta = 0.0;
+    scheme_params.lambda = dt/top_h[idir];
+    scheme_params.beta = 0.0;
 	scheme_params.artificial_compression = eqn_params->articomp;
-	for (i = 0; i < dim; ++i)
+
+	int icoords[MAXD];
+    for (int i = 0; i < dim; ++i)
 	    icoords[i] = grid_icoords[i];
-	seg_min = imin[idir];
+
+    int index;
+	COMPONENT comp;
+    seg_min = imin[idir];
 	while (seg_min <= imax[idir])
 	{
 	    for (; seg_min <= imax[idir]; ++seg_min)
 	    {
-		icoords[idir] = seg_min;
+    		icoords[idir] = seg_min;
 	    	index = d_index(icoords,top_gmax,dim);
 	    	comp = top_comp[index];
-	    	if (gas_comp(comp)) break;
+	    	
+            if (gas_comp(comp))
+                break;
 	    }
-	    if (seg_min > imax[idir]) break;
-	    for (i = 0; i <= top_gmax[idir]; ++i)
+	
+        if (seg_min > imax[idir])
+            break;
+	
+        for (int i = 0; i <= top_gmax[idir]; ++i)
 	    {
 	    	vst.dens[i] = 0.0; 
 	    	vst.pres[i] = 0.0; 
 	    	vst.engy[i] = 0.0; 
-	    	vst.momn[0][i] = vst.momn[1][i] = vst.momn[2][i] = 0.0;
+	    
+            vst.momn[0][i] = 0.0;
+            vst.momn[1][i] = 0.0;
+            vst.momn[2][i] = 0.0;
 	    }
-	    i = seg_min;
-	    icoords[idir] = i;
+
+	    icoords[idir] = seg_min;
 	    index = d_index(icoords,top_gmax,dim);
 	    comp = top_comp[index];
-	    n = 0;
-	    vst.dens[n+nrad] = m_vst->dens[index];
-            vst.engy[n+nrad] = m_vst->engy[index];
-            vst.pres[n+nrad] = m_vst->pres[index];
-	    for (l = 0; l < dim; ++l)
-            	vst.momn[l][n+nrad] = m_vst->momn[(l+idir)%dim][index];
-	    for (l = dim; l < 3; ++l)
-            	vst.momn[l][n+nrad] = 0.0;
-	    seg_max = i;
-	    n++;
-	    for (i = seg_min+1; i <= imax[idir]; i++)
+	    
+        vst.dens[nrad] = m_vst->dens[index];
+        vst.engy[nrad] = m_vst->engy[index];
+        vst.pres[nrad] = m_vst->pres[index];
+
+	    for (int l = 0; l < dim; ++l)
+            	vst.momn[l][nrad] = m_vst->momn[(l+idir)%dim][index];
+	
+        for (int l = dim; l < 3; ++l)
+            	vst.momn[l][nrad] = 0.0;
+
+        
+        int n = 1;
+        seg_max = seg_min;
+        	
+        for (int i = seg_min+1; i <= imax[idir]; i++)
 	    {
-		icoords[idir] = i;
-		index = d_index(icoords,top_gmax,dim);
-		if (needBufferFromIntfc(comp,top_comp[index]))
-		    break;
-		else
-		{
-	    	    vst.dens[n+nrad] = m_vst->dens[index];
-	    	    vst.engy[n+nrad] = m_vst->engy[index];
-	    	    vst.pres[n+nrad] = m_vst->pres[index];
-		    for (l = 0; l < dim; ++l)
-	    	    	vst.momn[l][n+nrad] = m_vst->momn[(l+idir)%dim][index];
-		    for (l = dim; l < 3; ++l)
-	    	    	vst.momn[l][n+nrad] = 0.0;
-		    n++;
-		}
-		seg_max = i;
+            icoords[idir] = i;
+	    	index = d_index(icoords,top_gmax,dim);
+	
+            if (needBufferFromIntfc(comp,top_comp[index]))
+	    	    break;
+		    else
+            {
+                vst.dens[n+nrad] = m_vst->dens[index];
+                vst.engy[n+nrad] = m_vst->engy[index];
+                vst.pres[n+nrad] = m_vst->pres[index];
+    
+                for (int l = 0; l < dim; ++l)
+                        vst.momn[l][n+nrad] = m_vst->momn[(l+idir)%dim][index];
+
+                for (int l = dim; l < 3; ++l)
+                        vst.momn[l][n+nrad] = 0.0;
+                n++;
+            }
+	
+            seg_max = i;
 	    }
-	    icoords[idir] = seg_min;
+	    
+        icoords[idir] = seg_min;
 	    appendGhostBuffer(&vst,m_vst,n,icoords,idir,0);
-	    icoords[idir] = seg_max;
+	    
+        icoords[idir] = seg_max;
 	    appendGhostBuffer(&vst,m_vst,n,icoords,idir,1);
 	    
 	    eos = &(eqn_params->eos[comp]);
 	    EosSetTVDParams(&scheme_params, eos);
+
 	    numericalFlux((POINTER)&scheme_params,&vst,&vflux,n);
-		    
-	    n = 0;
-	    for (i = seg_min; i <= seg_max; ++i)
+        
+
+        int iter = 0; 
+        for (int i = seg_min; i <= seg_max; ++i)
 	    {
-		icoords[idir] = i;
+            icoords[idir] = i;
 	    	index = d_index(icoords,top_gmax,dim);
-	    	m_flux->dens_flux[index] += vflux.dens_flux[n+nrad];
-	    	m_flux->engy_flux[index] += vflux.engy_flux[n+nrad];
-		for (l = 0; l < dim; ++l)
-	    	    m_flux->momn_flux[(l+idir)%dim][index] += 
-				vflux.momn_flux[l][n+nrad];
-		for (l = dim; l < 3; ++l)
-	    	    m_flux->momn_flux[l][index] = 0.0;
-		n++;
+	    	m_flux->dens_flux[index] += vflux.dens_flux[iter+nrad];
+	    	m_flux->engy_flux[index] += vflux.engy_flux[iter+nrad];
+	
+            for (int l = 0; l < dim; ++l)
+                m_flux->momn_flux[(l+idir)%dim][index] += 
+                    vflux.momn_flux[l][iter+nrad];
+	
+            for (int l = dim; l < 3; ++l)
+                m_flux->momn_flux[l][index] = 0.0;
+
+            iter++;
 	    }
 	    seg_min = seg_max + 1;
 	}
+
+    freeDirVstFlux(&vst,&vflux);
 }
 
 void G_CARTESIAN::errFunction()

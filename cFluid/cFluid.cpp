@@ -113,10 +113,7 @@ int main(int argc, char **argv)
 	    insert_objects(&front);
 	    rgb_init(&front,rgb_params);
 	    FT_PromptSetMixedTypeBoundary2d(in_name,&front);
-
-	    if (debugging("trace"))
-	    	printf("Passed g_cartesian.setProbParams()\n");
-	    
+ 
         read_dirichlet_bdry_data(in_name,&front);
 	    read_open_end_bdry_data(in_name,&front);
 	    

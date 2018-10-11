@@ -785,7 +785,7 @@ EXPORT	boolean FT_NormalAtGridCrossing(
 	return YES;
 }	/* end FT_NormalAtGridCrossing */
 
-#define         MAX_NUM_VERTEX_IN_CELL          20
+#define MAX_NUM_VERTEX_IN_CELL 20
 EXPORT	boolean FT_StateStructAtGridCrossing(
 	Front *front,
 	INTERFACE *grid_intfc,
@@ -796,14 +796,10 @@ EXPORT	boolean FT_StateStructAtGridCrossing(
 	HYPER_SURF **hs,
 	double *crx_coords)
 {
-        int j;
-	int crx_index;
-	static CRXING *crxs[MAX_NUM_CRX];
-	int i,nc,dim = grid_intfc->dim;
-
-	crx_index = 0;
-	nc = GridSegCrossing(crxs,icoords,dir,grid_intfc);
-	if (nc == 0) return NO;
+	int crx_index = 0;
+	CRXING *crxs[MAX_NUM_CRX];
+	int nc = GridSegCrossing(crxs,icoords,dir,grid_intfc);
+    if (nc == 0) return NO;
 
 	*hs = crxs[crx_index]->hs;
 	if (comp == negative_component(*hs))
@@ -817,9 +813,12 @@ EXPORT	boolean FT_StateStructAtGridCrossing(
 			"component does not match\n");
 	    return NO;
 	}
-	for (i = 0; i < dim; ++i)
+	
+    int dim = grid_intfc->dim;
+	for (int i = 0; i < dim; ++i)
 	    crx_coords[i] = Coords(crxs[crx_index]->pt)[i];
-	return YES;
+
+    return YES;
 }	/* end FT_StateStructAtGridCrossing */
 
 EXPORT	boolean FT_StateStructAtGridCrossing2(

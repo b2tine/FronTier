@@ -74,4 +74,4 @@ all: example00 example01 example02 example03 example04 example05 example06 examp
 clean:
 	rm -rf *.o example example[0-2][0-9]
 tagsfile:
-	ctags *.cpp ../src/*/*.[chf] ../src/*/*/*.[chf]
+	ctags *.cpp ../src/*/*.[ch] ../src/*/*.[ch]
