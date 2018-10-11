@@ -289,6 +289,7 @@ void G_CARTESIAN::allocRungeKuttaVstFlux()
 {
     FT_VectorMemoryAlloc((POINTER*)&st_field,orderRK,sizeof(SWEEP));
     FT_VectorMemoryAlloc((POINTER*)&st_flux,orderRK,sizeof(FSWEEP));
+	
     for (int i = 0; i < orderRK; ++i)
     {
         allocMeshVst(&st_field[i]);
@@ -1076,26 +1077,18 @@ void G_CARTESIAN::setDomain()
 void G_CARTESIAN::allocMeshVst(
 	SWEEP *vst)
 {
-	int size = 1;
-    for (int i = 0; i < dim; ++i)
-        size *= (top_gmax[i]+1);
-
-	FT_VectorMemoryAlloc((POINTER*)&vst->dens,size,sizeof(double));
-	FT_VectorMemoryAlloc((POINTER*)&vst->engy,size,sizeof(double));
-	FT_VectorMemoryAlloc((POINTER*)&vst->pres,size,sizeof(double));
-	FT_MatrixMemoryAlloc((POINTER*)&vst->momn,MAXD,size,sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&vst->dens,sizeEqnVst,sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&vst->engy,sizeEqnVst,sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&vst->pres,sizeEqnVst,sizeof(double));
+	FT_MatrixMemoryAlloc((POINTER*)&vst->momn,MAXD,sizeEqnVst,sizeof(double));
 }
 
 void G_CARTESIAN::allocMeshFlux(
 	FSWEEP *flux)
 {
-    int size = 1;
-    for (int i = 0; i < dim; ++i)
-        size *= (top_gmax[i]+1);
-
-	FT_VectorMemoryAlloc((POINTER*)&flux->dens_flux,size,sizeof(double));
-	FT_VectorMemoryAlloc((POINTER*)&flux->engy_flux,size,sizeof(double));
-	FT_MatrixMemoryAlloc((POINTER*)&flux->momn_flux,MAXD,size,sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&flux->dens_flux,sizeEqnVst,sizeof(double));
+	FT_VectorMemoryAlloc((POINTER*)&flux->engy_flux,sizeEqnVst,sizeof(double));
+	FT_MatrixMemoryAlloc((POINTER*)&flux->momn_flux,MAXD,sizeEqnVst,sizeof(double));
 }
 
 void G_CARTESIAN::allocDirVstFlux(
@@ -2721,7 +2714,7 @@ void G_CARTESIAN::numericalFlux(
 	case WENO_FIRST_ORDER:
 	case WENO_SECOND_ORDER:
 	case WENO_FOURTH_ORDER:
-	    WENO_flux(scheme_params,sweep,fsweep,n);
+	    WENO_flux(scheme_params,sweep,fsweep,n,sizeEqnVst);
 	    break;
 	default:
 	    (void) printf("Unknow numerical scheme\n");
@@ -3781,15 +3774,17 @@ void G_CARTESIAN::appendGhostBuffer(
 			status = FT_StateStructAtGridCrossing(front,grid_intfc,
 					ic_tmp,rdir[idir],comp,(POINTER*)&state,
 					&hs,crx_coords);
+
 			if(!status)
 			{
 			    /* check second neighbor in the same direction */
 			    for (k = 0; k < dim; ++k)
-                                ic_tmp[k] = ic[k];
-                            ic_tmp[idir] += 2;
-                            status = FT_StateStructAtGridCrossing(front,
-                                        grid_intfc,ic_tmp,ldir[idir],comp,
-                                        (POINTER*)&state,&hs,crx_coords);
+                    ic_tmp[k] = ic[k];
+
+                ic_tmp[idir] += 2;
+                status = FT_StateStructAtGridCrossing(front,grid_intfc,
+                        ic_tmp,ldir[idir],comp,(POINTER*)&state,&hs,crx_coords);
+
 			    if (!status)
 			    {
 				/* must be something wrong */

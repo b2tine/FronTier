@@ -2139,10 +2139,12 @@ LOCAL	boolean f_user_2d_insert_point_in_bond(
 	    len = bond_length(b);
 	    total_len = len + bond_length(bnew);
 	    para = (total_len > 0.0) ? len/total_len : 0.5;
+
 	    bi_interpolate_intfc_states(intfc,1.0-para,para,
 			                Coords(b->start),start_left_state,
 			                Coords(bnew->end),end_left_state,
 			                left_state(b->end));
+
 	    bi_interpolate_intfc_states(intfc,1.0-para,para,
 			                Coords(b->start),start_right_state,
 			                Coords(bnew->end),end_right_state,

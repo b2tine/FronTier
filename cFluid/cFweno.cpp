@@ -32,29 +32,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 static double weno5_scal(double *f);
 static void matmvec(double *b, double L[5][5], double *x);
 static void f2is(double *f, double *s);
-static void u2f(double *u, double *f);
-static void weno5_get_flux(POINTER,int,int,double**,double**);
+static void u2f(double *u, double* f);
+static void weno5_get_flux(POINTER,int,int,double**, std::vector<std::vector<double> >);
 static void arti_compression(POINTER,double*,double*,double,double,double*,int,double &c);
 
 extern void WENO_flux(
         POINTER params,
         SWEEP *vst,
         FSWEEP *vflux,
-        int n)
+        int n,
+        int sizevst)
 {
-    int extend_size;
-	SCHEME_PARAMS *scheme_params = (SCHEME_PARAMS*)params;
-	double lambda = scheme_params->lambda;
-
-    //TODO: get this out of here
-	static double **u_old;
-	static double **flux;
-	
-	if (u_old == NULL)
-	{
-	    FT_VectorMemoryAlloc((POINTER*)&u_old,6,sizeof(double*));
-	    FT_VectorMemoryAlloc((POINTER*)&flux,5,sizeof(double*));
-	}
+    double* u_old[6];
 
 	u_old[0] = vst->dens;
 	u_old[1] = vst->momn[0];
@@ -62,14 +51,20 @@ extern void WENO_flux(
 	u_old[3] = vst->momn[2];
 	u_old[4] = vst->engy;
 	u_old[5] = vst->pres;
-	flux[0] = vflux->dens_flux;
-	flux[1] = vflux->momn_flux[0];
-	flux[2] = vflux->momn_flux[1];
-	flux[3] = vflux->momn_flux[2];
-	flux[4] = vflux->engy_flux;
-	
+
+    std::vector<std::vector<double> > flux(5);
+
+    flux[0].assign(vflux->dens_flux, vflux->dens_flux + sizevst);
+    flux[1].assign(vflux->momn_flux[0], vflux->momn_flux[0] + sizevst);
+    flux[2].assign(vflux->momn_flux[1], vflux->momn_flux[1] + sizevst);
+    flux[3].assign(vflux->momn_flux[2], vflux->momn_flux[2] + sizevst);
+    flux[4].assign(vflux->engy_flux, vflux->engy_flux + sizevst);
+
     int ghost_size = 3;
-	extend_size = n + 2*ghost_size;
+	int extend_size = n + 2*ghost_size;
+
+	SCHEME_PARAMS *scheme_params = (SCHEME_PARAMS*)params;
+	double lambda = scheme_params->lambda;
 
 #if defined(__GPU__)
 	//startClock("Total_time_flux_gpu");
@@ -99,6 +94,7 @@ extern void WENO_flux(
             clean_up(ERROR);
 	    }
 	}
+
 }	/* end weno5_flux */
 
 static void weno5_get_flux(
@@ -106,17 +102,15 @@ static void weno5_get_flux(
 	int extend_size, 
 	int ghost_size, 
 	double **u_old,
-    double **flux)
+    std::vector<std::vector<double> > flux)
 {
 
 	SCHEME_PARAMS *scheme_params = (SCHEME_PARAMS*)params;
 	double gamma = scheme_params->gamma;
     double gm = gamma - 1.0;
 
-
-    double **f;
+    double** f;
     FT_MatrixMemoryAlloc((POINTER*)&f,extend_size,5,sizeof(double));
-    
 
     double maxeig[5] = {0 ,0 ,0, 0, 0};
     for(int i = 0; i < extend_size; ++i)
@@ -138,6 +132,7 @@ static void weno5_get_flux(
     maxeig[2] = maxeig[1];
     maxeig[3] = maxeig[1];
 
+    //#pragma omp parallel for num_threads(4)
     for(int i = ghost_size; i < extend_size - ghost_size + 1; ++i)
     {
         /*** Get u_1/2 ***/
@@ -264,7 +259,8 @@ static void weno5_get_flux(
         double f_tmp[5];
 	
 	    double gflux_tmp[5];
-        double vecp[5][4],vecm[5][4];
+        double vecp[5][4];
+        double vecm[5][4];
         
         for(int j = 0; j < 5; ++j)
         {
@@ -299,11 +295,11 @@ static void weno5_get_flux(
         
         for(int j = 0; j < 5; ++j)
         {
-            //TODO: put in debuggin function
-            if (isnan(f[j][i]))
+            //TODO: put in debugging function
+            if ( isnan(ff[j]) )
             {
                 (void) printf("In weno5_flux(): flux[%d][%d] = %f\n",
-                        j, i, f[j][i]);
+                        j, i, ff[j]);
 
                 for (int k = 0; k < extend_size; ++k)
                 {
@@ -401,8 +397,8 @@ static void matmvec(
 }
 
 static void u2f(
-	double *u,
-        double *f)
+	double* u,
+    double* f)
 {
 	double v = u[1]/u[0];
 

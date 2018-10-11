@@ -599,7 +599,7 @@ extern void cFluid_InitIntfc(Front*,LEVEL_FUNC_PACK*);
 extern boolean RiemannSolution(RIEMANN_INPUT,RIEMANN_SOLN*);
 extern boolean RiemannSolnAtXi(RIEMANN_SOLN*,RIEM_STATE*,double);
 extern void TVD_flux(POINTER,SWEEP*,FSWEEP*,int);
-extern void WENO_flux(POINTER,SWEEP*,FSWEEP*,int);
+extern void WENO_flux(POINTER,SWEEP*,FSWEEP*,int,int);
 
 
 class EOS

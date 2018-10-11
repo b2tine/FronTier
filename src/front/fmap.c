@@ -724,7 +724,8 @@ EXPORT	boolean FT_NormalAtGridCrossing(
         int j;
 	int crx_index;
 	INTERFACE *grid_intfc = front->grid_intfc;
-	static CRXING *crxs[MAX_NUM_CRX];
+	
+    CRXING *crxs[MAX_NUM_CRX];
 	int i,nc,dim = grid_intfc->dim;
 	POINT *p;
 	BOND *b;
@@ -798,6 +799,7 @@ EXPORT	boolean FT_StateStructAtGridCrossing(
 {
 	int crx_index = 0;
 	CRXING *crxs[MAX_NUM_CRX];
+
 	int nc = GridSegCrossing(crxs,icoords,dir,grid_intfc);
     if (nc == 0) return NO;
 
