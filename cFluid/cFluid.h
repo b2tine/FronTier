@@ -82,10 +82,41 @@ enum SHOCK_PARAMETER
 	SHOCK_MACH_NUMBER
 };
 
+struct FIELD
+{
+	double **vel;
+	double **momn;
+	double *dens;
+	double *engy;
+	double *pres;
+	double *vort;
+};
+
+struct SWEEP
+{
+    double *dens;
+    double **momn;
+    double *engy;
+    double *pres;
+};
+
+struct FSWEEP
+{
+    double *dens_flux;
+    double **momn_flux;
+    double *engy_flux;
+};
+
+struct GHOSTS
+{
+	double **gnor;
+	double **Gdens;
+	double ***Gvel;
+	double **Gpres;
+}
+
 struct EQN_PARAMS
 {
-    //TODO: Make as many parameters const as possible.
-    //      These are parameters:
     int dim;
     PROB_TYPE prob_type;
     POINTER level_func_params;
@@ -129,25 +160,24 @@ struct EQN_PARAMS
 	double contact_vel;
 
     //state variables
-        //TODO: Make seperate structue for
-        //      computations of state variables.
+    FIELD statevars;
+    /*
     double **vel;
 	double **mom;
 	double *dens;
 	double *engy;
 	double *pres;
-	double *vort;
+	double *vort;*/
 
     //GFM variables
-        //TODO: Make seperate structure for
-        //      computations of GFM state variables.
+    GHOSTS ghosts;
+    /*
 	double **gnor;
 	double **Gdens;
 	double ***Gvel;
-	double **Gpres;
+	double **Gpres;*/
 
-    //Data for the Base Front (to compare)
-        //TODO: This may warrant a seperate structure.
+    //TODO: This may warrant a seperate structure.
 	boolean use_base_soln;
     char base_dir_name[200];
     int num_step;
@@ -281,31 +311,6 @@ class L_RECTANGLE
 	    void setCoords(double*,int);
 };
 
-struct FIELD
-{
-	double **vel;
-	double **momn;
-	double *dens;
-	double *engy;
-	double *pres;
-	double *vort;
-};
-
-struct SWEEP
-{
-    double *dens;
-    double **momn;
-    double *engy;
-    double *pres;
-};
-
-struct FSWEEP
-{
-    double *dens_flux;
-    double **momn_flux;
-    double *engy_flux;
-};
-
 
 class G_CARTESIAN
 {
@@ -327,10 +332,9 @@ public:
 	double max_dt;			// max_dt from cartesian
 	double hmin;			// smallest spacing
 
-	void setInitialIntfc(LEVEL_FUNC_PACK*);// setup initial geometry
-	void setInitialStates(); 	// setup initial state
+	//void setInitialStates(); 	// setup initial state
 	void initMesh(void);		// setup the cartesian grid
-	void readInteriorStates(char*);
+	//void readInteriorStates(char*);
 	void printFrontInteriorStates(char*);
 	void initMovieVariables();
 	void getVelocity(double*,double*);
@@ -356,9 +360,7 @@ private:
 	int **ij_to_I,**I_to_ij;	// Index mapping for 2D
 	int ***ijk_to_I,**I_to_ijk;	// Index mapping for 3D
     
-	int nrad;   // Buffer size for a given numerical scheme
-    //TODO: Need a more descriptive name for nrad.
-    //      Why is it always equal to 3? 
+	int nrad {3};   // Buffer size for a given numerical scheme
 
 	// Sweeping limits
 	int imin[MAXD];
@@ -396,7 +398,6 @@ private:
 	void sampleVelocity3d();
 
     /*TMP*/
-        //TODO: what is TMP?
 	void checkVst(SWEEP*);
 	void checkFlux(FSWEEP*);
 

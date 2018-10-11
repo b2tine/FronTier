@@ -144,6 +144,25 @@ int main(int argc, char **argv)
 	    restart_set_dirichlet_bdry_function(&front);
     }
 
+    //G_CARTESIAN	g_cartesian(&front);
+
+
+    if (RestartRun)
+	{
+	    readFrontStates(&front,restart_state_name);
+	    readInteriorStates(&front,restart_state_name);
+	    //g_cartesian.readInteriorStates(restart_state_name);
+	}
+	else
+	{
+	    setInitialStates(&front);
+	    //g_cartesian.setInitialStates();
+	}
+
+	if (debugging("trace"))
+	    printf("Passed state initialization()\n");
+
+
     G_CARTESIAN	g_cartesian(&front);
 
 
@@ -159,20 +178,6 @@ int main(int argc, char **argv)
 
     if (debugging("sample_velocity"))
         initSampleVelocity(&front,in_name);
-
-    if (RestartRun)
-	{
-	    readFrontStates(&front,restart_state_name);
-	    g_cartesian.readInteriorStates(restart_state_name);
-	}
-	else
-	{
-	    g_cartesian.setInitialStates();
-	}
-
-	if (debugging("trace"))
-	    printf("Passed state initialization()\n");
-
 
 	/* Propagate the front */
 

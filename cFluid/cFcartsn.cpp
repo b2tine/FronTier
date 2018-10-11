@@ -60,8 +60,8 @@ G_CARTESIAN::G_CARTESIAN(Front* frnt)
     coeffsRK(4,std::vector<double>(4,0.0)),
     weightsRK(4,0.0)
 {
-    initRungeKutta();
     initMesh();
+    initRungeKutta();
     initMovieVariables();
 }
 
@@ -73,64 +73,6 @@ G_CARTESIAN::~G_CARTESIAN()
 */
 
 
-void G_CARTESIAN::initRungeKutta()
-{
-    //TODO: Need a more descrptive name for nrad,
-    //      and why is it always equal to 3?
-    //      Also could do a better job of handling
-    //      invalid input.
-	switch(eqn_params->num_scheme)
-    {
-        case TVD_FIRST_ORDER:
-        case WENO_FIRST_ORDER:
-            setFirstOrderRK();
-            break;
-        case TVD_SECOND_ORDER:
-        case WENO_SECOND_ORDER:
-            setSecondOrderRK();
-            break;
-        case TVD_FOURTH_ORDER:
-        case WENO_FOURTH_ORDER:
-            setFourthOrderRK();
-            break;
-        default:
-            (void)printf("ERROR: Numerical scheme not recognized\n");
-            clean_up(ERROR);
-    }
-}
-
-//TODO: Does nrad actually reflect the
-//      schemes implemented or is it just
-//      a placeholder value?
-void G_CARTESIAN::setFirstOrderRK()
-{
-    nrad = 3;
-    orderRK = 1;
-
-    weightsRK[0] = 1.0;
-}
-
-void G_CARTESIAN::setSecondOrderRK()
-{
-    nrad = 3;
-    orderRK = 2;
-    
-    coeffsRK[0][0] = 1.0;
-    weightsRK[0] = 0.5; weightsRK[1] = 0.5;
-}
-
-void G_CARTESIAN::setFourthOrderRK()
-{
-    nrad = 3;
-    orderRK = 4;
-    
-    coeffsRK[0][0] = 0.5;
-    coeffsRK[1][0] = 0.0;   coeffsRK[1][1] = 0.5;
-    coeffsRK[2][0] = 0.0;   coeffsRK[2][1] = 0.0;   coeffsRK[2][2] = 1.0;
-
-    weightsRK[0] = 1.0/6.0;  weightsRK[1] = 1.0/3.0;
-    weightsRK[2] = 1.0/3.0;  weightsRK[3] = 1.0/6.0;
-}
 
 
 void G_CARTESIAN::initMesh()
@@ -285,6 +227,54 @@ void G_CARTESIAN::allocGhostFluidVst()
 
 }*/
 
+void G_CARTESIAN::initRungeKutta()
+{
+	switch(eqn_params->num_scheme)
+    {
+        case TVD_FIRST_ORDER:
+        case WENO_FIRST_ORDER:
+            setFirstOrderRK();
+            break;
+        case TVD_SECOND_ORDER:
+        case WENO_SECOND_ORDER:
+            setSecondOrderRK();
+            break;
+        case TVD_FOURTH_ORDER:
+        case WENO_FOURTH_ORDER:
+            setFourthOrderRK();
+            break;
+        default:
+            (void)printf("ERROR: Numerical scheme not recognized\n");
+            clean_up(ERROR);
+    }
+}
+
+void G_CARTESIAN::setFirstOrderRK()
+{
+    orderRK = 1;
+    weightsRK[0] = 1.0;
+}
+
+void G_CARTESIAN::setSecondOrderRK()
+{
+    orderRK = 2;
+
+    coeffsRK[0][0] = 1.0;
+    weightsRK[0] = 0.5; weightsRK[1] = 0.5;
+}
+
+void G_CARTESIAN::setFourthOrderRK()
+{
+    orderRK = 4;
+    
+    coeffsRK[0][0] = 0.5;
+    coeffsRK[1][0] = 0.0;   coeffsRK[1][1] = 0.5;
+    coeffsRK[2][0] = 0.0;   coeffsRK[2][1] = 0.0;   coeffsRK[2][2] = 1.0;
+
+    weightsRK[0] = 1.0/6.0;  weightsRK[1] = 1.0/3.0;
+    weightsRK[2] = 1.0/3.0;  weightsRK[3] = 1.0/6.0;
+}
+
 void G_CARTESIAN::allocRungeKuttaVstFlux()
 {
     FT_VectorMemoryAlloc((POINTER*)&st_field,orderRK,sizeof(SWEEP));
@@ -374,105 +364,7 @@ void G_CARTESIAN::setComponent()
 
 }	/* end setComponent() */
 
-/*
-//INPROGRESS: This needs to be a non member function.
-void G_CARTESIAN::setInitialIntfc(
-        LEVEL_FUNC_PACK* level_func_pack)
-{
-    char* inname = InName(front);
-    
-	switch (eqn_params->prob_type)
-	{
-	case TWO_FLUID_RT:
-	case TWO_FLUID_RM:
-	    initSinePertIntfc(level_func_pack,inname);
-	    break;
-	case TWO_FLUID_RM_RAND:
-	    initRandPertIntfc(level_func_pack,inname);
-	    break;
-	case TWO_FLUID_BUBBLE:
-	case FLUID_SOLID_CIRCLE:
-	    initCirclePlaneIntfc(level_func_pack,inname);
-	    break;
-	case IMPLOSION:
-	    initImplosionIntfc(level_func_pack,inname);
-	    break;
-	case MT_FUSION:
-	    initMTFusionIntfc(level_func_pack,inname);
-	    break;
-	case PROJECTILE:
-	    initProjectileIntfc(level_func_pack,inname);
-	    break;
-	case FLUID_SOLID_RECT:
-	    initRectPlaneIntfc(level_func_pack,inname);
-	    break;
-	case FLUID_SOLID_TRIANGLE:
-	    initTrianglePlaneIntfc(level_func_pack,inname);
-	    break;
-	case FLUID_SOLID_CYLINDER:
-        initCylinderPlaneIntfc(level_func_pack,inname);
-        break;
-	case RIEMANN_PROB:
-	case ONED_BLAST:
-	case ONED_SSINE:
-	case ONED_ASINE:
-	    initRiemannProb(level_func_pack,inname);
-	    break;
-	case OBLIQUE_SHOCK_REFLECT:
-	    initObliqueIntfc(level_func_pack,inname);
-	    break;
-	default:
-	    (void) printf("Problem type not implemented, code needed!\n");
-	    clean_up(ERROR);
-	}
-}
-*/
 
-/*
-void G_CARTESIAN::setProbParams()
-{
-    char* inname = InName(front);
-	switch (eqn_params->prob_type)
-	{
-	case TWO_FLUID_RT:
-	    setRayleiTaylorParams(inname);
-	    break;
-	case TWO_FLUID_RM:
-	case TWO_FLUID_RM_RAND:
-	    setRichtmyerMeshkovParams(inname);
-	    break;
-	case TWO_FLUID_BUBBLE:
-	    setBubbleParams(inname);
-	    break;
-	case IMPLOSION:
-	    setImplosionParams(inname);
-	    break;
-	case MT_FUSION:
-	    setMTFusionParams(inname);
-	    break;
-	case PROJECTILE:
-	case FLUID_SOLID_CIRCLE:
-	case FLUID_SOLID_RECT:
-	case FLUID_SOLID_TRIANGLE:
-	case FLUID_SOLID_CYLINDER:
-	    setProjectileParams(inname);
-	    break;
-	case RIEMANN_PROB:
-	    setRiemProbParams(inname);
-	    break;
-	case ONED_BLAST:
-	case ONED_SSINE:
-	case ONED_ASINE:
-	    setOnedParams(inname);
-	    break;
-	case OBLIQUE_SHOCK_REFLECT:
-	    setRichtmyerMeshkovParams(inname);
-	    break;
-	default:
-	    printf("In setProbParams(), unknown problem type!\n");
-	    clean_up(ERROR);
-	}
-}*/	/* end setProbParams */
 
 void G_CARTESIAN::setInitialStates()
 {
