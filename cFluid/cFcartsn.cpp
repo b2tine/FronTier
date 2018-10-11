@@ -609,30 +609,38 @@ void G_CARTESIAN::addFluxInDirection(
 	FSWEEP *m_flux,
 	double delta_t)
 {
-	int icoords[MAXD];
 	switch (dim)
 	{
-	case 1:
-	    addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
-	    break;
-	case 2:
-        //#pragma omp parallel for num_threads(1)
-	    for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
-	    {
-	    	icoords[(dir+1)%dim] = i;
-	    	addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
-	    }
-	    break;
-	case 3:
-        //#pragma omp parallel for collapse(2) num_threads(1)
-	    for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
-	    for (int j = imin[(dir+2)%dim]; j <= imax[(dir+2)%dim]; ++j)
-	    {
-	    	icoords[(dir+1)%dim] = i;
-	    	icoords[(dir+2)%dim] = j;
-	    	addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
-	    }
-	    break;
+	    case 1:
+        {
+            int icoords[MAXD];
+	        addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
+	        break;
+        }
+	    case 2:
+        {
+            //#pragma omp parallel for num_threads(1)
+            for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
+            {
+                int icoords[MAXD];
+                icoords[(dir+1)%dim] = i;
+                addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
+            }
+            break;
+        }
+	    case 3:
+        {
+            //#pragma omp parallel for collapse(2) num_threads(1)
+            for (int i = imin[(dir+1)%dim]; i <= imax[(dir+1)%dim]; ++i)
+            for (int j = imin[(dir+2)%dim]; j <= imax[(dir+2)%dim]; ++j)
+            {
+                int icoords[MAXD];
+                icoords[(dir+1)%dim] = i;
+                icoords[(dir+2)%dim] = j;
+                addFluxAlongGridLine(dir,icoords,delta_t,m_vst,m_flux);
+            }
+            break;
+        }
 	}
 }	/* end addFluxInDirection */
 
@@ -3724,11 +3732,11 @@ void G_CARTESIAN::appendGhostBuffer(
 
 	switch(nb)
 	{
-	case 0:
+        case 0:
 	    for (i = 1; i <= nrad; ++i)
 	    {
-		ic[idir] = icoords[idir] - i;
-		index = d_index(ic,top_gmax,dim);
+            ic[idir] = icoords[idir] - i;
+	    	index = d_index(ic,top_gmax,dim);
 		    
 		if (!needBufferFromIntfc(comp,cell_center[index].comp))
 		{
@@ -3763,75 +3771,76 @@ void G_CARTESIAN::appendGhostBuffer(
             //extreme cases
             if (!status)
             {
-            double coords[MAXD], wtol[MAXD], tol[MAXD];
-			int ic_tmp[MAXD];
-			for (k = 0; k < dim; ++k)
-                            tol[k] = 2.0 * IG_TOL * top_h[k];
-			/* check neighbor in the opposite direction */
-			for (k = 0; k < dim; ++k)
-                            ic_tmp[k] = ic[k];
-                        ic_tmp[idir]--;
-			status = FT_StateStructAtGridCrossing(front,grid_intfc,
-					ic_tmp,rdir[idir],comp,(POINTER*)&state,
-					&hs,crx_coords);
-
-			if(!status)
-			{
-			    /* check second neighbor in the same direction */
-			    for (k = 0; k < dim; ++k)
-                    ic_tmp[k] = ic[k];
-
-                ic_tmp[idir] += 2;
+                double coords[MAXD], wtol[MAXD], tol[MAXD];
+                int ic_tmp[MAXD];
+                for (k = 0; k < dim; ++k)
+                                tol[k] = 2.0 * IG_TOL * top_h[k];
+                /* check neighbor in the opposite direction */
+                for (k = 0; k < dim; ++k)
+                                ic_tmp[k] = ic[k];
+                            ic_tmp[idir]--;
                 status = FT_StateStructAtGridCrossing(front,grid_intfc,
-                        ic_tmp,ldir[idir],comp,(POINTER*)&state,&hs,crx_coords);
+                        ic_tmp,rdir[idir],comp,(POINTER*)&state,
+                        &hs,crx_coords);
 
-			    if (!status)
-			    {
-				/* must be something wrong */
-		    	    	printf("In appendGhostBuffer() Case 0\n");
-		    	    	printf("ERROR: No crossing found!\n");
-		    	    	print_int_vector("ic=",ic,dim,"\n");
-		    	    	printf("direction: %s side %d\n",
-		           		grid_direction_name(ldir[idir]), nb);
-				clean_up(ERROR);
-			    }
-			    else
-			    {
-				/* check if crossing is close enough */
-			        boolean close_enough = YES;
-                                for (k = 0; k < dim; ++k)
-                                {
-                                    coords[k] = top_L[k]+ic_next[k]*top_h[k];
-                                    wtol[k] = crx_coords[k] - coords[k];
-                                    if (fabs(wtol[k]) > tol[k])
-                                        close_enough = NO;
-                                }
-                                if (!close_enough)
-                                {
-                                    (void) printf("ERROR: Not close enough!\n");
-                                    clean_up(ERROR);
-                                }
-			    }
-			}
-			else
-			{
-			    /* check if crossing is close enough */
-			    boolean close_enough = YES;
-			    for (k = 0; k < dim; ++k)
+                if(!status)
                 {
-                    coords[k] = top_L[k] + ic[k] * top_h[k];
-                    wtol[k] = crx_coords[k] - coords[k];
-                    if (fabs(wtol[k]) > tol[k])
-                        close_enough = NO;
+                    /* check second neighbor in the same direction */
+                    for (k = 0; k < dim; ++k)
+                        ic_tmp[k] = ic[k];
+
+                    ic_tmp[idir] += 2;
+                    status = FT_StateStructAtGridCrossing(front,grid_intfc,
+                            ic_tmp,ldir[idir],comp,(POINTER*)&state,&hs,crx_coords);
+
+                    if (!status)
+                    {
+                    /* must be something wrong */
+                            printf("In appendGhostBuffer() Case 0\n");
+                            printf("ERROR: No crossing found!\n");
+                            print_int_vector("ic=",ic,dim,"\n");
+                            printf("direction: %s side %d\n",
+                            grid_direction_name(ldir[idir]), nb);
+                            clean_up(ERROR);
+                    }
+                    else
+                    {
+                        /* check if crossing is close enough */
+                        boolean close_enough = YES;
+                        for (k = 0; k < dim; ++k)
+                        {
+                            coords[k] = top_L[k]+ic_next[k]*top_h[k];
+                            wtol[k] = crx_coords[k] - coords[k];
+                            if (fabs(wtol[k]) > tol[k])
+                                close_enough = NO;
+                        }
+                        
+                        if (!close_enough)
+                        {
+                            (void) printf("ERROR: Not close enough!\n");
+                            clean_up(ERROR);
+                        }
+                    }
                 }
-                
-                if (!close_enough)
+                else
                 {
-                    (void) printf("ERROR: Not close enough!\n");
-                    clean_up(ERROR);
-			    }
+                    /* check if crossing is close enough */
+                    boolean close_enough = YES;
+                    for (k = 0; k < dim; ++k)
+                    {
+                        coords[k] = top_L[k] + ic[k] * top_h[k];
+                        wtol[k] = crx_coords[k] - coords[k];
+                        if (fabs(wtol[k]) > tol[k])
+                            close_enough = NO;
+                    }
+                    
+                    if (!close_enough)
+                    {
+                        (void) printf("ERROR: Not close enough!\n");
+                        clean_up(ERROR);
+                    }
 
-            }
+                }
 
             }
 
@@ -3878,6 +3887,7 @@ void G_CARTESIAN::appendGhostBuffer(
 		    }
 		    break;
 		}
+
 	    }
 	    break;
 	case 1:
@@ -5162,21 +5172,27 @@ void G_CARTESIAN::setNeumannStates(
 			
 	    /* Interpolate the state at the reflected point */
 	    FT_IntrpStateVarAtCoords(front,comp,coords_ref,
-		m_vst->dens,getStateDens,&st_tmp.dens,&m_vst->dens[index]);
-	    FT_IntrpStateVarAtCoords(front,comp,coords_ref,
-		m_vst->pres,getStatePres,&st_tmp.pres,&m_vst->pres[index]);
-	    FT_IntrpStateVarAtCoords(front,comp,coords_ref,
-			m_vst->momn[0],getStateXmom,&st_tmp.momn[0],
-			&m_vst->momn[0][index]);
-	    if (dim > 1)
-		FT_IntrpStateVarAtCoords(front,comp,coords_ref,
-			m_vst->momn[1],getStateYmom,&st_tmp.momn[1],
-			&m_vst->momn[1][index]);
+                m_vst->dens,getStateDens,&st_tmp.dens,&m_vst->dens[index]);
+	    
+        FT_IntrpStateVarAtCoords(front,comp,coords_ref,
+                m_vst->pres,getStatePres,&st_tmp.pres,&m_vst->pres[index]);
+	   
+        FT_IntrpStateVarAtCoords(front,comp,coords_ref,
+                m_vst->momn[0],getStateXmom,&st_tmp.momn[0],&m_vst->momn[0][index]);
+	    
+        if (dim > 1)
+        {
+            FT_IntrpStateVarAtCoords(front,comp,coords_ref,
+                    m_vst->momn[1],getStateYmom,&st_tmp.momn[1],&m_vst->momn[1][index]);
+        }
+
 	    if (dim > 2)
-		FT_IntrpStateVarAtCoords(front,comp,coords_ref,
-			m_vst->momn[2],getStateZmom,&st_tmp.momn[2],
-			&m_vst->momn[2][index]);
-		/* Galileo Transformation */
+        {
+            FT_IntrpStateVarAtCoords(front,comp,coords_ref,
+                    m_vst->momn[2],getStateZmom,&st_tmp.momn[2],&m_vst->momn[2][index]);
+        }
+    
+        /* Galileo Transformation */
 	    vn = 0.0;
 	    for (j = 0; j < dim; j++)
 	    {
@@ -5507,8 +5523,6 @@ void G_CARTESIAN::addFluxAlongGridLine(
 	EOS_PARAMS	*eos;
 	int seg_min,seg_max;
 	
-    //EQN_PARAMS *eqn_params = (EQN_PARAMS*)(front->extra1);
-	
 	SWEEP vst;
 	FSWEEP vflux;
     allocDirVstFlux(&vst,&vflux);
@@ -5524,6 +5538,7 @@ void G_CARTESIAN::addFluxAlongGridLine(
     int index;
 	COMPONENT comp;
     seg_min = imin[idir];
+
 	while (seg_min <= imax[idir])
 	{
 	    for (; seg_min <= imax[idir]; ++seg_min)
@@ -5589,15 +5604,23 @@ void G_CARTESIAN::addFluxAlongGridLine(
                 n++;
             }
 	
-            seg_max = i;
+            seg_max++;
+            //seg_max = i;
 	    }
 	    
         icoords[idir] = seg_min;
-	    appendGhostBuffer(&vst,m_vst,n,icoords,idir,0);
-	    
+        //#pragma omp single
+        //{
+	        appendGhostBuffer(&vst,m_vst,n,icoords,idir,0);
+        //}
+
         icoords[idir] = seg_max;
-	    appendGhostBuffer(&vst,m_vst,n,icoords,idir,1);
 	    
+        //#pragma omp single
+        //{
+            appendGhostBuffer(&vst,m_vst,n,icoords,idir,1);
+        //}
+
 	    eos = &(eqn_params->eos[comp]);
 	    EosSetTVDParams(&scheme_params, eos);
 
@@ -5621,6 +5644,7 @@ void G_CARTESIAN::addFluxAlongGridLine(
 
             iter++;
 	    }
+
 	    seg_min = seg_max + 1;
 	}
 

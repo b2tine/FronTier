@@ -721,7 +721,8 @@ EXPORT	boolean FT_NormalAtGridCrossing(
 	HYPER_SURF **hs,
 	double *crx_coords)
 {
-        int j;
+
+    int j;
 	int crx_index;
 	INTERFACE *grid_intfc = front->grid_intfc;
 	
@@ -909,11 +910,11 @@ EXPORT	boolean FT_IntrpStateVarAtCoords(
 {
 	int icoords[MAXD];
 	INTERFACE *grid_intfc = front->grid_intfc;
-	static INTRP_CELL *blk_cell;
 	RECT_GRID *gr = &topological_grid(grid_intfc);
 	int i,dim = gr->dim;
 	extrapolation_permitted = front->extrapolation_permitted;
 
+	static INTRP_CELL *blk_cell;
 	if (blk_cell == NULL)
 	{
 	    scalar(&blk_cell,sizeof(INTRP_CELL));
@@ -947,8 +948,10 @@ EXPORT	boolean FT_IntrpStateVarAtCoords(
 	    	return NO;
 	    }
 	}
-	collect_cell_ptst(blk_cell,icoords,coords,comp,front,grid_array,
+	
+    collect_cell_ptst(blk_cell,icoords,coords,comp,front,grid_array,
 				get_state);
+
 	if (blk_cell->is_bilinear)
 	{
 	    if (debugging("the_pt"))
@@ -1298,10 +1301,12 @@ LOCAL void collect_cell_ptst(
 	double *L = gr->L;
 	double *h = gr->h;
 	COMPONENT *gr_comp = T->components;
-	static COMPONENT cell_comp1d[2];
+	
+    static COMPONENT cell_comp1d[2];
 	static COMPONENT cell_comp2d[2][2];
 	static COMPONENT cell_comp3d[2][2][2];
-	int i,j,k,index,nv,nc;
+	
+    int i,j,k,index,nv,nc;
 	CRXING *crx,*crxs[MAX_NUM_CRX];
 	GRID_DIRECTION dir;
 	int ic[MAXD];
