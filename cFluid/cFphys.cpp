@@ -195,6 +195,7 @@ extern void read_cFluid_params(
 	if (eqn_params->use_base_soln == YES)
 	    FT_ReadComparisonDomain(inname,eqn_params->f_basic);
 
+
 }	/* end read_cFluid_params */
 
 

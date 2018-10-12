@@ -113,7 +113,7 @@ struct GHOSTS
 	double **Gdens;
 	double ***Gvel;
 	double **Gpres;
-}
+};
 
 struct EQN_PARAMS
 {
@@ -160,22 +160,20 @@ struct EQN_PARAMS
 	double contact_vel;
 
     //state variables
-    FIELD statevars;
-    /*
-    double **vel;
-	double **mom;
+        //FIELD eqnField;
+	double **vel;
+	double **momn;
 	double *dens;
 	double *engy;
 	double *pres;
-	double *vort;*/
+	double *vort;
 
     //GFM variables
-    GHOSTS ghosts;
-    /*
+        //GHOSTS ghosts;
 	double **gnor;
 	double **Gdens;
 	double ***Gvel;
-	double **Gpres;*/
+	double **Gpres;
 
     //TODO: This may warrant a seperate structure.
 	boolean use_base_soln;
@@ -304,10 +302,6 @@ class L_RECTANGLE
 
 	    L_RECTANGLE();
 
-        //TODO: What is the point of having a setter
-        //      to a publicly exposed variable?
-        //      What is the point of a class with all
-        //      public data?
 	    void setCoords(double*,int);
 };
 
@@ -332,11 +326,11 @@ public:
 	double max_dt;			// max_dt from cartesian
 	double hmin;			// smallest spacing
 
-	//void setInitialStates(); 	// setup initial state
 	void initMesh(void);		// setup the cartesian grid
-	//void readInteriorStates(char*);
+    void setInitialStates();
+	void readInteriorStates(char*);
 	void printFrontInteriorStates(char*);
-	void initMovieVariables();
+	void initMovieVariables(); //TODO: move this out of class
 	void getVelocity(double*,double*);
 	void compareWithBaseData(char *out_name);
 	void freeBaseFront();
@@ -354,17 +348,18 @@ private:
 	Front* base_front;
 	double* array;  // for scatter states;
 
+	int imin[MAXD]; // Sweeping limits
+	int imax[MAXD];
 	int top_gmax[MAXD];
 	int lbuf[MAXD],ubuf[MAXD];
 	double top_L[MAXD],top_U[MAXD],top_h[MAXD];
+    void getDomainBounds();
+
 	int **ij_to_I,**I_to_ij;	// Index mapping for 2D
 	int ***ijk_to_I,**I_to_ijk;	// Index mapping for 3D
     
 	int nrad {3};   // Buffer size for a given numerical scheme
 
-	// Sweeping limits
-	int imin[MAXD];
-	int imax[MAXD];
 
 	// mesh storage
 	std::vector<L_RECTANGLE> cell_center;
@@ -416,7 +411,8 @@ private:
 
 	/* Mesh memory management */
     int sizeEqnVst;
-    void allocEqnVst();
+    void initComputationalData();
+    void allocEqnField();
 
 	void allocMeshVst(SWEEP*);
 	void allocMeshFlux(FSWEEP*);
@@ -464,6 +460,7 @@ private:
 	// 		initialization functions
 	// -------------------------------------------------------
 
+    //TODO: move these out of class if possible
 	void initRayleighTaylorStates();
 	void initRichtmyerMeshkovStates();
 	void initBubbleStates();
@@ -536,11 +533,12 @@ private:
 	void checkCorrectForTolerance(STATE*);
 	void adjustGhostFluidStates();
     void setGhostFluidStatesToZero();
+    void allocGhostFluid();
     void setupSolver();
 
 };
 
-void initSampleVelocity(Front* front, char* infile_name);
+void initSampleVelocity(Front*,char*);
 
 
 //cFsub.cpp
@@ -574,7 +572,6 @@ extern void init_moving_bodies(EQN_PARAMS,char*,Front*);
 extern void cfluid_compute_force_and_torque(Front*,HYPER_SURF*,double,double*,
 			double*);
 extern void record_moving_body_data(char*,Front*);
-extern void read_cFluid_params(char*,EQN_PARAMS*);
 extern void readFrontStates(Front*,char*);
 extern void reflectVectorThroughPlane(double*,double*,double*,int);
 extern boolean reflectNeumannState(Front*,HYPER_SURF*,double*,COMPONENT,SWEEP*,
@@ -593,7 +590,7 @@ extern void   findGhostState(STATE,STATE,STATE*);
 extern void prompt_for_rigid_body_params(int,char*,RG_PARAMS*);
 extern void set_rgbody_params(RG_PARAMS,HYPER_SURF*);
 extern void insert_objects(Front*);
-extern void cFluid_setProbParams(Front*);
+extern void read_cFluid_params(char*,EQN_PARAMS*);
 extern void cFluid_InitIntfc(Front*,LEVEL_FUNC_PACK*);
 
 //cFriem.cpp

@@ -31,8 +31,8 @@ cFcartsn.o : cFluid.h cFcartsn.cpp
 cFbase.o : cFluid.h cFbase.cpp
 	${CXX} -c cFbase.cpp $(incsloc) $(incs)
 
-cFphys.o : cFluid.h cFphys.cpp
-	${CXX} -c cFphys.cpp $(incsloc) $(incs)
+#cFphys.o : cFluid.h cFphys.cpp
+#	${CXX} -c cFphys.cpp $(incsloc) $(incs)
 
 cFinit.o : cFluid.h cFinit.cpp
 	${CXX} -c cFinit.cpp $(incsloc) $(incs)
@@ -48,7 +48,7 @@ cFluid.o : cFluid.h cFluid.cpp
 
 ifeq ($(USEGPU),no)
 
-cFluid: cFluid.h cFluid.o cFtvd.o cFweno.o cFsub.o cFcartsn.o cFbase.o cFphys.o cFinit.o cFeos.o cFriem.o
+cFluid: cFluid.h cFluid.o cFtvd.o cFweno.o cFsub.o cFcartsn.o cFbase.o cFinit.o cFeos.o cFriem.o
 	$(CXX) -o cFluid cFluid.o -g -I../include -L../lib/${build_cpu}  cFtvd.o cFweno.o cFsub.o cFcartsn.o cFbase.o cFphys.o cFinit.o cFeos.o cFriem.o -L../lib/${build_cpu} -lFronTier $(libincs)  $(libs) ${F77_LIBS}
 
 else

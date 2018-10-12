@@ -61,18 +61,21 @@ G_CARTESIAN::G_CARTESIAN(Front* frnt)
     weightsRK(4,0.0)
 {
     initMesh();
-    initRungeKutta();
     initMovieVariables();
 }
 
-/*
 G_CARTESIAN::~G_CARTESIAN()
 {
+    FT_FreeThese(5,eqn_params->vel,eqn_params->mom,
+           eqn_params->engy,eqn_params->pres,eqn_params->dens);
 
+    FT_FreeThese(4,eqn_params->gnor,eqn_params->Gdens,
+           eqn_params->Gpres,eqn_params->Gvel);
+    
+    //TODO: free rk4 flux data
+
+    FT_FreeThese(1,array);
 }
-*/
-
-
 
 
 void G_CARTESIAN::initMesh()
@@ -86,7 +89,7 @@ void G_CARTESIAN::initMesh()
 	    (void) printf("Entering g_cartesian.initMesh()\n");
 
 	FT_MakeGridIntfc(front);
-    allocEqnVst();
+    initComputationalData();
 	
     int num_cells = 1;
 	for (int i = 0; i < dim; ++i)
@@ -140,13 +143,24 @@ void G_CARTESIAN::initMesh()
 	    (void) printf("Leaving g_cartesian.initMesh()\n");
 }
 
-//TODO: break up into multiple functions
-void G_CARTESIAN::allocEqnVst()
+void G_CARTESIAN::initComputationalData()
+{
+    getDomainBounds();
+    allocEqnField();
+    allocGhostFluid();
+    initRungeKutta();
+
+    //Scatter array
+    FT_VectorMemoryAlloc((POINTER*)&array,
+            sizeEqnVst,sizeof(double));
+}
+
+void G_CARTESIAN::getDomainBounds()
 {
 	setDomain();
     
-    for (int i = 0; i < 3; ++i)
-        top_gmax[i] = 0;
+    //for (int i = 0; i < 3; ++i)
+      //  top_gmax[i] = 0;
 
     sizeEqnVst = 1;
     hmin = HUGE;
@@ -159,22 +173,22 @@ void G_CARTESIAN::allocEqnVst()
         top_L[i] = top_grid->L[i];
         top_U[i] = top_grid->U[i];
         top_h[i] = top_grid->h[i];
-
-        top_gmax[i] = top_grid->gmax[i];
-
+        
         if (hmin > top_h[i])
             hmin = top_h[i];
 
+        top_gmax[i] = top_grid->gmax[i];
         sizeEqnVst *= (top_gmax[i]+1);
         
         imin[i] = (lbuf[i] == 0) ? 1 : lbuf[i];
-        imax[i] = (ubuf[i] == 0) ?
+        
+        imax[i] = (ubuf[i] == 0) ? 
             top_gmax[i] - 1 : top_gmax[i] - ubuf[i];
     }
+}
 
-
-    //allocEqn
-    //{
+void G_CARTESIAN::allocEqnField()
+{
     FT_MatrixMemoryAlloc((POINTER*)&eqn_params->vel,
             dim,sizeEqnVst,sizeof(double));
     FT_MatrixMemoryAlloc((POINTER*)&eqn_params->mom,
@@ -191,20 +205,16 @@ void G_CARTESIAN::allocEqnVst()
         FT_VectorMemoryAlloc((POINTER*)&eqn_params->vort,
                 sizeEqnVst,sizeof(double));
     }
-
+    
     field.vel = eqn_params->vel;
     field.momn = eqn_params->mom;
     field.engy = eqn_params->engy;
     field.pres = eqn_params->pres;
     field.dens = eqn_params->dens;
-    //}
+}
 
-    //Scatter
-    FT_VectorMemoryAlloc((POINTER*)&array,
-            sizeEqnVst,sizeof(double));
-
-    //allocGFM()
-    //{
+void G_CARTESIAN::allocGhostFluid()
+{
     FT_MatrixMemoryAlloc((POINTER*)&eqn_params->gnor,
             dim,sizeEqnVst,sizeof(double));
     FT_MatrixMemoryAlloc((POINTER*)&eqn_params->Gdens,
@@ -215,17 +225,7 @@ void G_CARTESIAN::allocEqnVst()
             2,dim,sizeEqnVst,sizeof(double));
 
     setGhostFluidStatesToZero();
-    //}
-
-    allocRungeKuttaVstFlux();
-    
 }
-
-/*
-void G_CARTESIAN::allocGhostFluidVst()
-{
-
-}*/
 
 void G_CARTESIAN::initRungeKutta()
 {
@@ -247,6 +247,8 @@ void G_CARTESIAN::initRungeKutta()
             (void)printf("ERROR: Numerical scheme not recognized\n");
             clean_up(ERROR);
     }
+
+    allocRungeKuttaVstFlux();
 }
 
 void G_CARTESIAN::setFirstOrderRK()
@@ -965,13 +967,11 @@ void G_CARTESIAN::save(char *filename)
 
 void G_CARTESIAN::setDomain()
 {
-	INTERFACE* grid_intfc;
-	grid_intfc = front->grid_intfc;
-	top_grid = &topological_grid(grid_intfc);
+	INTERFACE* grid_intfc = front->grid_intfc;
+	this->top_grid = &topological_grid(grid_intfc);
 	
-    Table *T;
-	T = table_of_interface(grid_intfc);
-	top_comp = T->components;
+	Table* T = table_of_interface(grid_intfc);
+	this->top_comp = T->components;
 }
 
 void G_CARTESIAN::allocMeshVst(

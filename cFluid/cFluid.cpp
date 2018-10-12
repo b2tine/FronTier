@@ -96,9 +96,9 @@ int main(int argc, char **argv)
             eqn_params.f_basic->subdomains[i] = f_basic.subdomains[i];
 	}
 
-	front.extra1 = (POINTER)&eqn_params;
-    cFluid_setProbParams(&front);
+    
 
+	front.extra1 = (POINTER)&eqn_params;
 
 	/* Initialize interface through level function */
 
@@ -138,32 +138,31 @@ int main(int argc, char **argv)
                     break;
             }
         }
+
 	}
 	else
     {
 	    restart_set_dirichlet_bdry_function(&front);
     }
 
-    //G_CARTESIAN	g_cartesian(&front);
+
+
+    //Compressible fluid solver
+    G_CARTESIAN	g_cartesian(&front);
 
 
     if (RestartRun)
 	{
 	    readFrontStates(&front,restart_state_name);
-	    readInteriorStates(&front,restart_state_name);
-	    //g_cartesian.readInteriorStates(restart_state_name);
+	    g_cartesian.readInteriorStates(restart_state_name);
 	}
 	else
 	{
-	    setInitialStates(&front);
-	    //g_cartesian.setInitialStates();
+	    g_cartesian.setInitialStates();
 	}
 
 	if (debugging("trace"))
 	    printf("Passed state initialization()\n");
-
-
-    G_CARTESIAN	g_cartesian(&front);
 
 
 	/* Initialize velocity field function */
