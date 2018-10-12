@@ -162,7 +162,7 @@ struct EQN_PARAMS
     //state variables
         //FIELD eqnField;
 	double **vel;
-	double **momn;
+	double **mom;
 	double *dens;
 	double *engy;
 	double *pres;
@@ -312,9 +312,8 @@ class G_CARTESIAN
 public:
 
 	explicit G_CARTESIAN(Front* frnt);
-
-	~G_CARTESIAN() = default;
-	//~G_CARTESIAN();
+	
+    ~G_CARTESIAN();
 
     G_CARTESIAN() = delete;
     G_CARTESIAN(const G_CARTESIAN&) = delete;

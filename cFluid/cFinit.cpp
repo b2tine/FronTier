@@ -62,6 +62,9 @@ static void initCylinderPlaneIntfc(Front*,LEVEL_FUNC_PACK*);
 static void initRiemannProb(Front*,LEVEL_FUNC_PACK*);
 static void initObliqueIntfc(Front*,LEVEL_FUNC_PACK*);
 
+static void cFluid_setProbParams(char*,EQN_PARAMS*);
+
+
 
 void read_cFluid_params(char *inname, EQN_PARAMS *eqn_params)
 {
